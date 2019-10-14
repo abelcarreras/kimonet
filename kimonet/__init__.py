@@ -8,7 +8,7 @@ def all_none(centre_list):
     for element in centre_list:
 
         if element is None:
-            none_yes = none_yes*1
+            none_yes = none_yes * 1
 
         else:
             none_yes = none_yes * 0

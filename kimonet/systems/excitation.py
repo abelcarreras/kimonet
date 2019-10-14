@@ -22,10 +22,34 @@ def excited_system(molecules, initial_excitation, tolerance):
     return centre_list
 
 
+def excite_system(molecules, excitations):
+    """
+    :param molecules: List of the defined molecules
+    :param excitations: Information about the desired excitation
+    :param tolerance: (only used in pick_centre()).
+    :return: list with the index of the excited molecules
+    The function modifies the list of molecules with the excitons.
+    """
+    centre_list = []
+
+    for state in excitations:
+        print(state, excitations[state])
+
+        index = get_excited_index(excitations[state], centre_list, molecules)
+
+        print(centre_list)
+        exit()
+
+        molecules[index].set_state(state)     # check the correct method
+        centre_list.append(index)
+
+    return centre_list
+
+
 ########################################################################################
 
 
-def get_excited_index(position, centre_list, molecules, tolerance):
+def get_excited_index(position, centre_list, molecules, tolerance=1e-6):
     """
     This function simply redirects the program to more specific functions
     """
@@ -124,7 +148,7 @@ def pick_centre(centre_list, molecules, tolerance):
     index = None                                    # index is set to None until a number is chosen
     for i, molecule in enumerate(molecules):
 
-        position = np.linalg.norm(molecule.molecular_coordinates())
+        position = np.linalg.norm(molecule.get_coordinates())
 
         if position == 0:
             index = i
@@ -144,7 +168,7 @@ def pick_centre(centre_list, molecules, tolerance):
 
         if closest is True:
             print('No molecule found in the desired position. Picks the closest.')
-            print('New position:', molecules[index].molecular_coordinates())
+            print('New position:', molecules[index].get_coordinates())
 
     return index
 
@@ -160,7 +184,7 @@ def pick_furthest(centre_list, molecules):
     index = None                                    # index is set to None until a number is chosen
     for i, molecule in enumerate(molecules):
 
-        position = np.linalg.norm(molecule.molecular_coordinates())
+        position = np.linalg.norm(molecule.get_coordinates())
         if position > furthest_position:            # checks if the chosen position is further than the furthest at
             furthest_position = position            # the moment.
             index = i
@@ -189,7 +213,7 @@ def pick_with_coordinates(position, centre_list, molecules, tolerance):
     index = None                                    # index will be considered None until a int is chosen
 
     for (i, molecule) in enumerate(molecules):
-        molecular_position = molecule.molecular_coordinates()              # position of molecule i
+        molecular_position = molecule.get_coordinates()              # position of molecule i
 
         inter_distance = distance.euclidean(desired_position, molecular_position)
         # distance between molecule i and the desired position
@@ -209,7 +233,7 @@ def pick_with_coordinates(position, centre_list, molecules, tolerance):
 
         if closest is True:
             print('No molecule found in the desired position. Picks the closest.')
-            print('New position:', molecules[index].molecular_coordinates())
+            print('New position:', molecules[index].get_coordinates())
 
     return index
 
@@ -230,7 +254,7 @@ def pick_closest(position, molecules, centre_list):
     # sets a maximum distance (it is supposed that a closest molecule will be found)
 
     for i, molecule in enumerate(molecules):
-        molecular_position = molecule.molecular_coordinates()
+        molecular_position = molecule.get_coordinates()
 
         inter_distance = distance.euclidean(desired_position, molecular_position)
         # distance between the molecule and the desired point
@@ -247,7 +271,7 @@ def pick_closest(position, molecules, centre_list):
     if index is None:
         index = pick_random(centre_list, molecules)
         print('No molecule close to the desired position. Picks one randomly')
-        print('New position:', molecules[index].molecular_coordinates())
+        print('New position:', molecules[index].get_coordinates())
         closest = False
 
     return index, closest
