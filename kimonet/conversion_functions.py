@@ -25,11 +25,6 @@ def from_ns_to_au(time, d):
     if d is 'inverse':
         return time * 2.4189 * 10**(-8)
 
-    """
-    This function can be used to converse rates to inverse of time units to atomic units but changing the 
-    meaning of the parameter 'direct'/'inverse'.
-    In order to converse a rate in atomic units to a rate in an inverse of time 'direct' parameter shall be set.
-    """
 
 
 def from_nm_to_au(length, d):

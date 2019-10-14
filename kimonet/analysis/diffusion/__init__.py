@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import linregress
-from KiMonETSim.analysis.diffusion.diffusion_plots import final_distances_histogram, diffusion_length_and_lifetime_convergence,\
+from kimonet.analysis.diffusion.diffusion_plots import final_distances_histogram, diffusion_length_and_lifetime_convergence,\
     diffusion_line
 
 

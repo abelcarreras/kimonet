@@ -1,6 +1,6 @@
 import json
-from KiMonETSim.analysis.diffusion import statistical_diffusion_study, diffusion_parameters
-from KiMonETSim.analysis.theorethical_functions import theoretical_diffusion_values
+from kimonet.analysis.diffusion import statistical_diffusion_study, diffusion_parameters
+from kimonet.analysis.theorethical_functions import theoretical_diffusion_values
 
 
 input_file_name = 'example_1d_simulation.json'              # name of the file with the simulation data (.json)

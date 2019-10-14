@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import pi
-from KiMonETSim.molecules import Molecule
-from KiMonETSim.conversion_functions import from_ev_to_au, from_ns_to_au
+from kimonet.molecules import Molecule
+from kimonet.conversion_functions import from_ev_to_au, from_ns_to_au
 
 
 def theoretical_diffusion_values(system_information):

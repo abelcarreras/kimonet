@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from KiMonETSim.analysis import get_diffusion_vs_mu
+from kimonet.analysis import get_diffusion_vs_mu
 
 """
 In this script the user can get the plots of the diffusion length, constant and exciton lifetime vs the 

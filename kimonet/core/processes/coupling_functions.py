@@ -1,6 +1,6 @@
 import numpy as np
-from KiMonETSim.conversion_functions import from_nm_to_au
-
+from kimonet.conversion_functions import from_nm_to_au
+from kimonet.utils import minimum_distance_vector
 
 ##########################################################################################
 #                                   COUOPLING FUNCTIONS
@@ -9,26 +9,30 @@ from KiMonETSim.conversion_functions import from_nm_to_au
 coupling_memory = {}
 
 
-def compute_forster_coupling(donor, acceptor, conditions):
+def compute_forster_coupling(donor, acceptor, conditions, supercell):
     """
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
     :param conditions: dictionary with physical conditions
-    :return: Förster coupling between both molecules. We don't implement any correction for short distances.
+    :param supercell: the supercell
+    :return: Forster coupling between both molecules. We don't implement any correction for short distances.
     """
 
-    # definition of the parameters of the donor and acceptor needed in the calculation of the Förster coupling
+    # definition of the parameters of the donor and acceptor needed in the calculation of the Forster coupling
 
     u_d = donor.get_transition_moment()                     # transition dipole moment (donor) a.u
     u_a = acceptor.get_transition_moment()                  # transition dipole moment (acceptor) a.u
     momentum_projection = np.dot(u_d, u_a)                  # inner product of both a.u
 
     r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
+    r_vector, _ = minimum_distance_vector(r_vector, supercell)
+
     r = np.linalg.norm(r_vector)                            # inter molecular distance a.u
+    r = from_nm_to_au(r, 'direct')
 
     n = conditions['refractive_index']                      # refractive index of the material
 
-    info = str(hash((momentum_projection, r, n, 'förster')))
+    info = str(hash((momentum_projection, r, n, 'forster')))
     # we define a compact string with the characteristic information of the coupling
 
     if info in coupling_memory:
@@ -57,16 +61,17 @@ couplings = {'s1_gs': compute_forster_coupling}
 ###############################################################################################
 
 
-def intermolecular_vector(molecule1, molecule2):
+def intermolecular_vector(donor, acceptor):
     """
     :param molecule1: donor
     :param molecule2: acceptor
     :return: the euclidean distance between the donor and the acceptor
     """
-    position_d = molecule1.molecular_coordinates()
-    position_a = molecule2.molecular_coordinates()
-    r = position_d - position_a
-    return from_nm_to_au(r, 'direct')
+    position_d = donor.get_coordinates()
+    position_a = acceptor.get_coordinates()
+    r = position_a - position_d
+
+    return r
 
 
 def orientational_factor(u_d, u_a, r):

@@ -1,7 +1,7 @@
-from KiMonETSim.core.neighbourhood_and_connectivity import neighbourhood
-from KiMonETSim.core.kmc_implementation import kmc_algorithm
-from KiMonETSim.core.processes import get_transfer_rates, update_step, get_decay_rates
-from KiMonETSim import all_none
+from kimonet.core.neighbourhood_and_connectivity import get_neighbours_naive
+from kimonet.core.kmc_implementation import kmc_algorithm
+from kimonet.core.processes import get_transfer_rates, update_step, get_decay_rates
+from kimonet import all_none
 
 
 def update_system(system):
@@ -15,19 +15,19 @@ def update_system(system):
     :return: the chosen process and the advanced time
     """
 
-    molecules = system['molecules']                 # list of all instances of Molecule
-    centre_indexes = system['centres']              # tricky list with the indexes of all excited molecules
+    molecules = system.molecules                # list of all instances of Molecule
+    centre_indexes = system.centers              # tricky list with the indexes of all excited molecules
 
     rate_collector = []                             # list with all the rates (for all centers)
     process_collector = []                          # list with the respective processes (for all centers)
     # the indexes of both lists coincide.
 
-    for i, centre in enumerate(centre_indexes):
+    for i, centre in enumerate(system.centers):
         if type(centre) == int:
-            neighbour_indexes = neighbourhood(centre, system, radius=system['conditions']['neighbourhood_radius'])
+            # neighbour_indexes = get_neighbours_naive(centre, system, radius=system.conditions['cutoff_radius'])
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
-            process_list, rate_list = get_processes_and_rates(centre, neighbour_indexes, system, i)
+            process_list, rate_list = get_processes_and_rates(centre, system, i)
             # for each center computes all the decay rates and all the transfer rates for all neighbours
             # return them as a list
 
@@ -37,7 +37,7 @@ def update_system(system):
 
     chosen_process, time = kmc_algorithm(rate_collector, process_collector)
     # chooses one of the processes and gives it a duration using the Kinetic Monte-Carlo algorithm
-    update_step(chosen_process, molecules, centre_indexes)        # updates both lists according to the chosen process
+    update_step(chosen_process, system)        # updates both lists according to the chosen process
 
     # finally the chosen process and the advanced time are returned
     return chosen_process, time
@@ -46,7 +46,7 @@ def update_system(system):
 #############################################################################################
 
 
-def check_finish(system):
+def is_finished(system):
     """
     :param system:
     :return: Checks if the list of excited molecules is empty. When empty the excitations have all decayed and
@@ -54,7 +54,7 @@ def check_finish(system):
     """
     # all_none checks if all positions of a list are None. In the case of centres, if all are None means that all
     # excitons have decayed.
-    return all_none(system['centres'])
+    return system.get_number_of_excitations() == 0
 
 
 ##############################################################################################################
@@ -62,7 +62,7 @@ def check_finish(system):
 ##############################################################################################################
 
 
-def get_processes_and_rates(centre, neighbour_indexes, system, i):
+def get_processes_and_rates(centre, system, i):
     """
     :param i: index of the exciton
     :param centre: Index of the studied excited molecule. Donor
@@ -77,7 +77,7 @@ def get_processes_and_rates(centre, neighbour_indexes, system, i):
                 The list indexes coincide.
     """
 
-    transfer_processes, transfer_rates = get_transfer_rates(centre, neighbour_indexes, system, i)
+    transfer_processes, transfer_rates = get_transfer_rates(centre, system, i)
     # calls an external function that computes the transfer rates for all possible transfer processes between
     # the centre and all its neighbours
 

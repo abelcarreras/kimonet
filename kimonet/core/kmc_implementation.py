@@ -17,6 +17,11 @@ def kmc_algorithm(rate_list, process_list):
     process_index = select_process(rate_list)
     chosen_process = process_list[process_index]
 
+    #for i,j in zip(process_list, rate_list):
+    #    print(i)
+    #    print(j)
+
+
     time = time_advance(rate_list)
 
     return chosen_process, time

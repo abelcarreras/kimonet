@@ -3,9 +3,9 @@ from scipy.spatial import distance
 
 # neighbourhood is defined in this new file because it surely will be expanded when defining connectivities
 # for some systems
+data_center = {}
 
-
-def neighbourhood(centre, system, radius=1.05):
+def neighbourhood2(centre, system, radius=1.05):
     """
     :param centre: Index of an excited Molecule object
     :param system: dictionary with all the information of the system
@@ -15,7 +15,7 @@ def neighbourhood(centre, system, radius=1.05):
     """
 
     molecules = system['molecules']
-    center_position = np.array(molecules[centre].molecular_coordinates())
+    center_position = np.array(molecules[centre].get_coordinates())
     # position of the excited molecule (as a numpy array)
 
     # some connectivity tricks have been defined for specific cases: 1d, 2d ordered systems (squared systems).
@@ -68,6 +68,54 @@ def neighbourhood(centre, system, radius=1.05):
             # neighbour) If the molecule satisfies both its index is taken.
             if 0 < distance.euclidean(center_position, coordinates) < radius:
                 neighbours.append(i)
+
+    # Printed alert if no neighbours are found.
+    if len(neighbours) == 0:
+        print('No neighbours found. Check neighbourhood radius')
+
+    return neighbours
+
+
+def get_neighbours_naive(centre, system, radius=1.05):
+    """
+    :param centre: Index of an excited Molecule object
+    :param system: dictionary with all the information of the system
+    :param radius: Effective distance where interaction may be considerable. Default 0.11
+    :return: List of indexes of molecules in a neighbourhood of center
+    If there is not any neighbours in the defined neighbourhood an alert is printed.
+    """
+
+    if '{}'.format(centre) in data_center:
+        return data_center['{}'.format(centre)]
+
+    #print(system)
+    molecules = system.molecules
+    supercell = system.supercell
+
+    # print([mol.get_coordinates() for mol in molecules])
+
+    center_position = molecules[centre].get_coordinates()
+    # position of the excited molecule (as a numpy array)
+
+    # some connectivity tricks have been defined for specific cases: 1d, 2d ordered systems (squared systems).
+
+    # Flux control. We ensure that variable type is defined (in general will be an argument of system).
+    neighbours = []
+    for i, molecule in enumerate(molecules):
+        coordinates = molecule.get_coordinates()
+
+        for l_vector in supercell:
+            coord_plus = coordinates + np.array(l_vector)
+            coord_minus = coordinates - np.array(l_vector)
+            if 0 < distance.euclidean(center_position, coordinates) < radius:
+                neighbours.append(i)
+            elif 0 < distance.euclidean(center_position, coord_plus) < radius:
+                neighbours.append(i)
+            elif 0 < distance.euclidean(center_position, coord_minus) < radius:
+                neighbours.append(i)
+
+    neighbours = np.unique(neighbours)
+    # data_center['{}'.format(centre)] = neighbours
 
     # Printed alert if no neighbours are found.
     if len(neighbours) == 0:
