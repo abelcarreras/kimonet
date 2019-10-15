@@ -7,6 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D  # Actually needed
 
 
 class Trajectory:
+    # TODO: This full class has to be reorganized (rethought)
     def __init__(self, system):
         """
         trajectory: dictionary with the system trajectory (time, number of excitons, positions and process occurred)
@@ -30,6 +31,8 @@ class Trajectory:
         :param system: dictionary with the information of the system
         No return function, only updates the dictionary trajectory
         """
+
+        # TODO: get rid of system argument in add method
 
         # time update:
         if len(self.trajectory['time']) == 0:

@@ -14,13 +14,9 @@ def kmc_algorithm(rate_list, process_list):
     :return:    plan: The chosen proces and the new molecule affected
                 time: the duration of the process
     """
+
     process_index = select_process(rate_list)
     chosen_process = process_list[process_index]
-
-    #for i,j in zip(process_list, rate_list):
-    #    print(i)
-    #    print(j)
-
 
     time = time_advance(rate_list)
 

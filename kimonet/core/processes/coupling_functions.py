@@ -1,6 +1,8 @@
 import numpy as np
 from kimonet.conversion_functions import from_nm_to_au
 from kimonet.utils import minimum_distance_vector
+import inspect
+from collections import namedtuple
 
 ##########################################################################################
 #                                   COUOPLING FUNCTIONS
@@ -11,14 +13,23 @@ coupling_memory = {}
 
 def compute_forster_coupling(donor, acceptor, conditions, supercell):
     """
+    Compute Forster coupling
+
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
     :param conditions: dictionary with physical conditions
-    :param supercell: the supercell
+    :param supercell: the supercell of the system
     :return: Forster coupling between both molecules. We don't implement any correction for short distances.
     """
 
-    # definition of the parameters of the donor and acceptor needed in the calculation of the Forster coupling
+    function_name = inspect.currentframe().f_code.co_name
+
+    # donor <-> acceptor interaction symmetry
+    hash_string = str(hash((donor, function_name))+hash((acceptor, function_name)))
+    # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
+
+    if hash_string in coupling_memory:
+        return coupling_memory[hash_string]
 
     u_d = donor.get_transition_moment()                     # transition dipole moment (donor) a.u
     u_a = acceptor.get_transition_moment()                  # transition dipole moment (acceptor) a.u
@@ -28,37 +39,35 @@ def compute_forster_coupling(donor, acceptor, conditions, supercell):
     r_vector, _ = minimum_distance_vector(r_vector, supercell)
 
     r = np.linalg.norm(r_vector)                            # inter molecular distance a.u
-    r = from_nm_to_au(r, 'direct')
+    r = from_nm_to_au(r, 'direct')                          # Units
 
     n = conditions['refractive_index']                      # refractive index of the material
 
-    info = str(hash((momentum_projection, r, n, 'forster')))
-    # we define a compact string with the characteristic information of the coupling
+    k = orientation_factor(u_d, u_a, r_vector)              # orientation factor between molecules
 
-    if info in coupling_memory:
-        # use of the memory for computed situations
-        forster_coupling = coupling_memory[info]
+    forster_coupling = k**2 * momentum_projection / (n**2 * r**3)       # electronic coupling a.u
 
-    else:
-        k = orientational_factor(u_d, u_a, r_vector)            # orientational factor between molecules
-
-        forster_coupling = k**2 * momentum_projection / (n**2 * r**3)       # electronic coupling a.u
-
-        coupling_memory[info] = forster_coupling                            # memory update for new couplings
+    coupling_memory[hash_string] = forster_coupling                            # memory update for new couplings
 
     return forster_coupling
 
 
 ##########################################################################################
-#                               DICTIONARY COUPLINGS
+#                               COUPLING FUNCTIONS DICTIONARY
 ##########################################################################################
+Transfer = namedtuple("Transfer", ["initial", "final", "description"])
 
-couplings = {'s1_gs': compute_forster_coupling}
+# Transfer tuple format:
+# initial: tuple with the initial states of donor, acceptor for the transfer to occur (order is important!!)
+# final: tuple with the final states of the donor, acceptor once the transfer has occurred
+# description: string with some information about the transfer process
 
 
-###############################################################################################
-#                            AUXILIAR FUNCTIONS
-###############################################################################################
+functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): compute_forster_coupling}
+
+##########################################################################################
+#                            AUXILIARY FUNCTIONS
+##########################################################################################
 
 
 def intermolecular_vector(donor, acceptor):
@@ -74,20 +83,20 @@ def intermolecular_vector(donor, acceptor):
     return r
 
 
-def orientational_factor(u_d, u_a, r):
+def orientation_factor(u_d, u_a, r):
     """
     :param u_d: dipole transition moment of the donor
     :param u_a: dipole transition moment of the acceptor
     :param r:  intermolecular_distance
     :return: the orientational factor between both molecules
     """
-    nd = unity(u_d)
-    na = unity(u_a)
-    e = unity(r)
+    nd = unit_vector(u_d)
+    na = unit_vector(u_a)
+    e = unit_vector(r)
     return np.dot(nd, na) - 3*np.dot(e, nd)*np.dot(e, na)
 
 
-def unity(vector):
+def unit_vector(vector):
     """
     :param vector:
     :return: computes a unity vector in the direction of vector

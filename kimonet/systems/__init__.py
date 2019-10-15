@@ -373,6 +373,7 @@ class System:
         self.conditions = conditions
         self.supercell = supercell
         self.neighbors = {}
+        self.is_finished = False
 
         # search centers
         self.centers = []
@@ -428,6 +429,7 @@ class System:
         for molecule in self.molecules:
             molecule.state = 'gs'
         self.centers = []
+        self.is_finished = False
 
     def get_num_molecules(self):
         return len(self.molecules)
