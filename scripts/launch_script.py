@@ -1,19 +1,10 @@
-from kimonet.systems import get_system, ordered_system
+from kimonet.systems import ordered_system, disordered_system
 from kimonet.core import update_system, is_finished
 from kimonet.analysis import Trajectory, visualize_system
 from kimonet.molecules import Molecule
 import numpy as np
 import json
 import warnings
-import time
-
-
-#######################################################################################################################
-
-output_file_name = '2_excitons_simulation_1d.json'      # name of the output file where the trajectories will be saved
-                                                            # .json format
-
-#######################################################################################################################
 
 """
 Generic molecule initialization
@@ -25,17 +16,15 @@ All energies must be given in eV. By default initialized at gs.
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 2.5,
-                  's2': 3.0}
+                  's1': 2.5}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
-                           's1': 0.7,
-                           's2': 0.8}
+                           's1': 0.7}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[0.0, 0.6]         # transition dipole moment of the molecule (a.u)
+                    transition_moment=[0.6, 0]         # transition dipole moment of the molecule (a.u)
                     )
 
 #######################################################################################################################
@@ -47,8 +36,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-trajectories = []                               # list with the trajectories of all excitons
-num_trajectories = 500                            # number of trajectories that will be simulated
+num_trajectories = 100                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
 system = ordered_system(conditions=conditions,
@@ -58,15 +46,15 @@ system = ordered_system(conditions=conditions,
 
 # visualize_system(system)
 
-print(system.molecules)
-print(system.supercell)
-
+trajectories = []
 for j in range(num_trajectories):
 
-    system.add_excitation_center('s1')
-    # system.add_excitation_index('s1', 0)
+    # system.add_excitation_center('s1')
+    system.add_excitation_index('s1', 0)
 
-    print('num iteration', j)
+    # visualize_system(system)
+
+    print('iteration: ', j)
 
     trajectory = Trajectory(system)
     for i in range(max_steps):
@@ -84,28 +72,35 @@ for j in range(num_trajectories):
     system.reset()
 
     plt = trajectory.plot_distances()
-    #plt = trajectory.plot_2d()
+    # plt = trajectory.plot_2d()
 
     # print(trajectory.get_data())
     trajectories.append(trajectory)
 
+# diffusion properties
 d_tensor = np.average([traj.get_diffusion_tensor() for traj in trajectories], axis=0)
-
-d_coeff = np.average([traj.get_diffusion() for traj in trajectories])
-lifetime = np.average([traj.get_lifetime() for traj in trajectories])
 print('diffusion tensor')
 print(d_tensor)
-print('diffusion coefficient: {}\nlifetime: {}'.format(d_coeff, lifetime))
 
+d_coefficient = np.average([traj.get_diffusion() for traj in trajectories])
+lifetime = np.average([traj.get_lifetime() for traj in trajectories])
+print('diffusion coefficient (average): {}\n'
+      'lifetime: {}'.format(d_coefficient, lifetime))
 
 plt.show()
 
 exit()
 
-###########################################################################################################
-# We collect all the outputs in a dictionary system_information and write it in the output_file
 
-# s'ha de veure com s'enllaça la informació que donam aquí amb la que es defineix a l'input #############
+#######################################################################################################################
+
+output_file_name = '2_excitons_simulation_1d.json'      # name of the output file where the trajectories will be saved
+                                                        # .json format
+
+#######################################################################################################################
+
+
+# We collect all the outputs in a dictionary system_information and write it in the output_file
 
 system_information = {'conditions': system['conditions'],
                       'lattice': system['lattice'],
@@ -124,7 +119,7 @@ with open(output_file_name, 'w') as write_file:
     json.dump(output, write_file)
 
 
-################# Parallel test ##################
+################# Parallel test (py3 only) ##################
 
 import concurrent.futures as futures
 
@@ -146,5 +141,3 @@ for f in futures.as_completed(fut):
 
 for f in fut:
     print(f.result(), f.done(), f.running())
-
-
