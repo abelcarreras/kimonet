@@ -54,9 +54,12 @@ def rotate_vector_2d(vector, ang):
 
 def rotate_vector(vector, orientation):
 
+    norm = np.linalg.norm(vector)
     ndim = len(vector)
     ang_x, ang_y, ang_z = orientation
-    return np.dot(rot_z(ang_z)[:ndim, :ndim],
-                  np.dot(rot_y(ang_y)[:ndim, :ndim],
-                         np.dot(rot_x(ang_x)[:ndim, :ndim],
-                                vector)))
+    new_vector = np.dot(rot_z(ang_z)[:ndim, :ndim],
+                        np.dot(rot_y(ang_y)[:ndim, :ndim],
+                               np.dot(rot_x(ang_x)[:ndim, :ndim],
+                                      vector)))
+
+    return new_vector/np.linalg.norm(new_vector) * norm
