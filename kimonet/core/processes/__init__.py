@@ -1,5 +1,5 @@
 import numpy as np
-from kimonet.core.processes.coupling_functions import couplings
+from kimonet.core.processes.coupling_functions import functions_dict
 from kimonet.conversion_functions import from_ns_to_au, from_ev_to_au
 
 
@@ -43,32 +43,18 @@ def get_transfer_rates(centre, system, exciton_index):
         spectral_overlap = marcus_fcwd(donor, acceptor, conditions)
         # compute the spectral overlap with the Marcus Formula (for all possible couplings)
 
-        prefix_key = '{}_{}'.format(donor.electronic_state(), acceptor.electronic_state())
-        # first key. Only with the information of both implicated states: 'state1_state2'
+        coupling_functions = allowed_processes(donor, acceptor)
 
-        possible_couplings = slice_dict(couplings, prefix_key)
-        # new dictionary with all the keys of couplings that start with prefix_key
+        # for the possible couplings computes the transfer rate by the Fermi's Golden Rule.
+        for process, coupling_function in coupling_functions.items():
 
-        if len(possible_couplings) == 0:
-            # when no couplings are found, the rate is taken as 0
-            rate = 0
-            transfer_rates.append(rate)
+            e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
 
-            process = {'donor': centre, 'process': prefix_key,
-                       'acceptor': neighbour, 'index': exciton_index, 'cell_increment': cell_incr}
+            rate = 2*np.pi * e_coupling**2 * spectral_overlap          # rate in a.u -- Fermi's Golden Rule
+            transfer_rates.append(from_ns_to_au(rate, 'direct'))       # rate in ns-1
 
-            transfer_processes.append(process)
-
-        else:
-            # for the possible couplings computes the transfer rate by the Fermi's Golden Rule.
-            for key in possible_couplings:
-                e_coupling = possible_couplings[key](donor, acceptor, conditions, system.supercell)
-
-                rate = 2*np.pi * e_coupling**2 * spectral_overlap          # rate in a.u -- Fermi's Golden Rule
-                transfer_rates.append(from_ns_to_au(rate, 'direct'))    # rate in ns⁻¹
-
-                transfer_processes.append({'donor': int(centre), 'process': key, 'acceptor': int(neighbour),
-                                           'index': exciton_index, 'cell_increment': cell_incr})
+            transfer_processes.append({'donor': int(centre), 'process': process, 'acceptor': int(neighbour),
+                                       'index': exciton_index, 'cell_increment': cell_incr})
 
     # the process include: the index of the donor (in molecules), the key of the process,
     # the index of the acceptor (in molecules) and the index of the exciton (in centres).
@@ -129,53 +115,30 @@ def update_step(chosen_process, system):
     New if(s) entrances shall be defined for more processes.
     """
 
-    if chosen_process['process'] is 's1_gs':
-        system.add_excitation_index('gs', chosen_process['donor'])     # des excitation of the donor
-        system.add_excitation_index('s1', chosen_process['acceptor'])  # excitation of the acceptor
-        system.molecules[chosen_process['acceptor']].cell_state =- chosen_process['cell_increment']
-        # print('here', chosen_process['donor'], chosen_process['acceptor'], chosen_process['cell_increment'])
+    if type(chosen_process['process']).__name__ == 'Transfer':
 
-        system.molecules[chosen_process['donor']].cell_state *= 0
+        donor_state = chosen_process['process'].final[0]
+        acceptor_state = chosen_process['process'].final[1]
 
-    if chosen_process['process'] == 'Singlet_radiative_decay':
-        system.add_excitation_index('gs', chosen_process['donor'])
-        system.molecules[chosen_process['donor']].cell_state *= 0
+        system.add_excitation_index(donor_state, chosen_process['donor'])  # des excitation of the donor
+        system.add_excitation_index(acceptor_state, chosen_process['acceptor'])  # excitation of the acceptor
+        system.molecules[chosen_process['acceptor']].cell_state = - chosen_process['cell_increment']
 
+        if chosen_process['process'].final[0] == 'gs':
+            system.molecules[chosen_process['donor']].cell_state *= 0
 
-def update_step_old(chosen_process, molecules, centre_indexes):
-    """
-    :param chosen_process: dictionary like dict(center, process, neighbour)
-    :param molecules: list of instances of molecule
-    :param centre_indexes: list of the indexes of the excited molecules
-    Modifies the state of the donor and the acceptor. Removes the donor from the centre_indexes list
-    and includes the acceptor. If its a decay only changes and removes the donor
+    if type(chosen_process['process']).__name__ == 'Decay':
+        final_state = chosen_process['process'].final
+        # print('final_state', final_state)
+        system.add_excitation_index(final_state, chosen_process['donor'])
 
-    New if(s) entrances shall be defined for more processes.
-    """
-    if chosen_process['process'] is 's1_gs':
-        molecules[chosen_process['donor']].set_state('gs')          # des excitation of the donor
-        molecules[chosen_process['acceptor']].set_state('s1')       # excitation of the acceptor
-
-        centre_indexes[chosen_process['index']] = chosen_process['acceptor']
-        # modification of the excited molecules indexes list.
-
-    if chosen_process['process'] == 'Singlet_radiative_decay':
-        molecules[chosen_process['donor']].set_state('gs')          # des excitation of the donor
-
-        centre_indexes[chosen_process['index']] = None
-        # modification of the excited molecules indexes list
-
-    # When updating the centre_indexes list, the changed index is the index given by process. So the position with
-    # the donor (given by index) is overwritten with the acceptor.
-    # If it is a decay, this position, from now on, will be considered as None.
-
-    # No return function. Updates molecules and centre_indexes.
+        if final_state == 'gs':
+            system.molecules[chosen_process['donor']].cell_state *= 0
 
 
 ###########################################################################################################
-#                           ASSISTANT FUNCTIONS: spectral overlaps
+#                                 Frank-Condon weighted density
 ###########################################################################################################
-
 
 def marcus_fcwd(donor, acceptor, conditions):
     """
@@ -242,18 +205,19 @@ def gaussian_fcwd(donor, acceptor, conditions):
 ###########################################################################################################
 
 
-def slice_dict(original_dict, key_string):
+def allowed_processes(donor, acceptor):
     """
-    :param original_dict: Original (and larger) dictionary with all entrances
-    :param key_string: key string (desired starting string)
-    :return: A new dictionary with all the entrances of the original that start with key_string
+    Get the allowed processes given donor and acceptor
+
+    :param donor: Molecule class instance
+    :param acceptor: Molecule class instance
+    :return: Dictionary with the allowed coupling functions
     """
-    newdict = {}
 
-    for key in original_dict:
-        if key.startswith(key_string):
-            newdict[key] = original_dict[key]
+    allowed_couplings = {}
+    for coupling in functions_dict:
+        if coupling.initial == (donor.electronic_state(), acceptor.electronic_state()):
+            allowed_couplings[coupling] = functions_dict[coupling]
 
-    return newdict
-
+    return allowed_couplings
 

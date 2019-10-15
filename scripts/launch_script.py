@@ -5,6 +5,7 @@ from kimonet.molecules import Molecule
 import numpy as np
 import json
 import warnings
+import time
 
 
 #######################################################################################################################
@@ -24,15 +25,17 @@ All energies must be given in eV. By default initialized at gs.
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 2.5}
+                  's1': 2.5,
+                  's2': 3.0}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
-                           's1': 0.7}
+                           's1': 0.7,
+                           's2': 0.8}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[0.6, 0.0]         # transition dipole moment of the molecule (a.u)
+                    transition_moment=[0.0, 0.6]         # transition dipole moment of the molecule (a.u)
                     )
 
 #######################################################################################################################
@@ -70,10 +73,11 @@ for j in range(num_trajectories):
 
         change_step, step_time = update_system(system)
 
+        if system.is_finished:
+            break
+
         trajectory.add(change_step, step_time, system)
 
-        if is_finished(system):
-            break
         if i == max_steps-1:
             warnings.warn('Maximum number of steps reached!!')
 
@@ -92,6 +96,7 @@ lifetime = np.average([traj.get_lifetime() for traj in trajectories])
 print('diffusion tensor')
 print(d_tensor)
 print('diffusion coefficient: {}\nlifetime: {}'.format(d_coeff, lifetime))
+
 
 plt.show()
 

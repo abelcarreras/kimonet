@@ -2,6 +2,7 @@ from kimonet.core.neighbourhood_and_connectivity import get_neighbours_naive
 from kimonet.core.kmc_implementation import kmc_algorithm
 from kimonet.core.processes import get_transfer_rates, update_step, get_decay_rates
 from kimonet import all_none
+import warnings
 
 
 def update_system(system):
@@ -35,15 +36,17 @@ def update_system(system):
             process_collector += process_list
             # merging of the new list with the rates and processes previously computed
 
+    # If no process available system cannot evolve and simulation is finished
+    if len(process_collector) == 0:
+        system.is_finished = True
+        return None, 0
+
     chosen_process, time = kmc_algorithm(rate_collector, process_collector)
     # chooses one of the processes and gives it a duration using the Kinetic Monte-Carlo algorithm
     update_step(chosen_process, system)        # updates both lists according to the chosen process
 
     # finally the chosen process and the advanced time are returned
     return chosen_process, time
-
-
-#############################################################################################
 
 
 def is_finished(system):
@@ -54,20 +57,18 @@ def is_finished(system):
     """
     # all_none checks if all positions of a list are None. In the case of centres, if all are None means that all
     # excitons have decayed.
-    return system.get_number_of_excitations() == 0
 
+    if system.get_number_of_excitations() == 0:
+        system.finish = True
 
-##############################################################################################################
-#                                   ASSISTANT FUNCTION
-##############################################################################################################
+    return system.finish
 
 
 def get_processes_and_rates(centre, system, i):
     """
     :param i: index of the exciton
-    :param centre: Index of the studied excited molecule. Donor
-    :param neighbour_indexes: Indexes of the neighbours (candidates to acceptors)
-    :param system: Dictionary with the information of the system.
+    :param centre: Index of the studied excited molecule (Donor)
+    :param system: Instance of System class
     Computes the transfer and decay rates and builds two dictionaries:
             One with the decay process as key and its rate as argument
             One with the transferred molecule index as key and {'process': rate} as argument
@@ -91,40 +92,3 @@ def get_processes_and_rates(centre, system, i):
     rate_list = decay_rates + transfer_rates
 
     return process_list, rate_list
-
-
-####################################################################################################################
-
-####################################################################################################################
-
-
-def process_rate_splitter(transfer_rates, decay_rates, centre_index):
-    """
-    NOT USED ANYMORE
-    :param transfer_rates: Dictionary with the transferred molecule index as key and
-    another dictionary {'process': rate} as argument
-    :param decay_rates: Dictionary with the decay process as key and its rate as argument
-    :param centre_index: Index of the excited molecule
-    :return: Two lists:
-            Process list. List with elements dict(donor(index), process, acceptor(index))
-            Rate_list. List with the respective rates
-            (The indexes coincide)
-    """
-    process_list = []
-    rates_list = []
-
-    for decay in decay_rates:
-        process_list.append({'donor': centre_index, 'process': decay, 'acceptor': centre_index})
-        rates_list.append(decay_rates[decay])
-
-    for neighbour_index in transfer_rates:
-        for process in transfer_rates[neighbour_index]:
-            process_list.append({'donor': centre_index, 'process': process, 'acceptor': int(neighbour_index)})
-            rates_list.append(transfer_rates[neighbour_index][process])
-
-    return process_list, rates_list
-
-
-
-
-

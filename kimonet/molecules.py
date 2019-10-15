@@ -2,6 +2,7 @@ import numpy as np
 from kimonet.conversion_functions import from_ev_to_au, from_ns_to_au
 from kimonet.utils import rotate_vector
 import copy
+from collections import namedtuple
 
 
 class Molecule:
@@ -44,6 +45,13 @@ class Molecule:
         self.coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)            # rotX, rotY, rotZ
         self.cell_state = np.zeros_like(coordinates, dtype=int)
+
+    def __hash__(self):
+        return hash((str(self.state_energies),
+                     self.state,
+                     str(self.reorganization_energies),
+                     self.coordinates.tostring(),
+                     self.orientation.tostring()))
 
     def get_dim(self):
         return len(self.coordinates)
@@ -117,14 +125,14 @@ class Molecule:
         More if(s) entrances shall be added if more electronic states are considered.
         """
 
+        # Decay tuple
+        # final: final state after dacay
+        # description: any string with the description the decay
+        Decay = namedtuple("Decay", ["final", "description"])
+
         decay_rates = {}
 
-        if self.state == 'gs':
-            process = 'No decay for a molecule at the ground state.'
-            print(process)
-            decay_rates[process] = 0
-
-        elif self.state == 's1':
+        if self.state == 's1':
 
             desexcitation_energy = self.state_energies[self.state] - self.state_energies['gs']      # energy in eV
             desexcitation_energy = from_ev_to_au(desexcitation_energy, 'direct')                    # energy in a.u.
@@ -133,10 +141,20 @@ class Molecule:
             c = 137                                                 # light speed in atomic units
 
             rate = 4 * desexcitation_energy**3 * u**2 / (3 * c**3)
-            decay_process = 'Singlet_radiative_decay'
-            # for a first singlet state only radiative decay is considered.
 
+            decay_process = Decay(final='gs', description='singlet_radiative_decay')
             decay_rates[decay_process] = from_ns_to_au(rate, 'direct')
+
+            # Example of second decay
+            # -----------------------
+            # decay_process = Decay(final='s2', description='test')
+            # decay_rates[decay_process] = from_ns_to_au(rate, 'direct')
+
+        # Example of decay in another state
+        # ---------------------------------
+        # if self.state == 's2':
+        #     decay_process = Decay(final='s1', description='test2')
+        #     decay_rates[decay_process] = from_ns_to_au(1000000, 'direct')
 
         return decay_rates
 
