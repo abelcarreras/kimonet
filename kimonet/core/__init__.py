@@ -1,7 +1,5 @@
-from kimonet.core.neighbourhood_and_connectivity import get_neighbours_naive
-from kimonet.core.kmc_implementation import kmc_algorithm
+from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_transfer_rates, update_step, get_decay_rates
-from kimonet import all_none
 import warnings
 
 
@@ -25,7 +23,6 @@ def update_system(system):
 
     for i, centre in enumerate(system.centers):
         if type(centre) == int:
-            # neighbour_indexes = get_neighbours_naive(centre, system, radius=system.conditions['cutoff_radius'])
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
             process_list, rate_list = get_processes_and_rates(centre, system, i)
@@ -47,21 +44,6 @@ def update_system(system):
 
     # finally the chosen process and the advanced time are returned
     return chosen_process, time
-
-
-def is_finished(system):
-    """
-    :param system:
-    :return: Checks if the list of excited molecules is empty. When empty the excitations have all decayed and
-    the simulation will finish.
-    """
-    # all_none checks if all positions of a list are None. In the case of centres, if all are None means that all
-    # excitons have decayed.
-
-    if system.get_number_of_excitations() == 0:
-        system.finish = True
-
-    return system.finish
 
 
 def get_processes_and_rates(centre, system, i):

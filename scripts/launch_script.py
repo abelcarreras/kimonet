@@ -1,5 +1,5 @@
-from kimonet.systems import ordered_system, disordered_system
-from kimonet.core import update_system, is_finished
+from kimonet.system import ordered_system, disordered_system
+from kimonet.core import update_system
 from kimonet.analysis import Trajectory, visualize_system
 from kimonet.molecules import Molecule
 import numpy as np
@@ -36,7 +36,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 10000                          # number of trajectories that will be simulated
+num_trajectories = 1000                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
 system = ordered_system(conditions=conditions,
