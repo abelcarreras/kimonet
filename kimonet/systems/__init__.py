@@ -1,7 +1,5 @@
 import numpy as np
-from numpy import pi
 from scipy.spatial import distance
-from kimonet.systems.excitation import excited_system, excite_system
 import itertools
 import warnings
 

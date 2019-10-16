@@ -1,7 +1,6 @@
 import numpy as np
 from kimonet.core.processes.coupling_functions import functions_dict
-from kimonet.conversion_functions import from_ns_to_au, from_ev_to_au
-
+from kimonet.utils.units import BOTZMANN_CONSTANT
 
 # Memory for the calculated decay rates and spectral overlaps is introduced.
 decay_memory = {}
@@ -50,8 +49,8 @@ def get_transfer_rates(centre, system, exciton_index):
 
             e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
 
-            rate = 2*np.pi * e_coupling**2 * spectral_overlap          # rate in a.u -- Fermi's Golden Rule
-            transfer_rates.append(from_ns_to_au(rate, 'direct'))       # rate in ns-1
+            rate = 2*np.pi * e_coupling**2 * spectral_overlap          # Fermi's Golden Rule
+            transfer_rates.append(rate)
 
             transfer_processes.append({'donor': int(centre), 'process': process, 'acceptor': int(neighbour),
                                        'index': exciton_index, 'cell_increment': cell_incr})
@@ -77,19 +76,10 @@ def get_decay_rates(centre, system, exciton_index):
     """
     donor = system.molecules[centre]
 
-    info = str(hash(donor.state))
-    # we define a compact string with the characteristic information of the decays: electronic state
-
     decay_processes = []            # list of decays processes: dicts(donor, process, acceptor)
     decay_rates = []                # list of the decay rates (numerical values)
 
-    if info in decay_memory:
-        decay_complete = decay_memory[info]
-        # the decay memory defined is used if the decay have been already computed
-
-    else:
-        decay_complete = donor.decay_rates()        # returns a dict {decay_process, decay_rate}
-        decay_memory[info] = decay_complete         # saves it if not in memory
+    decay_complete = donor.decay_rates()        # returns a dict {decay_process, decay_rate}
 
     # splits the dictionary in two lists
     for key in decay_complete:
@@ -147,7 +137,6 @@ def marcus_fcwd(donor, acceptor, conditions):
     :param conditions:
     :return: The spectral overlap between the donor and the acceptor according to Marcus formula.
     """
-    kb = 8.617333e-5                    # Boltzmann constant in eV * K^(-1)
     T = conditions['temperature']       # temperature (K)
 
     excited_state = donor.electronic_state()
@@ -165,13 +154,13 @@ def marcus_fcwd(donor, acceptor, conditions):
         overlap = overlap_memory[info]
 
     else:
-        overlap = 1. / (2 * np.sqrt(np.pi*kb*T*reorganization)) * \
-                  np.exp(-(gibbs_energy+reorganization)**2 / (4*kb*T*reorganization))
+        overlap = 1.0 / (2 * np.sqrt(np.pi*BOTZMANN_CONSTANT*T*reorganization)) * \
+                  np.exp(-(gibbs_energy+reorganization)**2 / (4*BOTZMANN_CONSTANT*T*reorganization))
 
         overlap_memory[info] = overlap
         # new values are added to the memory
 
-    return from_ev_to_au(overlap, 'inverse')
+    return overlap
     # Since we have a quantity in 1/eV, we use the converse function from_ev_to_au in inverse mode
     # to have a 1/au quantity.
 

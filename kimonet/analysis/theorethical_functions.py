@@ -1,8 +1,7 @@
 import numpy as np
 from numpy import pi
 from kimonet.molecules import Molecule
-from kimonet.conversion_functions import from_ev_to_au, from_ns_to_au
-
+from kimonet.utils.units import BOTZMANN_CONSTANT
 
 def theoretical_diffusion_values(system_information):
     """
@@ -12,7 +11,6 @@ def theoretical_diffusion_values(system_information):
     """
 
     # system information
-    boltzmann_constant = 8.617333 * 10 ** (-5)  # Boltzmann constant in eV * K^(-1)
     k = 2                         # orientational factor. Always 2 in the systems where this model is possible
 
     r = system_information['lattice']['lattice_parameter'][0]       # equall in all directions (nm)
@@ -60,12 +58,10 @@ def theoretical_diffusion_values(system_information):
     if [system_information['type'], system_information['orientation']] in possible_cases:
 
         factor_1 = 2 * pi * (transition_moment**2 * k**2 / ((r/0.053)**3 * n**2))**2    # in atomic units
-        factor_2 = np.sqrt(1 / (4 * pi * reorganization * boltzmann_constant * T)) * \
-                   np.exp(- reorganization / (4*boltzmann_constant*T))                  # in eV
-        factor_2_transformed = from_ev_to_au(factor_2, 'inverse')                       # in atomic units
+        factor_2 = np.sqrt(1 / (4 * pi * reorganization * BOTZMANN_CONSTANT * T)) * \
+                   np.exp(- reorganization / (4*BOTZMANN_CONSTANT*T))                  # in eV
 
-        rate_au = factor_1 * factor_2_transformed                   # rate in atomic units (time⁻¹)
-        rate = from_ns_to_au(rate_au, 'direct')                     # rate in ns⁻¹
+        rate = factor_1 * factor_2
 
         D = rate * r**2                                             # diffusion constant (nm² ns⁻¹)
         Ld = np.sqrt(2 * d * rate * r**2 * life_time)               # diffusion length (nm)
