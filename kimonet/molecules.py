@@ -1,20 +1,19 @@
 import numpy as np
-from kimonet.conversion_functions import from_ev_to_au, from_ns_to_au
 from kimonet.utils import rotate_vector
 import copy
 from collections import namedtuple
+from kimonet.utils.units import DEBYE_TO_ANGS_EL, SPEED_OF_LIGHT, HBAR_PLANCK
 
 
 class Molecule:
 
     def __init__(self,
-                 state_energies,
-                 reorganization_energies,
-                 transition_moment,
+                 state_energies,                # eV
+                 reorganization_energies,       # eV
+                 transition_moment,             # Debye
                  state='gs',
-                 characteristic_length=10e-8,
-                 coordinates=(0,),
-                 orientation=(0, 0, 0)):                            # ax, ay, az
+                 coordinates=(0,),              # Angstrom
+                 orientation=(0, 0, 0)):        # Rx, Ry, Rz (radians)
         """
         :param states_energies: dictionary {'state': energy}
         :param state: sting of the name of the state
@@ -28,23 +27,21 @@ class Molecule:
         of the molecule. So for all molecules of a same type if will be equal.
         This dipole moment is given in atomic units.
 
-        :param characteristic_length: We consider a finite size molecule. The simplified shape of the molecule
-        is longitudinal, squared or cubic and is defined with this characteristic length. Units: nm
-
         :param coordinates: 3d vector. Gives the position of the molecule in the system (in general the 0 position
         will coincide with the center of the distribution). Units: nm. If the system has less than 3 dimensions,
         the extra coordinates will be taken as 0.
         :param orientation: 3d unit vector. Gives the orientation of the molecule in the global reference system.
         """
 
-        self.state_energies = state_energies
         self.state = state
+        self.state_energies = state_energies
         self.reorganization_energies = reorganization_energies
-        self.transition_moment = np.array(transition_moment)
-        self.characteristic_length = characteristic_length
+        self.transition_moment = np.array(transition_moment) * DEBYE_TO_ANGS_EL  # Debye -> Angs * e
         self.coordinates = np.array(coordinates)
-        self.orientation = np.array(orientation)            # rotX, rotY, rotZ
+        self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
+
+        self.decay_dict = {}
 
     def __hash__(self):
         return hash((str(self.state_energies),
@@ -128,22 +125,21 @@ class Molecule:
         # Decay tuple
         # final: final state after dacay
         # description: any string with the description the decay
+
+        if self.state in self.decay_dict:
+            return self.decay_dict[self.state]
+
         Decay = namedtuple("Decay", ["final", "description"])
 
         decay_rates = {}
-
         if self.state == 's1':
 
-            desexcitation_energy = self.state_energies[self.state] - self.state_energies['gs']      # energy in eV
-            desexcitation_energy = from_ev_to_au(desexcitation_energy, 'direct')                    # energy in a.u.
-
-            u = np.linalg.norm(self.transition_moment)              # transition moment norm.
-            c = 137                                                 # light speed in atomic units
-
-            rate = 4 * desexcitation_energy**3 * u**2 / (3 * c**3)
-
+            # Singlet radiative decay
+            desexcitation_energy = self.state_energies[self.state] - self.state_energies['gs']
+            mu2 = np.dot(self.transition_moment, self.transition_moment) # transition moment norm.
             decay_process = Decay(final='gs', description='singlet_radiative_decay')
-            decay_rates[decay_process] = from_ns_to_au(rate, 'direct')
+            alpha = 1.0/137
+            decay_rates[decay_process] = alpha * 4 * desexcitation_energy**3 * mu2 / (3 * SPEED_OF_LIGHT**2 * HBAR_PLANCK**3)
 
             # Example of second decay
             # -----------------------
@@ -155,6 +151,8 @@ class Molecule:
         # if self.state == 's2':
         #     decay_process = Decay(final='s1', description='test2')
         #     decay_rates[decay_process] = from_ns_to_au(1000000, 'direct')
+
+        self.decay_dict[self.state] = decay_rates
 
         return decay_rates
 

@@ -1,8 +1,8 @@
 import numpy as np
-from kimonet.conversion_functions import from_nm_to_au
 from kimonet.utils import minimum_distance_vector
 import inspect
 from collections import namedtuple
+from kimonet.utils.units import VAC_PERMITTIVITY
 
 ##########################################################################################
 #                                   COUOPLING FUNCTIONS
@@ -13,7 +13,7 @@ coupling_memory = {}
 
 def compute_forster_coupling(donor, acceptor, conditions, supercell):
     """
-    Compute Forster coupling
+    Compute Forster coupling in eV
 
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
@@ -25,27 +25,26 @@ def compute_forster_coupling(donor, acceptor, conditions, supercell):
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
-    hash_string = str(hash((donor, function_name))+hash((acceptor, function_name)))
+    hash_string = str(hash((donor, function_name)) + hash((acceptor, function_name)))
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
     if hash_string in coupling_memory:
         return coupling_memory[hash_string]
 
-    u_d = donor.get_transition_moment()                     # transition dipole moment (donor) a.u
-    u_a = acceptor.get_transition_moment()                  # transition dipole moment (acceptor) a.u
-    momentum_projection = np.dot(u_d, u_a)                  # inner product of both a.u
+    mu_d = donor.get_transition_moment()                     # transition dipole moment (donor) a.u
+    mu_a = acceptor.get_transition_moment()                  # transition dipole moment (acceptor) a.u
 
     r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
     r_vector, _ = minimum_distance_vector(r_vector, supercell)
 
-    r = np.linalg.norm(r_vector)                            # inter molecular distance a.u
-    r = from_nm_to_au(r, 'direct')                          # Units
+    r = np.linalg.norm(r_vector)
 
     n = conditions['refractive_index']                      # refractive index of the material
 
-    k = orientation_factor(u_d, u_a, r_vector)              # orientation factor between molecules
+    k = orientation_factor(mu_d, mu_a, r_vector)              # orientation factor between molecules
 
-    forster_coupling = k**2 * momentum_projection / (n**2 * r**3)       # electronic coupling a.u
+    k_e = 1.0/(4.0*np.pi*VAC_PERMITTIVITY)
+    forster_coupling = k_e * k**2 * np.dot(mu_d, mu_a) / (n**2 * r**3)
 
     coupling_memory[hash_string] = forster_coupling                            # memory update for new couplings
 
@@ -72,9 +71,9 @@ functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description
 
 def intermolecular_vector(donor, acceptor):
     """
-    :param molecule1: donor
-    :param molecule2: acceptor
-    :return: the euclidean distance between the donor and the acceptor
+    :param donor: donor
+    :param acceptor: acceptor
+    :return: the distance between the donor and the acceptor
     """
     position_d = donor.get_coordinates()
     position_a = acceptor.get_coordinates()

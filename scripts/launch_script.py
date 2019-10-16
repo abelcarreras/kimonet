@@ -16,15 +16,15 @@ All energies must be given in eV. By default initialized at gs.
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 2.5}
+                  's1': 9.0}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
-                           's1': 0.7}
+                           's1': 0.2}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[0.6, 0]         # transition dipole moment of the molecule (a.u)
+                    transition_moment=[2.0, 0]  # transition dipole moment of the molecule (Debye)
                     )
 
 #######################################################################################################################
@@ -32,16 +32,16 @@ molecule = Molecule(state_energies=state_energies,
 # physical conditions of the system (as a dictionary)
 conditions = {'temperature': 273.15,            # temperature of the system (K)
               'refractive_index': 1,            # refractive index of the material (adimensional)
-              'cutoff_radius': 1.1}             # maximum interaction distance (nm)
+              'cutoff_radius': 4.1}             # maximum interaction distance (Angstroms)
 
 #######################################################################################################################
 
-num_trajectories = 100                          # number of trajectories that will be simulated
+num_trajectories = 10000                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
 system = ordered_system(conditions=conditions,
                         molecule=molecule,
-                        lattice={'size': [3, 3], 'parameters': [1.0, 1.0]},
+                        lattice={'size': [10, 10], 'parameters': [3.0, 3.0]},  # Angstroms
                         orientation=[0, 0, 0])
 
 # visualize_system(system)
@@ -49,8 +49,8 @@ system = ordered_system(conditions=conditions,
 trajectories = []
 for j in range(num_trajectories):
 
-    # system.add_excitation_center('s1')
-    system.add_excitation_index('s1', 0)
+    system.add_excitation_center('s1')
+    # system.add_excitation_index('s1', 0)
 
     # visualize_system(system)
 
@@ -65,6 +65,8 @@ for j in range(num_trajectories):
             break
 
         trajectory.add(change_step, step_time, system)
+
+        # visualize_system(system)
 
         if i == max_steps-1:
             warnings.warn('Maximum number of steps reached!!')
@@ -84,8 +86,8 @@ print(d_tensor)
 
 d_coefficient = np.average([traj.get_diffusion() for traj in trajectories])
 lifetime = np.average([traj.get_lifetime() for traj in trajectories])
-print('diffusion coefficient (average): {}\n'
-      'lifetime: {}'.format(d_coefficient, lifetime))
+print('diffusion coefficient (average): {} angs^2/ns\n'
+      'lifetime: {} ns'.format(d_coefficient, lifetime))
 
 plt.show()
 
