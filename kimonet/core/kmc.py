@@ -1,6 +1,4 @@
 import numpy as np
-import random as rd
-
 
 def kmc_algorithm(rate_list, process_list):
     """
@@ -28,7 +26,7 @@ def select_process(constant_list):
     :param constant_list: List with the constant rates
     :return: Chooses a position of the list chosen proportionally to its value.
     """
-    r = np.sum(constant_list) * rd.random()
+    r = np.sum(constant_list) * np.random.rand()
     # random number picked from the uniform distribution U(0, rates sum)
 
     list_ = np.where(r > np.cumsum(constant_list))
@@ -45,5 +43,5 @@ def time_advance(rate_list):
     :param rate_list: List with all the rates. Considering all the processes for all exciton
     :return: Process duration. Picks a random time from an exponential distribution
     """
-    r = rd.random()
+    r = 1 - np.random.rand()  # interval [0, 1) -> (0, 1]
     return (-np.log(r)) / (np.sum(rate_list))

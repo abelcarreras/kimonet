@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import pi
 from kimonet.molecules import Molecule
-from kimonet.utils.units import BOTZMANN_CONSTANT
+from kimonet.utils.units import BOLTZMANN_CONSTANT
 
 def theoretical_diffusion_values(system_information):
     """
@@ -58,8 +58,8 @@ def theoretical_diffusion_values(system_information):
     if [system_information['type'], system_information['orientation']] in possible_cases:
 
         factor_1 = 2 * pi * (transition_moment**2 * k**2 / ((r/0.053)**3 * n**2))**2    # in atomic units
-        factor_2 = np.sqrt(1 / (4 * pi * reorganization * BOTZMANN_CONSTANT * T)) * \
-                   np.exp(- reorganization / (4*BOTZMANN_CONSTANT*T))                  # in eV
+        factor_2 = np.sqrt(1 / (4 * pi * reorganization * BOLTZMANN_CONSTANT * T)) * \
+                   np.exp(- reorganization / (4 * BOLTZMANN_CONSTANT * T))                  # in eV
 
         rate = factor_1 * factor_2
 

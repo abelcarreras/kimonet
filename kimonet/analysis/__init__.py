@@ -5,160 +5,176 @@ from scipy import stats
 from mpl_toolkits.mplot3d import Axes3D  # Actually needed
 
 
+class Node:
+    def __init__(self, state, coordinates, supercell):
+        self.state = state
+        self.coordinates = list(coordinates)
+        self.supercell = list(supercell)
+
+
 class Trajectory:
-    # TODO: This full class has to be reorganized (rethought)
     def __init__(self, system):
         """
-        trajectory: dictionary with the system trajectory (time, number of excitons, positions and process occurred)
+        Stores and analyzes the information of a kinetic MC trajectory
+
+        system: initial system
         """
 
-        inipos = [[list(system.molecules[center].get_coordinates()),
-                   system.molecules[center].state,
-                   list(system.molecules[center].cell_state)] for center in system.centers]
+        #inipos = [[list(system.molecules[center].get_coordinates()),
+        #           system.molecules[center].state,
+        #           list(system.molecules[center].cell_state)] for center in system.centers]
 
-        self.trajectory = {'time': [0],
-                           'n': [system.get_number_of_excitations()],
-                           'positions': [inipos],
-                           'process': [],
-                           'exciton_altered': [],
-                           'supercell': system.supercell}
+        self.centers = [{'coordinates': [list(system.molecules[center].get_coordinates())],
+                         'state': [system.molecules[center].state],
+                         'cell_state': [list(system.molecules[center].cell_state)]} for center in system.centers]
 
-    def add(self, change_step, time_step, system):
+
+        self.times = [0]
+        self.process = []
+        self.exciton_altered = []
+        self.supercell = system.supercell
+        self.system = system
+
+        self.center_track = {}
+        # for i, center in enumerate(self.system.centers):
+        #    self.center_track['{}'.format(i)] = center
+
+        for i, center in enumerate(self.system.centers):
+            self.center_track['{}'.format(center)] = i
+
+        self.n_dim = len(self.centers[0]['coordinates'][0])
+        self.n_centers = len(self.centers)
+
+    def add(self, change_step, time_step):
         """
-        :param change_step: process occured during time_step: {donor, process, acceptor}
+        Adds trajectory step
+
+        :param change_step: process occurred during time_step: {donor, process, acceptor}
         :param time_step: duration of the chosen process
-        :param system: dictionary with the information of the system
-        No return function, only updates the dictionary trajectory
         """
 
-        # TODO: get rid of system argument in add method
+        self.times.append(self.times[-1] + time_step)
+        self.exciton_altered.append(change_step['index'])
+        self.process.append(change_step['process'])
 
-        # time update:
-        if len(self.trajectory['time']) == 0:
-            self.trajectory['time'].append(time_step)
+        # key = next(key for key, value in self.center_track.items() if value == change_step['donor'])
+        # self.center_track[key] = change_step['acceptor']
+
+        self.center_track['{}'.format(change_step['acceptor'])] = self.center_track.pop('{}'.format(change_step['donor']))
+
+        # print('dict', self.center_track, self.center_track['{}'.format(self.system.centers[0])])
+
+        for center in self.system.centers:
+            i = self.center_track['{}'.format(center)]
+            exciton_coordinates = list(self.system.molecules[center].get_coordinates())  # cartesian coordinates
+            excited_state = self.system.molecules[center].electronic_state()  # electronic state
+            cell_state = list(self.system.molecules[center].cell_state)
+
+            self.centers[i]['coordinates'].append(exciton_coordinates)
+            self.centers[i]['state'].append(excited_state)
+            self.centers[i]['cell_state'].append(cell_state)
+
+        return
+
+    def get_number_of_centers(self):
+        return self.n_centers
+
+    def get_dimension(self):
+        return self.n_dim
+
+    def plot_2d(self, icenter, supercell_only=False):
+
+        if self.get_dimension() != 2:
+            raise Exception('plot_2d can only be used in 2D systems')
+
+        if supercell_only:
+            #  plt.xlim([0, 20])
+            #  plt.ylim([0, 20])
+            vector = np.array(self.centers[icenter]['coordinates'])
         else:
-            self.trajectory['time'].append(self.trajectory['time'][-1] + time_step)
+            initial = np.array(self.centers[icenter]['coordinates'][0])
 
-        # excitons positions and quantity update
-        exciton_positions = []      # list with all the positions of the excited molecules (simultaneous)
-        n = 0                       # number of excitons
+            cell_states = self.centers[icenter]['cell_state']
+            coordinates = self.centers[icenter]['coordinates']
 
-        if all_none(system.centers) is True:
-            # if there is not any excited molecule saves the position of the last excited molecule.
+            vector = []
+            lattice = np.zeros_like(initial)
+            for cell_state, coordinate in zip(cell_states, coordinates):
+                lattice += np.dot(self.supercell, cell_state)
+                vector.append(np.array(coordinate) - lattice - initial)
 
-            # This will be the last position of the trajectory:
-            # The time will be the decay time
-            # The exciton position could not be saved since it gives no different information from the previous point
-            # (during the decay, the exciton does not change its position). n = 0
-
-            last_excited = change_step['acceptor']
-            exciton_coordinates = list(system.molecules[last_excited].get_coordinates())   # cartesian coordinates
-            excited_state = system.molecules[last_excited].electronic_state()                    # electronic state
-            cell_state = system.molecules[last_excited].cell_state
-
-            # a tetra vector is built ([x,y,z], state)
-            exciton_point = [exciton_coordinates, excited_state, list(cell_state)]
-
-            # collector of the positions of all excitons transferring.
-            exciton_positions.append(exciton_point)
-
-        else:
-            for centre in system.centers:
-                if type(centre) == int:
-                    exciton_coordinates = list(system.molecules[centre].get_coordinates())      # cartesian coordinates
-                    excited_state = system.molecules[centre].electronic_state()                       # electronic state
-                    cell_state = system.molecules[centre].cell_state
-
-                    # a tetra vector is built ([x,y,z], state)
-                    exciton_point = [exciton_coordinates, excited_state, list(cell_state)]
-
-                    # collector of the positions of all excitons transferring.
-                    exciton_positions.append(exciton_point)
-                    n = n + 1
-
-        self.trajectory['positions'].append(exciton_positions)
-        self.trajectory['n'].append(n)
-
-        # process occurred.
-
-        self.trajectory['process'].append(change_step['process'])
-
-        # exciton that suffered the process
-
-        self.trajectory['exciton_altered'].append(change_step['index'])
-
-        # No return function: only updates trajectory.
-
-    def get_data(self):
-        return self.trajectory
-
-    def plot_2d(self):
-
-        # types = [pos[0][1] for pos in self.trajectory['positions']]
-
-        vector = [pos[0][0] for pos in self.trajectory['positions']]
         vector = np.array(vector).T
-        plt.xlim([0, 20])
-        plt.ylim([0, 20])
 
         plt.plot(vector[0], vector[1], '-o')
 
         return plt
 
-    def plot_distances(self):
+    def plot_distances(self, icenter):
 
-        initial = np.array(self.trajectory['positions'][0][0][0])
+        initial = np.array(self.centers[icenter]['coordinates'][0])
+
+        cell_states = self.centers[icenter]['cell_state']
+        coordinates = self.centers[icenter]['coordinates']
 
         vector = []
         lattice = np.zeros_like(initial)
-        for pos in self.trajectory['positions']:
-            lattice += np.dot(self.trajectory['supercell'], pos[0][2])
-            vector.append(np.array(pos[0][0]) - lattice - initial)
+        for cell_state, coordinate in zip(cell_states, coordinates):
+            lattice += np.dot(self.supercell, cell_state)
+            vector.append(np.array(coordinate) - lattice - initial)
 
-        #vector = [np.array(pos[0][0]) - initial for pos in self.trajectory['positions']]
+        vector.append(vector[-1])
 
         vector = np.array(vector).T
+        n_dim, n_length = vector.shape
         vector = np.linalg.norm(vector, axis=0)
+        t = np.array(self.times)[:n_length]
 
-        plt.plot(self.trajectory['time'], vector)
+        plt.plot(t, vector)
 
         return plt
 
-    def get_diffusion(self):
+    def get_diffusion(self, icenter):
 
-        initial = np.array(self.trajectory['positions'][0][0][0])
+        initial = np.array(self.centers[icenter]['coordinates'][0])
+
+        cell_states = self.centers[icenter]['cell_state']
+        coordinates = self.centers[icenter]['coordinates']
 
         vector = []
         lattice = np.zeros_like(initial)
-        for pos in self.trajectory['positions']:
-            lattice += np.dot(self.trajectory['supercell'], pos[0][2])
-            vector.append(np.array(pos[0][0]) - lattice - initial)
+        for cell_state, coordinate in zip(cell_states, coordinates):
+            lattice += np.dot(self.supercell, cell_state)
+            vector.append(np.array(coordinate) - lattice - initial)
 
-        #vector = [np.array(pos[0][0]) - initial for pos in self.trajectory['positions']]
-
+        vector.append(vector[-1])
         vector = np.array(vector).T
-        n_dim = len(vector)
+        n_dim, n_length = vector.shape
 
-        vector2 = np.linalg.norm(vector, axis=0)**2/n_dim
+        vector2 = np.linalg.norm(vector, axis=0)**2  # emulate dot product in axis 0
 
-        t = np.array(self.trajectory['time'])
+        t = np.array(self.times)[:n_length]
+
         slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
 
-        return slope
+        return slope/(2*n_dim)
 
-    def get_diffusion_tensor(self):
+    def get_diffusion_tensor(self, icenter):
 
-        initial = np.array(self.trajectory['positions'][0][0][0])
+        initial = np.array(self.centers[icenter]['coordinates'][0])
+
+        cell_states = self.centers[icenter]['cell_state']
+        coordinates = self.centers[icenter]['coordinates']
 
         vector = []
         lattice = np.zeros_like(initial)
-        for pos in self.trajectory['positions']:
-            lattice += np.dot(self.trajectory['supercell'], pos[0][2])
-            vector.append(np.array(pos[0][0]) - lattice - initial)
+        for cell_state, coordinate in zip(cell_states, coordinates):
+            lattice += np.dot(self.supercell, cell_state)
+            vector.append(np.array(coordinate) - lattice - initial)
 
-        t = np.array(self.trajectory['time'])
-
+        vector.append(vector[-1])
         vector = np.array(vector).T
+        n_dim, n_length = vector.shape
+        t = np.array(self.times)[:n_length]
 
         tensor_x = []
         for v1 in vector:
@@ -169,32 +185,127 @@ class Trajectory:
                 tensor_y.append(slope)
             tensor_x.append(tensor_y)
 
+        return np.array(tensor_x)/2
+
+    def get_lifetime(self, icenter):
+        n_length = len(self.centers[icenter]['coordinates'])
+        return self.times[n_length]
+
+    def get_diffusion_length_square(self, icenter):
+
+        initial = np.array(self.centers[icenter]['coordinates'][0])
+
+        cell_states = self.centers[icenter]['cell_state']
+        coordinates = self.centers[icenter]['coordinates']
+
+        lattice = np.zeros_like(initial)
+        for cell_state, coordinate in zip(cell_states, coordinates):
+            lattice += np.dot(self.supercell, cell_state)
+
+        vector = np.array(self.centers[icenter]['coordinates'][-1]) - lattice - initial
+
+        return np.dot(vector, vector)
+
+    def get_diffusion_length_square_tensor(self, icenter):
+
+        initial = np.array(self.centers[icenter]['coordinates'][0])
+
+        cell_states = self.centers[icenter]['cell_state']
+        coordinates = self.centers[icenter]['coordinates']
+
+        lattice = np.zeros_like(initial)
+        for cell_state, coordinate in zip(cell_states, coordinates):
+            lattice += np.dot(self.supercell, cell_state)
+
+        vector = np.array(self.centers[icenter]['coordinates'][-1]) - lattice - initial
+
+        tensor_x = []
+        for v1 in vector:
+            tensor_y = []
+            for v2 in vector:
+                tensor_y.append(v1*v2)
+            tensor_x.append(tensor_y)
+
         return np.array(tensor_x)
 
-    def get_lifetime(self):
 
-        if len(self.trajectory['time']) > 0:
-            return self.trajectory['time'][-1]
-        else:
-            return 0
+class TrajectoryAnalysis:
 
+    def __init__(self, trajectories):
+        self.trajectories = trajectories
+        self.n_centers = trajectories[0].get_number_of_centers()
+        self.n_dim = trajectories[0].get_dimension()
+        self.n_traj = len(trajectories)
 
-def all_none(centre_list):
-    """
-    :param centre_list:
-    :return: checks if all positions in a list are None
-    """
-    none_yes = 1
+    def __str__(self):
 
-    for element in centre_list:
+        txt_data = '\nTrajectory Analysis\n'
+        txt_data += '------------------------------\n'
+        txt_data += 'Number of trajectories: {}\n'.format(self.n_traj)
+        txt_data += 'Dimension: {}\n'.format(self.n_dim)
+        txt_data += 'Number of centers: {}\n'.format(self.n_centers)
 
-        if element is None:
-            none_yes = none_yes * 1
+        return txt_data
 
-        else:
-            none_yes = none_yes * 0
+    def diffusion_coeff_tensor(self):
+        """
+        calculate the average diffusion tensor defined as:
 
-    return bool(none_yes)
+        DiffTensor = 1/2 * <DiffLen^2> / <time>
+
+        :param trajectories: list of Trajectory
+        :return:
+        """
+        return np.average([traj.get_diffusion_tensor(0) for traj in self.trajectories], axis=0)
+
+    def diffusion_length_tensor(self):
+        """
+        calculate the average diffusion length tensor defined as:
+
+        DiffLenTen = SQRT( 2 * DiffTensor * lifetime)
+
+        :param trajectories: list of Trajectory
+        :return:
+        """
+        dl_tensor = np.average([traj.get_diffusion_length_square_tensor(0) for traj in self.trajectories], axis=0)
+
+        return np.sqrt(dl_tensor)
+
+    def diffusion_coefficient(self):
+        """
+        Return the average diffusion coefficient defined as:
+
+        DiffCoeff = 1/(2*z) * <DiffLen^2>/<time>
+
+        :return:
+        """
+        return np.average([traj.get_diffusion(0) for traj in self.trajectories])
+
+    def lifetime(self):
+        return np.average([traj.get_lifetime(0) for traj in self.trajectories])
+
+    def diffusion_length(self):
+        """
+        Return the average diffusion coefficient defined as:
+
+        DiffLen = SQRT(2 * z * DiifCoeff * LifeTime)
+
+        :return:
+        """
+        length2 = np.average([traj.get_diffusion_length_square(0) for traj in self.trajectories])
+        return np.sqrt(length2)
+
+    def plot_2d(self):
+        plt = None
+        for traj in self.trajectories:
+            plt = traj.plot_2d(0)
+        return plt
+
+    def plot_distances(self):
+        plt = None
+        for traj in self.trajectories:
+            plt = traj.plot_distances(0)
+        return plt
 
 
 def merge_json_files(file1, file2):
