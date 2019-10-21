@@ -37,7 +37,6 @@ def update_system(system):
     if len(process_collector) == 0:
         system.is_finished = True
         return None, 0
-
     chosen_process, time = kmc_algorithm(rate_collector, process_collector)
     # chooses one of the processes and gives it a duration using the Kinetic Monte-Carlo algorithm
     update_step(chosen_process, system)        # updates both lists according to the chosen process

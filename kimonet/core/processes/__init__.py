@@ -1,6 +1,6 @@
 import numpy as np
 from kimonet.core.processes.coupling_functions import functions_dict
-from kimonet.utils.units import BOTZMANN_CONSTANT
+from kimonet.utils.units import BOLTZMANN_CONSTANT
 
 # Memory for the calculated decay rates and spectral overlaps is introduced.
 decay_memory = {}
@@ -154,8 +154,8 @@ def marcus_fcwd(donor, acceptor, conditions):
         overlap = overlap_memory[info]
 
     else:
-        overlap = 1.0 / (2 * np.sqrt(np.pi*BOTZMANN_CONSTANT*T*reorganization)) * \
-                  np.exp(-(gibbs_energy+reorganization)**2 / (4*BOTZMANN_CONSTANT*T*reorganization))
+        overlap = 1.0 / (2 * np.sqrt(np.pi * BOLTZMANN_CONSTANT * T * reorganization)) * \
+                  np.exp(-(gibbs_energy+reorganization)**2 / (4 * BOLTZMANN_CONSTANT * T * reorganization))
 
         overlap_memory[info] = overlap
         # new values are added to the memory

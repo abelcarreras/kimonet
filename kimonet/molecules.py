@@ -140,7 +140,6 @@ class Molecule:
             decay_process = Decay(final='gs', description='singlet_radiative_decay')
             alpha = 1.0/137
             decay_rates[decay_process] = alpha * 4 * desexcitation_energy**3 * mu2 / (3 * SPEED_OF_LIGHT**2 * HBAR_PLANCK**3)
-
             # Example of second decay
             # -----------------------
             # decay_process = Decay(final='s2', description='test')
