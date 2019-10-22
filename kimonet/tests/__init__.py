@@ -76,11 +76,11 @@ class TestKimonet(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 2.713221,
+        ref = {'diffusion coefficient': 2.721624,
                'lifetime': 1601.843545,
                'diffusion length': 129.200077,
-               'diffusion tensor': [[5.169843, 0.318825],
-                                    [0.318825, 0.256599]],
+               'diffusion tensor': [[5.187157, 0.322335],
+                                    [0.322335, 0.256091]],
                'diffusion length tensor': [[126.724347, 32.767362],
                                            [32.767362, 25.171412]]
                }

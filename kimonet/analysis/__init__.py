@@ -2,7 +2,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
-from mpl_toolkits.mplot3d import Axes3D  # Actually needed
+from mpl_toolkits.mplot3d import Axes3D  # Actually needed!
 
 
 class Node:
@@ -28,7 +28,6 @@ class Trajectory:
                          'state': [system.molecules[center].state],
                          'cell_state': [list(system.molecules[center].cell_state)]} for center in system.centers]
 
-
         self.times = [0]
         self.process = []
         self.exciton_altered = []
@@ -44,6 +43,21 @@ class Trajectory:
 
         self.n_dim = len(self.centers[0]['coordinates'][0])
         self.n_centers = len(self.centers)
+        self.labels = {}
+
+    def get_ranges_from_label(self, label):
+        dtype = [('center', int), ('position', int)]
+        self.labels[label] = []
+        for i, center in enumerate(self.centers):
+            for j, state in enumerate(center['state']):
+                if state == label:
+                    self.labels[label].append((i, j))
+
+        ordered_points = np.sort(np.array(self.labels[label], dtype=dtype), order='center')
+        continuous_sections = np.split(ordered_points, np.where(np.diff(ordered_points['position']) != 1)[0] + 1)
+        if len(ordered_points) == 0:
+            return [(np.array((0, 0), dtype=dtype), np.array((0, 0), dtype=dtype))]
+        return [(seq[0], seq[-1]) for seq in continuous_sections]
 
     def add(self, change_step, time_step):
         """
@@ -74,6 +88,8 @@ class Trajectory:
             self.centers[i]['state'].append(excited_state)
             self.centers[i]['cell_state'].append(cell_state)
 
+        # print(self.centers[0]['cell_state'][-1])
+        # print('t:', len(self.times), len(self.centers[0]['state']))
         return
 
     def get_number_of_centers(self):
@@ -98,9 +114,8 @@ class Trajectory:
             coordinates = self.centers[icenter]['coordinates']
 
             vector = []
-            lattice = np.zeros_like(initial)
             for cell_state, coordinate in zip(cell_states, coordinates):
-                lattice += np.dot(self.supercell, cell_state)
+                lattice = np.dot(self.supercell, cell_state)
                 vector.append(np.array(coordinate) - lattice - initial)
 
         vector = np.array(vector).T
@@ -117,12 +132,12 @@ class Trajectory:
         coordinates = self.centers[icenter]['coordinates']
 
         vector = []
-        lattice = np.zeros_like(initial)
+        #lattice = np.zeros_like(initial)
         for cell_state, coordinate in zip(cell_states, coordinates):
-            lattice += np.dot(self.supercell, cell_state)
+            lattice = np.dot(self.supercell, cell_state)
             vector.append(np.array(coordinate) - lattice - initial)
 
-        vector.append(vector[-1])
+        # vector.append(vector[-1])
 
         vector = np.array(vector).T
         n_dim, n_length = vector.shape
@@ -133,48 +148,48 @@ class Trajectory:
 
         return plt
 
-    def get_diffusion(self, icenter):
+    def _vector_list(self, state):
 
-        initial = np.array(self.centers[icenter]['coordinates'][0])
+        t = []
+        coordinates = []
+        sections = self.get_ranges_from_label(state)
+        for ini, fin in sections:
+            icenter = ini['center']
 
-        cell_states = self.centers[icenter]['cell_state']
-        coordinates = self.centers[icenter]['coordinates']
+            initial = np.array(self.centers[icenter]['coordinates'][ini['position']])
 
-        vector = []
-        lattice = np.zeros_like(initial)
-        for cell_state, coordinate in zip(cell_states, coordinates):
-            lattice += np.dot(self.supercell, cell_state)
-            vector.append(np.array(coordinate) - lattice - initial)
+            cell_states = self.centers[icenter]['cell_state'][ini['position']: fin['position']+1]
+            coordinate_range = self.centers[icenter]['coordinates'][ini['position']: fin['position']+1]
 
-        vector.append(vector[-1])
-        vector = np.array(vector).T
+            coord_per = []
+            for cell_state, coordinate in zip(cell_states, coordinate_range):
+                lattice = np.dot(self.supercell, cell_state) - np.dot(self.supercell, cell_states[0])
+                coord_per.append(np.array(coordinate) - lattice - initial)
+
+            coordinates += coord_per
+
+            t += list(np.array(self.times[ini['position']:fin['position']+1]) - self.times[ini['position']])
+
+        return np.array(coordinates).T, t
+
+    def get_diffusion(self, state):
+
+        vector, t = self._vector_list(state)
+
+        if len(vector) == 0:
+            return np.nan
+
         n_dim, n_length = vector.shape
 
         vector2 = np.linalg.norm(vector, axis=0)**2  # emulate dot product in axis 0
-
-        t = np.array(self.times)[:n_length]
 
         slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
 
         return slope/(2*n_dim)
 
-    def get_diffusion_tensor(self, icenter):
+    def get_diffusion_tensor(self, state):
 
-        initial = np.array(self.centers[icenter]['coordinates'][0])
-
-        cell_states = self.centers[icenter]['cell_state']
-        coordinates = self.centers[icenter]['coordinates']
-
-        vector = []
-        lattice = np.zeros_like(initial)
-        for cell_state, coordinate in zip(cell_states, coordinates):
-            lattice += np.dot(self.supercell, cell_state)
-            vector.append(np.array(coordinate) - lattice - initial)
-
-        vector.append(vector[-1])
-        vector = np.array(vector).T
-        n_dim, n_length = vector.shape
-        t = np.array(self.times)[:n_length]
+        vector, t = self._vector_list(state)
 
         tensor_x = []
         for v1 in vector:
@@ -187,46 +202,60 @@ class Trajectory:
 
         return np.array(tensor_x)/2
 
-    def get_lifetime(self, icenter):
-        n_length = len(self.centers[icenter]['coordinates'])
-        return self.times[n_length]
+    def get_lifetime(self, state):
 
-    def get_diffusion_length_square(self, icenter):
+        sections = self.get_ranges_from_label(state)
 
-        initial = np.array(self.centers[icenter]['coordinates'][0])
+        t = []
+        for ini, fin in sections:
+            t.append(self.times[fin['position']+1] - self.times[ini['position']])
 
-        cell_states = self.centers[icenter]['cell_state']
-        coordinates = self.centers[icenter]['coordinates']
+        return np.average(t)
 
-        lattice = np.zeros_like(initial)
-        for cell_state, coordinate in zip(cell_states, coordinates):
-            lattice += np.dot(self.supercell, cell_state)
+    def get_diffusion_length_square(self, state):
 
-        vector = np.array(self.centers[icenter]['coordinates'][-1]) - lattice - initial
+        distances = []
+        sections = self.get_ranges_from_label(state)
+        for ini, fin in sections:
+            icenter = ini['center']
 
-        return np.dot(vector, vector)
+            cell_states = self.centers[icenter]['cell_state'][ini['position']: fin['position']+1]
+            initial = np.array(self.centers[icenter]['coordinates'][ini['position']])
 
-    def get_diffusion_length_square_tensor(self, icenter):
+            lattice_diff = np.dot(self.supercell, cell_states[-1]) - np.dot(self.supercell, cell_states[0])
+            distance_vector = self.centers[icenter]['coordinates'][fin['position']] - lattice_diff - initial
 
-        initial = np.array(self.centers[icenter]['coordinates'][0])
+            distances.append(distance_vector)
 
-        cell_states = self.centers[icenter]['cell_state']
-        coordinates = self.centers[icenter]['coordinates']
+        return np.average([np.dot(vector, vector) for vector in distances])
 
-        lattice = np.zeros_like(initial)
-        for cell_state, coordinate in zip(cell_states, coordinates):
-            lattice += np.dot(self.supercell, cell_state)
+    def get_diffusion_length_square_tensor(self, state):
 
-        vector = np.array(self.centers[icenter]['coordinates'][-1]) - lattice - initial
+        distances = []
+        sections = self.get_ranges_from_label(state)
+        for ini, fin in sections:
+            icenter = ini['center']
 
-        tensor_x = []
-        for v1 in vector:
-            tensor_y = []
-            for v2 in vector:
-                tensor_y.append(v1*v2)
-            tensor_x.append(tensor_y)
+            cell_states = self.centers[icenter]['cell_state'][ini['position']: fin['position']+1]
+            initial = np.array(self.centers[icenter]['coordinates'][ini['position']])
 
-        return np.array(tensor_x)
+            lattice_diff = np.dot(self.supercell, cell_states[-1]) - np.dot(self.supercell, cell_states[0])
+            distance_vector = self.centers[icenter]['coordinates'][fin['position']] - lattice_diff - initial
+
+            distances.append(distance_vector)
+
+        tensor = []
+        for vector in distances:
+            tensor_x = []
+            for v1 in vector:
+                tensor_y = []
+                for v2 in vector:
+                    tensor_y.append(v1*v2)
+                tensor_x.append(tensor_y)
+
+            tensor.append(np.array(tensor_x))
+
+        return np.average(tensor, axis=0)
 
 
 class TrajectoryAnalysis:
@@ -256,20 +285,20 @@ class TrajectoryAnalysis:
         :param trajectories: list of Trajectory
         :return:
         """
-        return np.average([traj.get_diffusion_tensor(0) for traj in self.trajectories], axis=0)
+        return np.average([traj.get_diffusion_tensor('s1') for traj in self.trajectories], axis=0)
 
     def diffusion_length_tensor(self):
         """
         calculate the average diffusion length tensor defined as:
 
-        DiffLenTen = SQRT( 2 * DiffTensor * lifetime)
+        DiffLenTen = SQRT( |2 * DiffTensor * lifetime| )
 
         :param trajectories: list of Trajectory
         :return:
         """
-        dl_tensor = np.average([traj.get_diffusion_length_square_tensor(0) for traj in self.trajectories], axis=0)
+        dl_tensor = np.average([traj.get_diffusion_length_square_tensor('s1') for traj in self.trajectories], axis=0)
 
-        return np.sqrt(dl_tensor)
+        return np.sqrt(np.abs(dl_tensor))
 
     def diffusion_coefficient(self):
         """
@@ -279,10 +308,10 @@ class TrajectoryAnalysis:
 
         :return:
         """
-        return np.average([traj.get_diffusion(0) for traj in self.trajectories])
+        return np.average([traj.get_diffusion('s1') for traj in self.trajectories])
 
     def lifetime(self):
-        return np.average([traj.get_lifetime(0) for traj in self.trajectories])
+        return np.average([traj.get_lifetime('s1') for traj in self.trajectories])
 
     def diffusion_length(self):
         """
@@ -292,7 +321,7 @@ class TrajectoryAnalysis:
 
         :return:
         """
-        length2 = np.average([traj.get_diffusion_length_square(0) for traj in self.trajectories])
+        length2 = np.average([traj.get_diffusion_length_square('s1') for traj in self.trajectories])
         return np.sqrt(length2)
 
     def plot_2d(self):
@@ -308,6 +337,7 @@ class TrajectoryAnalysis:
         return plt
 
 
+# THIS IS OLD and not used, to be replaced in the near future
 def merge_json_files(file1, file2):
     """
     :param file1: name (string) of the first file in .json format
