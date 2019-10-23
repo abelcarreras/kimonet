@@ -62,7 +62,11 @@ Transfer = namedtuple("Transfer", ["initial", "final", "description"])
 # description: string with some information about the transfer process
 
 
-functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): compute_forster_coupling}
+functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): compute_forster_coupling,
+                  # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
+                  # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
+                  # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
+                  }
 
 ##########################################################################################
 #                            AUXILIARY FUNCTIONS

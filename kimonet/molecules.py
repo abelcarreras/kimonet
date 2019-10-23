@@ -5,6 +5,23 @@ from collections import namedtuple
 from kimonet.utils.units import DEBYE_TO_ANGS_EL, SPEED_OF_LIGHT, HBAR_PLANCK
 
 
+# Decay tuple
+# final: final state after dacay
+# description: any string with the description the decay
+Decay = namedtuple("Decay", ["initial", "final", "description"])
+
+
+# Decay functions
+def singlet_decay(molecule):
+    desexcitation_energy = molecule.state_energies[molecule.state] - molecule.state_energies['gs']
+    mu2 = np.dot(molecule.transition_moment, molecule.transition_moment)  # transition moment norm.
+    alpha = 1.0 / 137
+    return alpha * 4 * desexcitation_energy ** 3 * mu2 / (3 * SPEED_OF_LIGHT ** 2 * HBAR_PLANCK ** 3)
+
+
+decay_functions_dict = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): singlet_decay}
+
+
 class Molecule:
 
     def __init__(self,
@@ -122,34 +139,13 @@ class Molecule:
         More if(s) entrances shall be added if more electronic states are considered.
         """
 
-        # Decay tuple
-        # final: final state after dacay
-        # description: any string with the description the decay
-
         if self.state in self.decay_dict:
             return self.decay_dict[self.state]
 
-        Decay = namedtuple("Decay", ["final", "description"])
-
         decay_rates = {}
-        if self.state == 's1':
-
-            # Singlet radiative decay
-            desexcitation_energy = self.state_energies[self.state] - self.state_energies['gs']
-            mu2 = np.dot(self.transition_moment, self.transition_moment) # transition moment norm.
-            decay_process = Decay(final='gs', description='singlet_radiative_decay')
-            alpha = 1.0/137
-            decay_rates[decay_process] = alpha * 4 * desexcitation_energy**3 * mu2 / (3 * SPEED_OF_LIGHT**2 * HBAR_PLANCK**3)
-            # Example of second decay
-            # -----------------------
-            # decay_process = Decay(final='s2', description='test')
-            # decay_rates[decay_process] = from_ns_to_au(rate, 'direct')
-
-        # Example of decay in another state
-        # ---------------------------------
-        # if self.state == 's2':
-        #     decay_process = Decay(final='s1', description='test2')
-        #     decay_rates[decay_process] = from_ns_to_au(1000000, 'direct')
+        for coupling in decay_functions_dict:
+            if coupling.initial == self.state:
+                decay_rates[coupling] = decay_functions_dict[coupling](self)
 
         self.decay_dict[self.state] = decay_rates
 
