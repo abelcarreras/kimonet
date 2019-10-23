@@ -3,7 +3,7 @@ from kimonet.core import update_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.molecules import Molecule
 import numpy as np
-np.random.seed(0)
+np.random.seed(0)  # for testing
 
 
 """
@@ -36,12 +36,12 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 50                          # number of trajectories that will be simulated
+num_trajectories = 500                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
 system = ordered_system(conditions=conditions,
                         molecule=molecule,
-                        lattice={'size': [10, 10], 'parameters': [3.0, 3.0]},  # Angstroms
+                        lattice={'size': [3, 3], 'parameters': [3.0, 3.0]},  # Angstroms
                         orientation=[0, 0, 0])
 
 # visualize_system(system)
@@ -56,7 +56,6 @@ for j in range(num_trajectories):
     # visualize_system(system)
 
     print('iteration: ', j)
-
     trajectory = Trajectory(system)
     for i in range(max_steps):
 
@@ -97,28 +96,3 @@ plt.figure()
 analysis.plot_distances()
 
 plt.show()
-
-exit()
-
-################# Parallel test (py3 only) ##################
-
-import concurrent.futures as futures
-
-
-def function_test(a, b, test=0):
-    import time
-    time.sleep(abs(i-5))
-    return a * b + test
-
-
-executor = futures.ThreadPoolExecutor()
-
-fut = []
-for i in range(10):
-    fut.append(executor.submit(function_test, i, i))
-
-for f in futures.as_completed(fut):
-    print(f.result())
-
-for f in fut:
-    print(f.result(), f.done(), f.running())
