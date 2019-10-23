@@ -183,7 +183,8 @@ class Trajectory:
 
         vector2 = np.linalg.norm(vector, axis=0)**2  # emulate dot product in axis 0
 
-        slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
+        with np.errstate(invalid='ignore'):
+            slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
 
         return slope/(2*n_dim)
 
@@ -196,7 +197,8 @@ class Trajectory:
             tensor_y = []
             for v2 in vector:
                 vector2 = v1*v2
-                slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
+                with np.errstate(invalid='ignore'):
+                    slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
                 tensor_y.append(slope)
             tensor_x.append(tensor_y)
 
@@ -285,7 +287,7 @@ class TrajectoryAnalysis:
         :param trajectories: list of Trajectory
         :return:
         """
-        return np.average([traj.get_diffusion_tensor('s1') for traj in self.trajectories], axis=0)
+        return np.nanmean([traj.get_diffusion_tensor('s1') for traj in self.trajectories], axis=0)
 
     def diffusion_length_tensor(self):
         """
@@ -308,7 +310,7 @@ class TrajectoryAnalysis:
 
         :return:
         """
-        return np.average([traj.get_diffusion('s1') for traj in self.trajectories])
+        return np.nanmean([traj.get_diffusion('s1') for traj in self.trajectories])
 
     def lifetime(self):
         return np.average([traj.get_lifetime('s1') for traj in self.trajectories])
@@ -321,7 +323,7 @@ class TrajectoryAnalysis:
 
         :return:
         """
-        length2 = np.average([traj.get_diffusion_length_square('s1') for traj in self.trajectories])
+        length2 = np.nanmean([traj.get_diffusion_length_square('s1') for traj in self.trajectories])
         return np.sqrt(length2)
 
     def plot_2d(self):

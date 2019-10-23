@@ -16,13 +16,11 @@ All energies must be given in eV. By default initialized at gs.
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 1,
-                  's2': 2}
+                  's1': 1}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
-                           's1': 0.2,
-                           's2': 0.1}
+                           's1': 0.2}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
