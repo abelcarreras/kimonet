@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial import distance
 import itertools
 import warnings
-
+import copy
 
 class System:
     def __init__(self,
@@ -38,25 +38,6 @@ class System:
                 if 0 < np.linalg.norm(r_vec) < radius:
                     neighbours.append(i)
                     jumps.append(cell_vec)
-                """
-                
-                for l_vector in np.array(self.supercell):
-                    coord_plus = coordinates + np.array(l_vector)
-                    coord_minus = coordinates - np.array(l_vector)
-
-                    if 0 < distance.euclidean(center_position, coordinates) < radius:
-                        neighbours.append(i)
-                        jumps.append(0)
-
-                    elif 0 < distance.euclidean(center_position, coord_plus) < radius:
-                        neighbours.append(i)
-                        jumps.append(1)
-
-                    elif 0 < distance.euclidean(center_position, coord_minus) < radius:
-                        neighbours.append(i)
-                        jumps.append(-1)
-
-                """
 
             indexes = np.unique(neighbours, return_index=True)[1]
             neighbours = np.array(neighbours)[indexes]
@@ -69,8 +50,12 @@ class System:
     def reset(self):
         for molecule in self.molecules:
             molecule.state = 'gs'
+            molecule.cell_state = np.zeros(molecule.get_dim())
         self.centers = []
         self.is_finished = False
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def get_num_molecules(self):
         return len(self.molecules)
