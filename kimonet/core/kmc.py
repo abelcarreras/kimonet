@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def kmc_algorithm(rate_list, process_list):
     """
     :param rate_list: List with all the computed rates for all the neighbours for all the centers

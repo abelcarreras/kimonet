@@ -1,7 +1,8 @@
 import numpy as np
 from numpy import pi
-from kimonet.molecules import Molecule
+from kimonet.system.molecule import Molecule
 from kimonet.utils.units import BOLTZMANN_CONSTANT
+
 
 def theoretical_diffusion_values(system_information):
     """

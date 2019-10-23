@@ -1,7 +1,7 @@
-from kimonet.system import ordered_system, disordered_system
-from kimonet.core import update_system
+from kimonet.system.generators import ordered_system, disordered_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
-from kimonet.molecules import Molecule
+from kimonet.system.molecule import Molecule
+from kimonet import update_system
 import numpy as np
 np.random.seed(0)  # for testing
 

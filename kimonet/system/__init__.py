@@ -4,6 +4,7 @@ import itertools
 import warnings
 import copy
 
+
 class System:
     def __init__(self,
                  molecules,
@@ -100,44 +101,3 @@ class System:
                 index = i
 
         self.add_excitation_index(type, index)
-
-
-def ordered_system(conditions,
-                   molecule,
-                   lattice={'size': (1),
-                            'parameters': (1.0, 1.0, 1.0)},
-                   orientation=(0, 0, 0)
-                   ):
-
-    molecules = []                              # list of instances of class molecule
-    for subset in itertools.product(*[list(range(n)) for n in lattice['size']]):
-        coordinates = np.multiply(subset, lattice['parameters'])
-
-        molecule = molecule.copy()  # copy of the generic instance
-        molecule.set_coordinates(coordinates)
-        molecule.set_orientation(orientation)
-        molecules.append(molecule)
-
-    supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
-
-    return System(molecules, conditions, supercell)
-
-
-def disordered_system(conditions,
-                      molecule,
-                      lattice={'size': (1),
-                               'parameters': (1.0, 1.0, 1.0)}
-                      ):
-
-    molecules = []  # list of instances of class molecule
-    for subset in itertools.product(*[list(range(n)) for n in lattice['size']]):
-        coordinates = np.multiply(subset, lattice['parameters'])
-        orientation = np.random.random_sample(3) * 2*np.pi
-        molecule = molecule.copy()  # copy of the generic instance
-        molecule.set_coordinates(coordinates)
-        molecule.set_orientation(orientation)
-        molecules.append(molecule)
-
-    supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
-
-    return System(molecules, conditions, supercell)

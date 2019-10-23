@@ -1,7 +1,7 @@
-from kimonet.system import ordered_system, disordered_system
-from kimonet.core import update_system
+from kimonet.system.generators import ordered_system, disordered_system
 from kimonet.analysis import Trajectory, TrajectoryAnalysis
-from kimonet.molecules import Molecule
+from kimonet.system.molecule import Molecule
+from kimonet import update_system
 import unittest
 
 import numpy as np
@@ -10,9 +10,9 @@ np.random.seed(0)  # set random seed in order for the examples to reproduce the 
 
 def get_analytical_model(distance, dimension, transfer, decay):
 
-    K = [transfer] * 2 * dimension
+    k_list = [transfer] * 2 * dimension
     t_rad = 1. / decay
-    diff_m = np.sum(K) * distance ** 2 / (2 * dimension)
+    diff_m = np.sum(k_list) * distance ** 2 / (2 * dimension)
     ld_m = np.sqrt(2 * dimension * diff_m * t_rad)
 
     return {'diffusion coefficient': diff_m,
@@ -88,7 +88,7 @@ class TestKimonet(unittest.TestCase):
         self.assertDictEqual(ref, test)
 
         # This is just for visual comparison (not accounted in the test)
-        from kimonet.core import get_transfer_rates, get_decay_rates
+        from kimonet.core.processes import get_transfer_rates, get_decay_rates
 
         self.system.add_excitation_index('s1', 0)
         transfer_x, _, transfer_y, _ = get_transfer_rates(0, self.system, 0)[1]

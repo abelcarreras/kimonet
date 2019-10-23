@@ -4,11 +4,8 @@ import inspect
 from collections import namedtuple
 from kimonet.utils.units import VAC_PERMITTIVITY
 
-##########################################################################################
-#                                   COUOPLING FUNCTIONS
-##########################################################################################
 
-coupling_memory = {}
+foster_data = {}
 
 
 def compute_forster_coupling(donor, acceptor, conditions, supercell):
@@ -28,8 +25,8 @@ def compute_forster_coupling(donor, acceptor, conditions, supercell):
     hash_string = str(hash((donor, function_name)) + hash((acceptor, function_name)))
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
-    if hash_string in coupling_memory:
-        return coupling_memory[hash_string]
+    if hash_string in foster_data:
+        return foster_data[hash_string]
 
     mu_d = donor.get_transition_moment()                     # transition dipole moment (donor) a.u
     mu_a = acceptor.get_transition_moment()                  # transition dipole moment (acceptor) a.u
@@ -46,31 +43,9 @@ def compute_forster_coupling(donor, acceptor, conditions, supercell):
     k_e = 1.0/(4.0*np.pi*VAC_PERMITTIVITY)
     forster_coupling = k_e * k**2 * np.dot(mu_d, mu_a) / (n**2 * r**3)
 
-    coupling_memory[hash_string] = forster_coupling                            # memory update for new couplings
+    foster_data[hash_string] = forster_coupling                            # memory update for new couplings
 
     return forster_coupling
-
-
-##########################################################################################
-#                               COUPLING FUNCTIONS DICTIONARY
-##########################################################################################
-Transfer = namedtuple("Transfer", ["initial", "final", "description"])
-
-# Transfer tuple format:
-# initial: tuple with the initial states of donor, acceptor for the transfer to occur (order is important!!)
-# final: tuple with the final states of the donor, acceptor once the transfer has occurred
-# description: string with some information about the transfer process
-
-
-functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): compute_forster_coupling,
-                  # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
-                  # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
-                  # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
-                  }
-
-##########################################################################################
-#                            AUXILIARY FUNCTIONS
-##########################################################################################
 
 
 def intermolecular_vector(donor, acceptor):
@@ -105,3 +80,22 @@ def unit_vector(vector):
     :return: computes a unity vector in the direction of vector
     """
     return vector / np.linalg.norm(vector)
+
+
+##########################################################################################
+#                                 FUNCTIONS DICTIONARY
+##########################################################################################
+
+Transfer = namedtuple("Transfer", ["initial", "final", "description"])
+
+# Transfer tuple format:
+# initial: tuple with the initial states of donor, acceptor for the transfer to occur (order is important!!)
+# final: tuple with the final states of the donor, acceptor once the transfer has occurred
+# description: string with some information about the transfer process
+
+
+functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): compute_forster_coupling,
+                  # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
+                  # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
+                  # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
+                  }

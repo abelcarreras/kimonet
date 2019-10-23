@@ -1,15 +1,38 @@
 import numpy as np
-from kimonet.core.processes.coupling_functions import functions_dict
-from kimonet.utils.units import BOLTZMANN_CONSTANT
+from kimonet.core.processes.coupling import functions_dict
+from kimonet.core.processes.fcwd import marcus_fcwd
 
-# Memory for the calculated decay rates and spectral overlaps is introduced.
-decay_memory = {}
-overlap_memory = {}
+decay_data = {}
 
 
-###########################################################################################################
-#                                   FUNCTION 1: TRANSFER RATES
-###########################################################################################################
+def get_processes_and_rates(centre, system, i):
+    """
+    :param i: index of the exciton
+    :param centre: Index of the studied excited molecule (Donor)
+    :param system: Instance of System class
+    Computes the transfer and decay rates and builds two dictionaries:
+            One with the decay process as key and its rate as argument
+            One with the transferred molecule index as key and {'process': rate} as argument
+
+    :return:    process_list: List of elements like dict(center, process, new molecule)
+                rate_list: List with the respective rates
+                The list indexes coincide.
+    """
+
+    transfer_processes, transfer_rates = get_transfer_rates(centre, system, i)
+    # calls an external function that computes the transfer rates for all possible transfer processes between
+    # the centre and all its neighbours
+
+    decay_processes, decay_rates = get_decay_rates(centre, system, i)
+    # calls an external function that computes the decay rates for all possible decay processes of the centre.
+    # Uses a method of the class Molecule
+
+    # merges all processes in a list and the same for the rates
+    # the indexes of the list must coincide (same length. rate 'i' is related to process 'i')
+    process_list = decay_processes + transfer_processes
+    rate_list = decay_rates + transfer_rates
+
+    return process_list, rate_list
 
 
 def get_transfer_rates(centre, system, exciton_index):
@@ -37,33 +60,21 @@ def get_transfer_rates(centre, system, exciton_index):
 
     for neighbour, cell_incr in zip(neighbour_indexes, cell_increment):
         acceptor = system.molecules[neighbour]
-        # acceptor = molecule instance for each neighbour index.
 
+        # compute the spectral overlap using Marcus formula
         spectral_overlap = marcus_fcwd(donor, acceptor, conditions)
-        # compute the spectral overlap with the Marcus Formula (for all possible couplings)
 
-        coupling_functions = allowed_processes(donor, acceptor)
+        allowed_processes = get_allowed_processes(donor, acceptor)
 
-        # for the possible couplings computes the transfer rate by the Fermi's Golden Rule.
-        for process, coupling_function in coupling_functions.items():
+        for process, coupling_function in allowed_processes.items():
 
             e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
-
-            rate = 2*np.pi * e_coupling**2 * spectral_overlap          # Fermi's Golden Rule
-            transfer_rates.append(rate)
+            transfer_rates.append(2*np.pi * e_coupling**2 * spectral_overlap)  # Fermi's Golden Rule
 
             transfer_processes.append({'donor': int(centre), 'process': process, 'acceptor': int(neighbour),
                                        'index': exciton_index, 'cell_increment': cell_incr})
 
-    # the process include: the index of the donor (in molecules), the key of the process,
-    # the index of the acceptor (in molecules) and the index of the exciton (in centres).
-    # This last parameter acts as the name of the exciton
     return transfer_processes, transfer_rates
-
-
-###########################################################################################################
-#                               FUNCTION 2: DECAY RATES
-###########################################################################################################
 
 
 def get_decay_rates(centre, system, exciton_index):
@@ -93,109 +104,7 @@ def get_decay_rates(centre, system, exciton_index):
     return decay_processes, decay_rates
 
 
-###########################################################################################################
-#                           FUNCTION 3: UPDATE OF THE SYSTEM AND CENTRE INDEXES
-###########################################################################################################
-def update_step(chosen_process, system):
-    """
-    :param chosen_process: dictionary like dict(center, process, neighbour)
-    Modifies the state of the donor and the acceptor. Removes the donor from the centre_indexes list
-    and includes the acceptor. If its a decay only changes and removes the donor
-
-    New if(s) entrances shall be defined for more processes.
-    """
-
-    if type(chosen_process['process']).__name__ == 'Transfer':
-
-        donor_state = chosen_process['process'].final[0]
-        acceptor_state = chosen_process['process'].final[1]
-
-        system.add_excitation_index(donor_state, chosen_process['donor'])  # des excitation of the donor
-        system.add_excitation_index(acceptor_state, chosen_process['acceptor'])  # excitation of the acceptor
-        system.molecules[chosen_process['acceptor']].cell_state = system.molecules[chosen_process['donor']].cell_state -chosen_process['cell_increment']
-        # system.molecules[chosen_process['donor']].cell_state *= 0
-
-        if chosen_process['process'].final[0] == 'gs':
-            system.molecules[chosen_process['donor']].cell_state *= 0
-
-    if type(chosen_process['process']).__name__ == 'Decay':
-        final_state = chosen_process['process'].final
-        # print('final_state', final_state)
-        system.add_excitation_index(final_state, chosen_process['donor'])
-
-        if final_state == 'gs':
-            system.molecules[chosen_process['donor']].cell_state *= 0
-
-
-###########################################################################################################
-#                                 Frank-Condon weighted density
-###########################################################################################################
-
-def marcus_fcwd(donor, acceptor, conditions):
-    """
-    :param donor:
-    :param acceptor:
-    :param conditions:
-    :return: The spectral overlap between the donor and the acceptor according to Marcus formula.
-    """
-    T = conditions['temperature']       # temperature (K)
-
-    excited_state = donor.electronic_state()
-    gibbs_energy = donor.state_energies[excited_state] - acceptor.state_energies[excited_state]
-    # Gibbs energy: energy difference between the equilibrium points of the excited states
-
-    reorganization = acceptor.reorganization_energies[excited_state]
-    # acceptor reorganization energy of the excited state
-
-    info = str(hash((T, gibbs_energy, reorganization, 'marcus')))
-    # we define a compact string with the characteristic information of the spectral overlap
-
-    if info in overlap_memory:
-        # the memory is used if the overlap has been already computed
-        overlap = overlap_memory[info]
-
-    else:
-        overlap = 1.0 / (2 * np.sqrt(np.pi * BOLTZMANN_CONSTANT * T * reorganization)) * \
-                  np.exp(-(gibbs_energy+reorganization)**2 / (4 * BOLTZMANN_CONSTANT * T * reorganization))
-
-        overlap_memory[info] = overlap
-        # new values are added to the memory
-
-    return overlap
-    # Since we have a quantity in 1/eV, we use the converse function from_ev_to_au in inverse mode
-    # to have a 1/au quantity.
-
-
-def gaussian_fcwd(donor, acceptor, conditions):
-
-    """
-    :param donor: energy diference between states
-    :param acceptor: deviation in energy units
-    :return: Franck-Condon-weighted density of states in gaussian aproximation
-    """
-
-    excited_state = donor.electronic_state()
-    delta = donor.state_energies[excited_state] - acceptor.state_energies[excited_state]
-    deviation = conditions['a_e_spectra_deviation'] / 27.211     # atomic units
-
-    info = str(hash((delta, deviation)))
-
-    if info in overlap_memory:
-        fcwd = overlap_memory[info]
-
-    else:
-        fcwd = np.exp(- delta**2 / (2 * deviation) ** 2) / (2 * np.sqrt(np.pi) * deviation)
-        overlap_memory[info] = fcwd
-
-    return fcwd
-
-
-###########################################################################################################
-#          Take all the keys of a dictionary that start with the same string
-###########################################################################################################
-
-
-def allowed_processes(donor, acceptor):
+def get_allowed_processes(donor, acceptor):
     """
     Get the allowed processes given donor and acceptor
 

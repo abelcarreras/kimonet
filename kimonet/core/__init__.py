@@ -1,5 +1,5 @@
 from kimonet.core.kmc import kmc_algorithm
-from kimonet.core.processes import get_transfer_rates, update_step, get_decay_rates
+from kimonet.core.processes import get_processes_and_rates
 import warnings
 
 
@@ -45,31 +45,33 @@ def update_system(system):
     return chosen_process, time
 
 
-def get_processes_and_rates(centre, system, i):
+def update_step(chosen_process, system):
     """
-    :param i: index of the exciton
-    :param centre: Index of the studied excited molecule (Donor)
-    :param system: Instance of System class
-    Computes the transfer and decay rates and builds two dictionaries:
-            One with the decay process as key and its rate as argument
-            One with the transferred molecule index as key and {'process': rate} as argument
+    :param chosen_process: dictionary like dict(center, process, neighbour)
+    Modifies the state of the donor and the acceptor. Removes the donor from the centre_indexes list
+    and includes the acceptor. If its a decay only changes and removes the donor
 
-    :return:    process_list: List of elements like dict(center, process, new molecule)
-                rate_list: List with the respective rates
-                The list indexes coincide.
+    New if(s) entrances shall be defined for more processes.
     """
 
-    transfer_processes, transfer_rates = get_transfer_rates(centre, system, i)
-    # calls an external function that computes the transfer rates for all possible transfer processes between
-    # the centre and all its neighbours
+    if type(chosen_process['process']).__name__ == 'Transfer':
 
-    decay_processes, decay_rates = get_decay_rates(centre, system, i)
-    # calls an external function that computes the decay rates for all possible decay processes of the centre.
-    # Uses a method of the class Molecule
+        donor_state = chosen_process['process'].final[0]
+        acceptor_state = chosen_process['process'].final[1]
 
-    # merges all processes in a list and the same for the rates
-    # the indexes of the list must coincide (same length. rate 'i' is related to process 'i')
-    process_list = decay_processes + transfer_processes
-    rate_list = decay_rates + transfer_rates
+        system.add_excitation_index(donor_state, chosen_process['donor'])  # des excitation of the donor
+        system.add_excitation_index(acceptor_state, chosen_process['acceptor'])  # excitation of the acceptor
+        system.molecules[chosen_process['acceptor']].cell_state = system.molecules[chosen_process['donor']].cell_state -chosen_process['cell_increment']
+        # system.molecules[chosen_process['donor']].cell_state *= 0
 
-    return process_list, rate_list
+        if chosen_process['process'].final[0] == 'gs':
+            system.molecules[chosen_process['donor']].cell_state *= 0
+
+    if type(chosen_process['process']).__name__ == 'Decay':
+        final_state = chosen_process['process'].final
+        # print('final_state', final_state)
+        system.add_excitation_index(final_state, chosen_process['donor'])
+
+        if final_state == 'gs':
+            system.molecules[chosen_process['donor']].cell_state *= 0
+
