@@ -16,11 +16,13 @@ All energies must be given in eV. By default initialized at gs.
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 1}
+                  's1': 1,
+                  's2': 1}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
-                           's1': 0.2}
+                           's1': 0.2,
+                           's2': 0.2}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
@@ -36,7 +38,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 500                          # number of trajectories that will be simulated
+num_trajectories = 50                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
 system = ordered_system(conditions=conditions,
@@ -51,7 +53,7 @@ for j in range(num_trajectories):
 
     system.add_excitation_center('s1')
     # system.add_excitation_index('s1', 0)
-    # system.add_excitation_random('s2', 20)
+    # system.add_excitation_random('s2', 3)
 
     # visualize_system(system)
 
@@ -73,6 +75,9 @@ for j in range(num_trajectories):
 
     system.reset()
 
+    # print(trajectory.get_lifetime_ratio('s1'), trajectory.get_lifetime_ratio('s2'), trajectory.get_lifetime_ratio('s3'))
+    # print(trajectory.get_lifetime_ratio('s3'))
+
     trajectories.append(trajectory)
 
 
@@ -82,13 +87,15 @@ analysis = TrajectoryAnalysis(trajectories)
 print(analysis)
 
 print('diffusion coefficient (average): {} angs^2/ns'.format(analysis.diffusion_coefficient()))
+print('diffusion coefficient (s1): {} angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
+
 print('lifetime: {} ns'.format(analysis.lifetime()))
 print('diffusion length: {} angs'.format(analysis.diffusion_length()))
 
 print('diffusion tensor')
-print(analysis.diffusion_coeff_tensor())
+print(analysis.diffusion_coeff_tensor('s1'))
 print('diffusion length tensor')
-print(analysis.diffusion_length_tensor())
+print(analysis.diffusion_length_tensor('s1'))
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
 plt = analysis.plot_2d()

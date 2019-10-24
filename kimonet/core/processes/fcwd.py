@@ -64,4 +64,3 @@ def gaussian_fcwd(donor, acceptor, conditions):
         overlap_data[info] = fcwd
 
     return fcwd
-

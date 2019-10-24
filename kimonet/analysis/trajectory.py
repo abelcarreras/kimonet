@@ -23,7 +23,7 @@ class Trajectory:
 
         self.times = [0]
         self.process = []
-        self.exciton_altered = []
+        # self.exciton_altered = []
         self.supercell = system.supercell
         self.system = system
 
@@ -33,6 +33,11 @@ class Trajectory:
 
         for i, center in enumerate(self.system.centers):
             self.center_track['{}'.format(center)] = i
+
+        self.states = set()
+        for center in self.centers:
+            for state in center['state']:
+                self.states.add(state)
 
         self.n_dim = len(self.centers[0]['coordinates'][0])
         self.n_centers = len(self.centers)
@@ -49,7 +54,7 @@ class Trajectory:
         ordered_points = np.sort(np.array(self.labels[label], dtype=dtype), order='center')
         continuous_sections = np.split(ordered_points, np.where(np.diff(ordered_points['position']) != 1)[0] + 1)
         if len(ordered_points) == 0:
-            return [(np.array((0, 0), dtype=dtype), np.array((0, 0), dtype=dtype))]
+            return [(np.array((0, 0), dtype=dtype), np.array((0, -1), dtype=dtype))]
         return [(seq[0], seq[-1]) for seq in continuous_sections]
 
     def add(self, change_step, time_step):
@@ -61,7 +66,6 @@ class Trajectory:
         """
 
         self.times.append(self.times[-1] + time_step)
-        self.exciton_altered.append(change_step['index'])
         self.process.append(change_step['process'])
 
         # key = next(key for key, value in self.center_track.items() if value == change_step['donor'])
@@ -81,9 +85,14 @@ class Trajectory:
             self.centers[i]['state'].append(excited_state)
             self.centers[i]['cell_state'].append(cell_state)
 
+            self.states.add(excited_state)
+
         # print(self.centers[0]['cell_state'][-1])
         # print('t:', len(self.times), len(self.centers[0]['state']))
         return
+
+    def get_states(self):
+        return self.states
 
     def get_number_of_centers(self):
         return self.n_centers
@@ -206,6 +215,25 @@ class Trajectory:
             t.append(self.times[fin['position']+1] - self.times[ini['position']])
 
         return np.average(t)
+
+    def get_lifetime_ratio(self, state):
+
+        t_tot = 0
+        for center in self.centers:
+            try:
+                t_tot += self.times[len(center['state'])]
+            except IndexError:
+                t_tot += self.times[-1]
+
+        t = 0
+        sections = self.get_ranges_from_label(state)
+        for ini, fin in sections:
+            try:
+                t += self.times[fin['position']+1] - self.times[ini['position']]
+            except IndexError:
+                t += self.times[fin['position']] - self.times[ini['position']]
+
+        return t/t_tot
 
     def get_diffusion_length_square(self, state):
 

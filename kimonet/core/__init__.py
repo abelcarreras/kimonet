@@ -7,8 +7,8 @@ def update_system(system):
     """
     :param system: Dictionary with all the information of the system
     Dictionary system already has the indexes of the excited molecules
-    1. Looks for the neighbourhood of every centre.
-    2. Chooses a process for every exciton (KMC). This path variables include: dict(centre, process, new molecule)
+    1. Looks for the neighbourhood of every center.
+    2. Chooses a process for every exciton (KMC). This path variables include: dict(center, process, new molecule)
     3. Considering all the calculated rates computes the time interval for each process.
     4. Updates the system according to the chosen path and the time passed.
     :return: the chosen process and the advanced time
@@ -21,11 +21,11 @@ def update_system(system):
     process_collector = []                          # list with the respective processes (for all centers)
     # the indexes of both lists coincide.
 
-    for i, centre in enumerate(system.centers):
-        if type(centre) == int:
+    for center in system.centers:
+        if type(center) == int:
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
-            process_list, rate_list = get_processes_and_rates(centre, system, i)
+            process_list, rate_list = get_processes_and_rates(center, system)
             # for each center computes all the decay rates and all the transfer rates for all neighbours
             # return them as a list
 

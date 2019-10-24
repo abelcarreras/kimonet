@@ -59,7 +59,7 @@ def run_trajectory(system, index):
 
 
 # executor = futures.ThreadPoolExecutor(max_workers=4)
-executor = futures.ProcessPoolExecutor(max_workers=4)
+executor = futures.ProcessPoolExecutor(max_workers=14)
 
 futures_list = []
 for i in range(num_trajectories):
@@ -77,9 +77,9 @@ print('lifetime: {} ns'.format(analysis.lifetime()))
 print('diffusion length: {} angs'.format(analysis.diffusion_length()))
 
 print('diffusion tensor')
-print(analysis.diffusion_coeff_tensor())
+print(analysis.diffusion_coeff_tensor('s1'))
 print('diffusion length tensor')
-print(analysis.diffusion_length_tensor())
+print(analysis.diffusion_length_tensor('s1'))
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
 plt = analysis.plot_2d()

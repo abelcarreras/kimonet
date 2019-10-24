@@ -19,7 +19,10 @@ def singlet_decay(molecule):
     return alpha * 4 * desexcitation_energy ** 3 * mu2 / (3 * SPEED_OF_LIGHT ** 2 * HBAR_PLANCK ** 3)
 
 
-decay_functions_dict = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): singlet_decay}
+decay_functions_dict = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): singlet_decay,
+                        # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
+                        # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
+                        }
 
 
 class Molecule:

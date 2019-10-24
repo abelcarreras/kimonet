@@ -71,8 +71,8 @@ class TestKimonet(unittest.TestCase):
         test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient(), decimals=6),
                 'lifetime': np.around(analysis.lifetime(), decimals=6),
                 'diffusion length': np.around(analysis.diffusion_length(), decimals=6),
-                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor(), decimals=6).tolist(),
-                'diffusion length tensor': np.around(analysis.diffusion_length_tensor(), decimals=6).tolist()
+                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=6).tolist(),
+                'diffusion length tensor': np.around(analysis.diffusion_length_tensor('s1'), decimals=6).tolist()
                 }
 
         print(test)
@@ -91,8 +91,8 @@ class TestKimonet(unittest.TestCase):
         from kimonet.core.processes import get_transfer_rates, get_decay_rates
 
         self.system.add_excitation_index('s1', 0)
-        transfer_x, _, transfer_y, _ = get_transfer_rates(0, self.system, 0)[1]
-        decay, = get_decay_rates(0, self.system, 0)[1]
+        transfer_x, _, transfer_y, _ = get_transfer_rates(0, self.system)[1]
+        decay, = get_decay_rates(0, self.system)[1]
 
         print('analytical model')
         print('----------------')
