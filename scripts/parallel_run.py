@@ -1,5 +1,5 @@
 # This works only in python 3
-from kimonet.system.generators import ordered_system, disordered_system
+from kimonet.system.generators import regular_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import update_system
@@ -47,7 +47,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 num_trajectories = 500                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
-system = ordered_system(conditions=conditions,
+system = regular_system(conditions=conditions,
                         molecule=molecule,
                         lattice={'size': [3, 3], 'parameters': [3.0, 3.0]},  # Angstroms
                         orientation=[0, 0, 0])

@@ -15,11 +15,16 @@ def visualize_system(system):
     fig.suptitle('Transition moment')
     if ndim == 3:
         ax = fig.gca(projection='3d')
+        ax.set_zlabel('Z')
     else:
         ax = fig.gca()
 
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+
     # plt.xlim([0, np.dot([1, 0], system.supercell[0])])
     # plt.ylim([0, np.dot([0, 1], system.supercell[1])])
+
 
     # define color by state
     colors = {'gs': 'red',
@@ -30,6 +35,7 @@ def visualize_system(system):
     for molecule in system.molecules:
         c = molecule.coordinates
         o = molecule.get_transition_moment()
+
         if ndim == 1:
             ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state])
         if ndim == 2:
@@ -37,6 +43,10 @@ def visualize_system(system):
         if ndim == 3:
             ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=False, color=colors[molecule.state])
             # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
+
+    # Plot lattice vectors
+    for lattice_vector in system.supercell:
+        ax.plot(*np.array([[0]*ndim, lattice_vector]).T)
 
     # ax.quiverkey(q, X=0.3, Y=1.1, U=10,
     #               label='Quiver key, length = 10', labelpos='E')

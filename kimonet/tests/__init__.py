@@ -1,4 +1,4 @@
-from kimonet.system.generators import ordered_system, disordered_system
+from kimonet.system.generators import regular_system
 from kimonet.analysis import Trajectory, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import update_system
@@ -52,7 +52,7 @@ class TestKimonet(unittest.TestCase):
                       'refractive_index': 1,            # refractive index of the material (adimensional)
                       'cutoff_radius': 3.1}             # maximum interaction distance (Angstroms)
 
-        self.system = ordered_system(conditions=conditions,
+        self.system = regular_system(conditions=conditions,
                                      molecule=self.molecule,
                                      lattice={'size': [3, 3], 'parameters': self.parameters},  # Angstroms
                                      orientation=[0, 0, 0])

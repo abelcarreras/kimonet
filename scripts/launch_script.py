@@ -1,4 +1,4 @@
-from kimonet.system.generators import ordered_system, disordered_system
+from kimonet.system.generators import regular_system, crystal_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import update_system
@@ -50,12 +50,27 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 num_trajectories = 50                          # number of trajectories that will be simulated
 max_steps = 100000                              # maximum number of steps for trajectory allowed
 
-system = ordered_system(conditions=conditions,
-                        molecule=molecule,
-                        lattice={'size': [3, 3], 'parameters': [3.0, 3.0]},  # Angstroms
-                        orientation=[0, 0, 0])
+system_1 = regular_system(conditions=conditions,
+                          molecule=molecule,
+                          lattice={'size': [3, 3], 'parameters': [3.0, 3.0]},  # Angstroms
+                          orientation=[0, 0, 0])  # (Rx, Ry, Rz) if None then random orientation
 
-# visualize_system(system)
+
+system_2 = crystal_system(conditions=conditions,
+                          molecule=molecule,
+                          scaled_coordinates=[[0, 0],
+                                              [1, 1]],
+                          unitcell=[[2.0, 0.5],
+                                    [0.0, 2.0]],
+                          dimensions=[3, 3],
+                          orientations=[[0, 0, np.pi/2],  # if element is None then random, if list then oriented
+                                      None])
+
+
+system = system_1  # choose 1
+
+visualize_system(system)
+
 
 trajectories = []
 for j in range(num_trajectories):
