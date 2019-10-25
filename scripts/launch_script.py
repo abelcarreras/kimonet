@@ -11,7 +11,7 @@ import numpy as np
 np.random.seed(1)  # for testing
 
 
-processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
                              # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
                              # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
                              # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling

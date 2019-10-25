@@ -1,4 +1,3 @@
-import json
 import numpy as np
 
 
@@ -38,7 +37,7 @@ class TrajectoryAnalysis:
 
         DiffTensor = 1/2 * <DiffLen^2> / <time>
 
-        :param trajectories: list of Trajectory
+        :param state: electronic state to analyze
         :return:
         """
         return np.nanmean([traj.get_diffusion_tensor(state) for traj in self.trajectories], axis=0)
@@ -49,7 +48,7 @@ class TrajectoryAnalysis:
 
         DiffLenTen = SQRT( |2 * DiffTensor * lifetime| )
 
-        :param trajectories: list of Trajectory
+        :param state: electronic state to analyze
         :return:
         """
         dl_tensor = np.average([traj.get_diffusion_length_square_tensor(state) for traj in self.trajectories], axis=0)
@@ -94,7 +93,6 @@ class TrajectoryAnalysis:
 
         :return:
         """
-        import warnings
 
         sum_diff = 0
         if state is None:

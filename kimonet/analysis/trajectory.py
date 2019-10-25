@@ -125,7 +125,7 @@ class Trajectory:
         coordinates = self.centers[icenter]['coordinates']
 
         vector = []
-        #lattice = np.zeros_like(initial)
+        # lattice = np.zeros_like(initial)
         for cell_state, coordinate in zip(cell_states, coordinates):
             lattice = np.dot(self.supercell, cell_state)
             vector.append(np.array(coordinate) - lattice - initial)
