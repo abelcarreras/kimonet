@@ -1,14 +1,13 @@
 import numpy as np
 from kimonet.utils import minimum_distance_vector
 import inspect
-from collections import namedtuple
 from kimonet.utils.units import VAC_PERMITTIVITY
 
 
 foster_data = {}
 
 
-def compute_forster_coupling(donor, acceptor, conditions, supercell):
+def forster_coupling(donor, acceptor, conditions, supercell):
     """
     Compute Forster coupling in eV
 
@@ -82,20 +81,3 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 
-##########################################################################################
-#                                 FUNCTIONS DICTIONARY
-##########################################################################################
-
-Transfer = namedtuple("Transfer", ["initial", "final", "description"])
-
-# Transfer tuple format:
-# initial: tuple with the initial states of donor, acceptor for the transfer to occur (order is important!!)
-# final: tuple with the final states of the donor, acceptor once the transfer has occurred
-# description: string with some information about the transfer process
-
-
-functions_dict = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): compute_forster_coupling,
-                  # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
-                  # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
-                  # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
-                  }

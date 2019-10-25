@@ -2,10 +2,26 @@ from kimonet.system.generators import ordered_system, disordered_system
 from kimonet.analysis import Trajectory, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import update_system
-import unittest
+from kimonet.core.processes.couplings import forster_coupling
+from kimonet.core.processes.decays import einstein_singlet_decay
+from kimonet.core.processes import Transfer, Decay
+import kimonet.core.processes as processes
 
+import unittest
 import numpy as np
 np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
+
+
+processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
+                             }
+
+decay_scheme = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
+                # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
+                }
 
 
 def get_analytical_model(distance, dimension, transfer, decay):
@@ -28,7 +44,8 @@ class TestKimonet(unittest.TestCase):
 
         self.molecule = Molecule(state_energies={'gs': 0, 's1': 1},
                                  reorganization_energies={'gs': 0, 's1': 0.2},
-                                 transition_moment=[2.0, 0]  # transition dipole moment of the molecule (Debye)
+                                 transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                                 decays=decay_scheme
                                  )
 
         conditions = {'temperature': 273.15,            # temperature of the system (K)
@@ -85,7 +102,6 @@ class TestKimonet(unittest.TestCase):
                                            [32.767362, 25.171412]]
                }
 
-        self.assertDictEqual(ref, test)
 
         # This is just for visual comparison (not accounted in the test)
         from kimonet.core.processes import get_transfer_rates, get_decay_rates
@@ -100,3 +116,5 @@ class TestKimonet(unittest.TestCase):
         print('x:', data)
         data = get_analytical_model(self.parameters[1], analysis.n_dim, transfer_y, decay)
         print('y:', data)
+
+        self.assertDictEqual(ref, test)

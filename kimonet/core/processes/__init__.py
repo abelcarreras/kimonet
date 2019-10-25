@@ -1,6 +1,10 @@
 import numpy as np
-from kimonet.core.processes.coupling import functions_dict
 from kimonet.core.processes.fcwd import marcus_fcwd
+from collections import namedtuple
+
+
+Transfer = namedtuple("Transfer", ["initial", "final", "description"])
+Decay = namedtuple("Decay", ["initial", "final", "description"])
 
 
 def get_processes_and_rates(centre, system):
@@ -93,9 +97,17 @@ def get_allowed_processes(donor, acceptor):
     """
 
     allowed_couplings = {}
-    for coupling in functions_dict:
+    for coupling in transfer_scheme:
         if coupling.initial == (donor.electronic_state(), acceptor.electronic_state()):
-            allowed_couplings[coupling] = functions_dict[coupling]
+            allowed_couplings[coupling] = transfer_scheme[coupling]
 
     return allowed_couplings
 
+
+# Transfer tuple format:
+
+transfer_scheme = {# Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+          # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
+          # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
+          # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
+          }

@@ -2,17 +2,25 @@ from kimonet.system.generators import ordered_system, disordered_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import update_system
+from kimonet.core.processes.couplings import forster_coupling
+from kimonet.core.processes.decays import einstein_singlet_decay
+from kimonet.core.processes import Transfer, Decay
+import kimonet.core.processes as processes
+
 import numpy as np
-np.random.seed(0)  # for testing
+np.random.seed(1)  # for testing
 
 
-"""
-Generic molecule initialization
-Possible states: 
-    'gs': ground state 
-    's1': first singlet state 
-All energies must be given in eV. By default initialized at gs.
-"""
+processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
+                             }
+
+decay_scheme = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                # Decay(initial='s1', final='s2', description='test1'): einstein_singlet_decay,
+                # Decay(initial='s2', final='gs', description='test2'): einstein_singlet_decay,
+                }
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
@@ -26,7 +34,8 @@ reorganization_energies = {'gs': 0,
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[2.0, 0]  # transition dipole moment of the molecule (Debye)
+                    transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                    decays=decay_scheme
                     )
 
 #######################################################################################################################
@@ -76,7 +85,7 @@ for j in range(num_trajectories):
     system.reset()
 
     # print(trajectory.get_lifetime_ratio('s1'), trajectory.get_lifetime_ratio('s2'), trajectory.get_lifetime_ratio('s3'))
-    # print(trajectory.get_lifetime_ratio('s3'))
+    # print(trajectory.get_lifetime_ratio('s3'), trajectory.get_lifetime_ratio('s1') + trajectory.get_lifetime_ratio('s2'))
 
     trajectories.append(trajectory)
 
@@ -90,8 +99,8 @@ print('diffusion coefficient (average): {} angs^2/ns'.format(analysis.diffusion_
 print('diffusion coefficient (s1): {} angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
 
 print('lifetime: {} ns'.format(analysis.lifetime()))
-print('diffusion length: {} angs'.format(analysis.diffusion_length()))
 
+print('diffusion length: {} angs'.format(analysis.diffusion_length()))
 print('diffusion tensor')
 print(analysis.diffusion_coeff_tensor('s1'))
 print('diffusion length tensor')

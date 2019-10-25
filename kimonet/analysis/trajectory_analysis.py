@@ -84,7 +84,6 @@ class TrajectoryAnalysis:
                 if not np.isnan(diffusion_list).all():
                     sum_diff += np.nanmean(diffusion_list) * self.get_lifetime_ratio(s)
             return sum_diff
-
         return np.average([traj.get_lifetime(state) for traj in self.trajectories])
 
     def diffusion_length(self, state=None):
@@ -95,12 +94,15 @@ class TrajectoryAnalysis:
 
         :return:
         """
+        import warnings
+
         sum_diff = 0
         if state is None:
             for s in self.get_states():
                 diffusion_list = [traj.get_diffusion_length_square(s) for traj in self.trajectories]
                 if not np.isnan(diffusion_list).all():
                     sum_diff += np.nanmean(diffusion_list) * self.get_lifetime_ratio(s)
+
             return np.sqrt(sum_diff)
 
         length2 = np.nanmean([traj.get_diffusion_length_square(state) for traj in self.trajectories])

@@ -1,28 +1,7 @@
 import numpy as np
 from kimonet.utils import rotate_vector
 import copy
-from collections import namedtuple
-from kimonet.utils.units import DEBYE_TO_ANGS_EL, SPEED_OF_LIGHT, HBAR_PLANCK
-
-
-# Decay tuple
-# final: final state after dacay
-# description: any string with the description the decay
-Decay = namedtuple("Decay", ["initial", "final", "description"])
-
-
-# Decay functions
-def singlet_decay(molecule):
-    desexcitation_energy = molecule.state_energies[molecule.state] - molecule.state_energies['gs']
-    mu2 = np.dot(molecule.transition_moment, molecule.transition_moment)  # transition moment norm.
-    alpha = 1.0 / 137
-    return alpha * 4 * desexcitation_energy ** 3 * mu2 / (3 * SPEED_OF_LIGHT ** 2 * HBAR_PLANCK ** 3)
-
-
-decay_functions_dict = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): singlet_decay,
-                        # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
-                        # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
-                        }
+from kimonet.utils.units import DEBYE_TO_ANGS_EL
 
 
 class Molecule:
@@ -31,6 +10,7 @@ class Molecule:
                  state_energies,                # eV
                  reorganization_energies,       # eV
                  transition_moment,             # Debye
+                 decays=None,
                  state='gs',
                  coordinates=(0,),              # Angstrom
                  orientation=(0, 0, 0)):        # Rx, Ry, Rz (radians)
@@ -62,6 +42,8 @@ class Molecule:
         self.cell_state = np.zeros_like(coordinates, dtype=int)
 
         self.decay_dict = {}
+
+        self.decays = {} if decays is None else decays
 
     def __hash__(self):
         return hash((str(self.state_energies),
@@ -146,9 +128,9 @@ class Molecule:
             return self.decay_dict[self.state]
 
         decay_rates = {}
-        for coupling in decay_functions_dict:
+        for coupling in self.decays:
             if coupling.initial == self.state:
-                decay_rates[coupling] = decay_functions_dict[coupling](self)
+                decay_rates[coupling] = self.decays[coupling](self)
 
         self.decay_dict[self.state] = decay_rates
 

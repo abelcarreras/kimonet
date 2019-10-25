@@ -9,13 +9,8 @@ class Trajectory:
     def __init__(self, system):
         """
         Stores and analyzes the information of a kinetic MC trajectory
-
-        system: initial system
+        system: system
         """
-
-        #inipos = [[list(system.molecules[center].get_coordinates()),
-        #           system.molecules[center].state,
-        #           list(system.molecules[center].cell_state)] for center in system.centers]
 
         self.centers = [{'coordinates': [list(system.molecules[center].get_coordinates())],
                          'state': [system.molecules[center].state],
@@ -23,7 +18,6 @@ class Trajectory:
 
         self.times = [0]
         self.process = []
-        # self.exciton_altered = []
         self.supercell = system.supercell
         self.system = system
 
@@ -55,6 +49,7 @@ class Trajectory:
         continuous_sections = np.split(ordered_points, np.where(np.diff(ordered_points['position']) != 1)[0] + 1)
         if len(ordered_points) == 0:
             return [(np.array((0, 0), dtype=dtype), np.array((0, -1), dtype=dtype))]
+
         return [(seq[0], seq[-1]) for seq in continuous_sections]
 
     def add(self, change_step, time_step):
@@ -73,8 +68,6 @@ class Trajectory:
 
         self.center_track['{}'.format(change_step['acceptor'])] = self.center_track.pop('{}'.format(change_step['donor']))
 
-        # print('dict', self.center_track, self.center_track['{}'.format(self.system.centers[0])])
-
         for center in self.system.centers:
             i = self.center_track['{}'.format(center)]
             exciton_coordinates = list(self.system.molecules[center].get_coordinates())  # cartesian coordinates
@@ -87,8 +80,6 @@ class Trajectory:
 
             self.states.add(excited_state)
 
-        # print(self.centers[0]['cell_state'][-1])
-        # print('t:', len(self.times), len(self.centers[0]['state']))
         return
 
     def get_states(self):
@@ -152,6 +143,7 @@ class Trajectory:
 
     def _vector_list(self, state):
 
+        times = self.times + [self.times[-1]]
         t = []
         coordinates = []
         sections = self.get_ranges_from_label(state)
@@ -170,7 +162,7 @@ class Trajectory:
 
             coordinates += coord_per
 
-            t += list(np.array(self.times[ini['position']:fin['position']+1]) - self.times[ini['position']])
+            t += list(np.array(times[ini['position']:fin['position']+1]) - times[ini['position']])
 
         return np.array(coordinates).T, t
 
@@ -209,29 +201,25 @@ class Trajectory:
     def get_lifetime(self, state):
 
         sections = self.get_ranges_from_label(state)
+        times = self.times + [self.times[-1]]
 
         t = []
         for ini, fin in sections:
-            t.append(self.times[fin['position']+1] - self.times[ini['position']])
+            t.append(times[fin['position']+1] - times[ini['position']])
 
         return np.average(t)
 
     def get_lifetime_ratio(self, state):
 
+        times = self.times + [self.times[-1]]
         t_tot = 0
         for center in self.centers:
-            try:
-                t_tot += self.times[len(center['state'])]
-            except IndexError:
-                t_tot += self.times[-1]
+            t_tot += times[len(center['state'])]
 
         t = 0
         sections = self.get_ranges_from_label(state)
         for ini, fin in sections:
-            try:
-                t += self.times[fin['position']+1] - self.times[ini['position']]
-            except IndexError:
-                t += self.times[fin['position']] - self.times[ini['position']]
+            t += times[fin['position']+1] - times[ini['position']]
 
         return t/t_tot
 
@@ -245,12 +233,19 @@ class Trajectory:
             cell_states = self.centers[icenter]['cell_state'][ini['position']: fin['position']+1]
             initial = np.array(self.centers[icenter]['coordinates'][ini['position']])
 
+            if len(cell_states) == 0:
+                break
+
             lattice_diff = np.dot(self.supercell, cell_states[-1]) - np.dot(self.supercell, cell_states[0])
             distance_vector = self.centers[icenter]['coordinates'][fin['position']] - lattice_diff - initial
 
             distances.append(distance_vector)
 
-        return np.average([np.dot(vector, vector) for vector in distances])
+        dot_list = [np.dot(vector, vector) for vector in distances]
+        if len(dot_list) == 0:
+            return np.nan
+
+        return np.average(dot_list)
 
     def get_diffusion_length_square_tensor(self, state):
 

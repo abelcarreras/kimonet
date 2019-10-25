@@ -3,8 +3,23 @@ from kimonet.system.generators import ordered_system, disordered_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import update_system
+from kimonet.core.processes.couplings import forster_coupling
+from kimonet.core.processes.decays import einstein_singlet_decay
+from kimonet.core.processes import Transfer, Decay
+import kimonet.core.processes as processes
 import concurrent.futures as futures
 
+
+processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
+                             }
+
+decay_scheme = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
+                # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
+                }
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
@@ -16,7 +31,8 @@ reorganization_energies = {'gs': 0,
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[2.0, 0]  # transition dipole moment of the molecule (Debye)
+                    transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                    decays=decay_scheme
                     )
 
 #######################################################################################################################
@@ -59,7 +75,7 @@ def run_trajectory(system, index):
 
 
 # executor = futures.ThreadPoolExecutor(max_workers=4)
-executor = futures.ProcessPoolExecutor(max_workers=14)
+executor = futures.ProcessPoolExecutor()
 
 futures_list = []
 for i in range(num_trajectories):
