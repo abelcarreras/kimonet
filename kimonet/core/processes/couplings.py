@@ -113,4 +113,4 @@ def dexter_coupling(donor, acceptor, conditions, supercell):
 
     dexter_data[hash_string] = dexter_coupling                            # memory update for new couplings
 
-    return forster_coupling
+    return dexter_coupling

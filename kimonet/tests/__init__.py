@@ -85,19 +85,19 @@ class TestKimonet(unittest.TestCase):
 
         print('n_dim: ', analysis.n_dim)
 
-        test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient(), decimals=6),
-                'lifetime': np.around(analysis.lifetime(), decimals=6),
-                'diffusion length': np.around(analysis.diffusion_length(), decimals=6),
+        test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient('s1'), decimals=6),
+                'lifetime': np.around(analysis.lifetime('s1'), decimals=6),
+                'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=6),
                 'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=6).tolist(),
                 'diffusion length tensor': np.around(analysis.diffusion_length_tensor('s1'), decimals=6).tolist()
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 2.721624,
+        ref = {'diffusion coefficient': 2.713221,
                'lifetime': 1601.843545,
                'diffusion length': 129.200077,
-               'diffusion tensor': [[5.187157, 0.322335],
-                                    [0.322335, 0.256091]],
+               'diffusion tensor': [[5.169843, 0.318825],
+                                    [0.318825, 0.256599]],
                'diffusion length tensor': [[126.724347, 32.767362],
                                            [32.767362, 25.171412]]
                }

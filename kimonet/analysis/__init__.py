@@ -2,7 +2,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from kimonet.analysis.trajectory import Trajectory
+from kimonet.analysis.trajectory_graph import TrajectoryGraph as Trajectory
 from kimonet.analysis.trajectory_analysis import TrajectoryAnalysis
 
 

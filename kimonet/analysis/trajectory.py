@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 from mpl_toolkits.mplot3d import Axes3D  # Actually needed!
-import networkx as nx
 
 
 class Trajectory:
@@ -171,8 +170,10 @@ class Trajectory:
 
         vector, t = self._vector_list(state)
 
-        if len(vector) == 0:
-            return np.nan
+        #print('no_graph')
+        #print(vector.T)
+
+        # print(t)
 
         n_dim, n_length = vector.shape
 
@@ -237,6 +238,7 @@ class Trajectory:
             if len(cell_states) == 0:
                 break
 
+            # print('cell', cell_states[-1], cell_states[0])
             lattice_diff = np.dot(self.supercell, cell_states[-1]) - np.dot(self.supercell, cell_states[0])
             distance_vector = self.centers[icenter]['coordinates'][fin['position']] - lattice_diff - initial
 
@@ -276,85 +278,3 @@ class Trajectory:
 
         return np.average(tensor, axis=0)
 
-
-class TrajectoryGraph:
-    def __init__(self, system):
-        """
-        Stores and analyzes the information of a kinetic MC trajectory
-        system: system
-        """
-
-        self.node_count = len(system.centers)
-
-        self.G = nx.DiGraph()
-
-        for i, center in enumerate(system.centers):
-            self.G.add_node(i,
-                            coordinates=[list(system.molecules[center].get_coordinates())],
-                            state=system.molecules[center].state,
-                            cell_state=[list(system.molecules[center].cell_state)],
-                            time=[0],
-                            index=[center]
-                            )
-
-        self.supercell = system.supercell
-        self.system = system
-
-        self.n_dim = len(system.molecules[0].get_coordinates())
-        self.n_centers = len(system.centers)
-        self.labels = {}
-        self.times = [0]
-
-    def add(self, change_step, time_step):
-        """
-        Adds trajectory step
-
-        :param change_step: process occurred during time_step: {donor, process, acceptor}
-        :param time_step: duration of the chosen process
-        """
-
-        self.times.append(self.times[-1] + time_step)
-
-        end_points = [node for node in self.G.nodes if len(list(self.G.successors(node))) == 0]
-
-        process = change_step['process']
-        for i in end_points:
-            # print('-> ', self.G.nodes[i]['index'][-1], change_step['donor'])
-            node = self.G.nodes[i]
-            if node['index'][-1] == change_step['donor']:
-                # print(process[0], process[1])
-                # print('>--<', process['initial'])
-                if process[0][0] != process[1][1] and process[1][1] != 'gs':
-                    self.node_count += 1
-                    center = change_step['acceptor']
-
-                    self.G.add_edge(i, self.node_count)
-                    self.G.add_node(self.node_count,
-                                    coordinates=[list(self.system.molecules[center].get_coordinates())],
-                                    state=self.system.molecules[center].state,
-                                    cell_state=[list(self.system.molecules[center].cell_state)],
-                                    time=[self.times[-1]],
-                                    index=[center]
-                                    )
-
-                if process[0][0] != process[1][0] and process[1][0] != 'gs':
-                    self.node_count += 1
-                    center = change_step['donor']
-
-                    self.G.add_edge(i, self.node_count)
-                    self.G.add_node(self.node_count,
-                                    coordinates=[list(self.system.molecules[center].get_coordinates())],
-                                    state=self.system.molecules[center].state,
-                                    cell_state=[list(self.system.molecules[center].cell_state)],
-                                    time=[self.times[-1]],
-                                    index=[center]
-                                    )
-
-                if process[0][0] == process[1][1] and process[1][1] != 'gs':
-
-                    index = (change_step['acceptor'])
-                    node['index'].append(index)
-                    node['coordinates'].append(list(self.system.molecules[index].get_coordinates()))
-                    # nodei['state'].append(self.system.molecules[index].electronic_state())
-                    node['cell_state'].append(list(self.system.molecules[index].cell_state))
-                    node['time'].append(self.times[-1])

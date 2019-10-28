@@ -12,14 +12,15 @@ np.random.seed(1)  # for testing
 
 
 processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                             Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='Dexter'): dexter_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
+                             # Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='Dexter'): dexter_coupling,
+                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test2'): dexter_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test3'): dexter_coupling
                              }
 
 decay_scheme = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                # Decay(initial='s1', final='s2', description='test1'): einstein_singlet_decay,
-                # Decay(initial='s2', final='gs', description='test2'): einstein_singlet_decay,
+                Decay(initial='s1', final='s2', description='test1'): einstein_singlet_decay,
+                Decay(initial='s2', final='gs', description='test2'): einstein_singlet_decay,
                 }
 
 # excitation energies of the electronic states (eV)
@@ -73,19 +74,17 @@ system = system_1  # choose 1
 
 visualize_system(system)
 
-from kimonet.analysis.trajectory import TrajectoryGraph
 trajectories = []
 for j in range(num_trajectories):
 
     system.add_excitation_center('s1')
     # system.add_excitation_index('s1', 0)
-    # system.add_excitation_random('s2', 3)
+    system.add_excitation_random('s1', 3)
 
     # visualize_system(system)
 
     print('iteration: ', j)
     trajectory = Trajectory(system)
-    # trajectory = TrajectoryGraph(system)
 
     for i in range(max_steps):
 
@@ -103,31 +102,52 @@ for j in range(num_trajectories):
 
     system.reset()
 
-    # print(trajectory.get_lifetime_ratio('s1'), trajectory.get_lifetime_ratio('s2'), trajectory.get_lifetime_ratio('s3'))
-    # print(trajectory.get_lifetime_ratio('s3'), trajectory.get_lifetime_ratio('s1') + trajectory.get_lifetime_ratio('s2'))
+    #print(trajectory.get_lifetime_ratio('s1'), trajectory.get_lifetime_ratio('s2'), trajectory.get_lifetime_ratio('s3'))
+    #print(trajectory.get_lifetime_ratio('s3'), trajectory.get_lifetime_ratio('s1') + trajectory.get_lifetime_ratio('s2'))
+    #print('---')
+    #print(trajectoryg.get_lifetime('s3'))
+    #print(trajectoryg.get_lifetime_ratio('s1'), trajectoryg.get_lifetime_ratio('s2'), trajectoryg.get_lifetime_ratio('s3'))
+    #print(trajectoryg.get_lifetime_ratio('s3'), trajectoryg.get_lifetime_ratio('s1') + trajectoryg.get_lifetime_ratio('s2'))
+    #print('***')
+
+    # plt = trajectory.plot_distances('s1')
+    # plt.show()
 
     trajectories.append(trajectory)
 
+    #print('diff: ', trajectory.get_diffusion('s1'))
+    #print('diffT: ', trajectory.get_diffusion_tensor('s1'))
+    #print('diffTg: ', trajectoryg.get_diffusion_tensor('s1'))
+
+    #print('lengh: ', trajectory.get_diffusion_length_square('s1'))
+    #print('lT: \n', trajectory.get_diffusion_length_square_tensor('s1'))
+
+    #exit()
+
+
+    import networkx as nx
+    import matplotlib.pyplot as plt
+    # nx.draw_spring(trajectory.G, with_labels=True)
+    #plt.show()
+    # exit()
 
 # diffusion properties
 analysis = TrajectoryAnalysis(trajectories)
 
 print(analysis)
 
-print('diffusion coefficient (average): {} angs^2/ns'.format(analysis.diffusion_coefficient()))
 print('diffusion coefficient (s1): {} angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
-
-print('lifetime: {} ns'.format(analysis.lifetime()))
-
-print('diffusion length: {} angs'.format(analysis.diffusion_length()))
+print('lifetime: {} ns'.format(analysis.lifetime('s1')))
+print('diffusion length: {} angs'.format(analysis.diffusion_length('s1')))
 print('diffusion tensor')
 print(analysis.diffusion_coeff_tensor('s1'))
 print('diffusion length tensor')
 print(analysis.diffusion_length_tensor('s1'))
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
-plt = analysis.plot_2d()
+
+plt = analysis.plot_2d('s1')
 plt.figure()
-analysis.plot_distances()
+analysis.plot_distances('s1')
 
 plt.show()

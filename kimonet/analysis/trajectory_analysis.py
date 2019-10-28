@@ -106,14 +106,14 @@ class TrajectoryAnalysis:
         length2 = np.nanmean([traj.get_diffusion_length_square(state) for traj in self.trajectories])
         return np.sqrt(length2)
 
-    def plot_2d(self):
+    def plot_2d(self, state=None):
         plt = None
         for traj in self.trajectories:
-            plt = traj.plot_2d(0)
+            plt = traj.plot_2d(state)
         return plt
 
-    def plot_distances(self):
+    def plot_distances(self, state=None):
         plt = None
         for traj in self.trajectories:
-            plt = traj.plot_distances(0)
+            plt = traj.plot_distances(state)
         return plt

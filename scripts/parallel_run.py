@@ -88,9 +88,9 @@ for f in futures.as_completed(futures_list):
 
 analysis = TrajectoryAnalysis(trajectories)
 
-print('diffusion coefficient (average): {} angs^2/ns'.format(analysis.diffusion_coefficient()))
-print('lifetime: {} ns'.format(analysis.lifetime()))
-print('diffusion length: {} angs'.format(analysis.diffusion_length()))
+print('diffusion coefficient (average): {} angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
+print('lifetime: {} ns'.format(analysis.lifetime('s1')))
+print('diffusion length: {} angs'.format(analysis.diffusion_length('s1')))
 
 print('diffusion tensor')
 print(analysis.diffusion_coeff_tensor('s1'))
@@ -101,3 +101,4 @@ print(analysis.diffusion_length_tensor('s1'))
 plt = analysis.plot_2d()
 plt.figure()
 analysis.plot_distances()
+plt.show()
