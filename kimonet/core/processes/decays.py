@@ -9,3 +9,12 @@ def einstein_singlet_decay(molecule):
     alpha = 1.0 / 137
     return alpha * 4 * desexcitation_energy ** 3 * mu2 / (3 * SPEED_OF_LIGHT ** 2 * HBAR_PLANCK ** 3)
 
+
+def triplet_triplet_annihilation(molecule):
+    f = 1
+    ct = 1
+    ptta = 50
+    lifetime=10
+    a0=0.529177249
+    t=ct*a0**-3
+    return 1/(f*lifetime*t)*(1/ptta-1)**-1

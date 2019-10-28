@@ -1,7 +1,7 @@
 from kimonet.system.generators import regular_system
 from kimonet.analysis import Trajectory, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
-from kimonet import update_system
+from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
 from kimonet.core.processes import Transfer, Decay
@@ -69,7 +69,7 @@ class TestKimonet(unittest.TestCase):
             trajectory = Trajectory(self.system)
             for i in range(max_steps):
 
-                change_step, step_time = update_system(self.system)
+                change_step, step_time = do_simulation_step(self.system)
 
                 if self.system.is_finished:
                     break

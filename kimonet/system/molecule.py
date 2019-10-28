@@ -12,6 +12,7 @@ class Molecule:
                  transition_moment,             # Debye
                  decays=None,
                  state='gs',
+                 vdw_radius=1.0,                # Angstrom
                  coordinates=(0,),              # Angstrom
                  orientation=(0, 0, 0)):        # Rx, Ry, Rz (radians)
         """
@@ -40,10 +41,10 @@ class Molecule:
         self.coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
-
-        self.decay_dict = {}
+        self.vdw_radius = vdw_radius
 
         self.decays = {} if decays is None else decays
+        self.decay_dict = {}
 
     def __hash__(self):
         return hash((str(self.state_energies),
@@ -51,6 +52,9 @@ class Molecule:
                      str(self.reorganization_energies),
                      self.coordinates.tostring(),
                      self.orientation.tostring()))
+
+    def get_vdw_radius(self):
+        return self.vdw_radius
 
     def get_dim(self):
         return len(self.coordinates)

@@ -3,7 +3,7 @@ from kimonet.core.processes import get_processes_and_rates
 import warnings
 
 
-def update_system(system):
+def do_simulation_step(system):
     """
     :param system: Dictionary with all the information of the system
     Dictionary system already has the indexes of the excited molecules

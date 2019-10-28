@@ -1,8 +1,8 @@
 from kimonet.system.generators import regular_system, crystal_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
-from kimonet import update_system
-from kimonet.core.processes.couplings import forster_coupling
+from kimonet import do_simulation_step
+from kimonet.core.processes.couplings import forster_coupling, dexter_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
 from kimonet.core.processes import Transfer, Decay
 import kimonet.core.processes as processes
@@ -12,7 +12,7 @@ np.random.seed(1)  # for testing
 
 
 processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
+                             Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='Dexter'): dexter_coupling,
                              # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
                              # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
                              }
@@ -35,7 +35,8 @@ reorganization_energies = {'gs': 0,
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
                     transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
-                    decays=decay_scheme
+                    decays=decay_scheme,
+                    vdw_radius=1.7
                     )
 
 #######################################################################################################################
@@ -43,7 +44,8 @@ molecule = Molecule(state_energies=state_energies,
 # physical conditions of the system (as a dictionary)
 conditions = {'temperature': 273.15,            # temperature of the system (K)
               'refractive_index': 1,            # refractive index of the material (adimensional)
-              'cutoff_radius': 3.1}             # maximum interaction distance (Angstroms)
+              'cutoff_radius': 3.1,             # maximum interaction distance (Angstroms)
+              'dexter_k': 1.0}                  # eV
 
 #######################################################################################################################
 
@@ -71,7 +73,7 @@ system = system_1  # choose 1
 
 visualize_system(system)
 
-
+from kimonet.analysis.trajectory import TrajectoryGraph
 trajectories = []
 for j in range(num_trajectories):
 
@@ -83,9 +85,11 @@ for j in range(num_trajectories):
 
     print('iteration: ', j)
     trajectory = Trajectory(system)
+    # trajectory = TrajectoryGraph(system)
+
     for i in range(max_steps):
 
-        change_step, step_time = update_system(system)
+        change_step, step_time = do_simulation_step(system)
 
         if system.is_finished:
             break

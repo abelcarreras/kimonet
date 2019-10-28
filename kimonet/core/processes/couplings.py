@@ -5,6 +5,7 @@ from kimonet.utils.units import VAC_PERMITTIVITY
 
 
 foster_data = {}
+dexter_data = {}
 
 
 def forster_coupling(donor, acceptor, conditions, supercell):
@@ -15,7 +16,7 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     :param acceptor: neighbouring molecule. Possible acceptor
     :param conditions: dictionary with physical conditions
     :param supercell: the supercell of the system
-    :return: Forster coupling between both molecules. We don't implement any correction for short distances.
+    :return: Forster coupling
     """
 
     function_name = inspect.currentframe().f_code.co_name
@@ -81,3 +82,35 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 
+def dexter_coupling(donor, acceptor, conditions, supercell):
+    """
+    Compute Dexter coupling in eV
+
+    :param donor: excited molecules. Donor
+    :param acceptor: neighbouring molecule. Possible acceptor
+    :param conditions: dictionary with physical conditions
+    :param supercell: the supercell of the system
+    :return: Dexter coupling
+    """
+
+    function_name = inspect.currentframe().f_code.co_name
+
+    # donor <-> acceptor interaction symmetry
+    hash_string = str(hash((donor, function_name)) + hash((acceptor, function_name)))
+    # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
+
+    if hash_string in dexter_data:
+        return dexter_data[hash_string]
+
+    r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
+    r_vector, _ = minimum_distance_vector(r_vector, supercell)
+
+    distance = np.linalg.norm(r_vector)
+
+    k_factor = conditions['dexter_k']
+    vdw_radius_sum = donor.get_vdw_radius() + acceptor.get_vdw_radius()
+    dexter_coupling = k_factor * np.exp(-2 * distance / vdw_radius_sum)
+
+    dexter_data[hash_string] = dexter_coupling                            # memory update for new couplings
+
+    return forster_coupling
