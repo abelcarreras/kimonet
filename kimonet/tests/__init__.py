@@ -74,7 +74,7 @@ class TestKimonet(unittest.TestCase):
                 if self.system.is_finished:
                     break
 
-                trajectory.add(change_step, step_time)
+                trajectory.add_step(change_step, step_time)
 
             self.system.reset()
 

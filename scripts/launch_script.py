@@ -11,16 +11,16 @@ import numpy as np
 np.random.seed(1)  # for testing
 
 
-processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                             # Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='Dexter'): dexter_coupling,
-                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test2'): dexter_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test3'): dexter_coupling
+processes.transfer_scheme = {
+                             # Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
+                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
+                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='test2'): forster_coupling,
+                             # Transfer(initial=('s2', 's2'), final=('s1', 'gs'), description='test3'): dexter_coupling
                              }
 
-decay_scheme = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s1', final='s2', description='test1'): einstein_singlet_decay,
-                Decay(initial='s2', final='gs', description='test2'): einstein_singlet_decay,
+decay_scheme = {
+                Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                Decay(initial='s2', final='s1', description='test1'): einstein_singlet_decay
                 }
 
 # excitation energies of the electronic states (eV)
@@ -51,7 +51,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 #######################################################################################################################
 
 num_trajectories = 50                          # number of trajectories that will be simulated
-max_steps = 100000                              # maximum number of steps for trajectory allowed
+max_steps = 100                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
                           molecule=molecule,
@@ -79,7 +79,7 @@ for j in range(num_trajectories):
 
     system.add_excitation_center('s1')
     # system.add_excitation_index('s1', 0)
-    system.add_excitation_random('s1', 3)
+    system.add_excitation_random('s2', 1)
 
     # visualize_system(system)
 
@@ -93,7 +93,7 @@ for j in range(num_trajectories):
         if system.is_finished:
             break
 
-        trajectory.add(change_step, step_time)
+        trajectory.add_step(change_step, step_time)
 
         # visualize_system(system)
 
@@ -110,8 +110,8 @@ for j in range(num_trajectories):
     #print(trajectoryg.get_lifetime_ratio('s3'), trajectoryg.get_lifetime_ratio('s1') + trajectoryg.get_lifetime_ratio('s2'))
     #print('***')
 
-    # plt = trajectory.plot_distances('s1')
-    # plt.show()
+    plt = trajectory.plot_distances('s1')
+    plt.show()
 
     trajectories.append(trajectory)
 
@@ -124,11 +124,8 @@ for j in range(num_trajectories):
 
     #exit()
 
+    trajectory.plot_graph()
 
-    import networkx as nx
-    import matplotlib.pyplot as plt
-    # nx.draw_spring(trajectory.G, with_labels=True)
-    #plt.show()
     # exit()
 
 # diffusion properties

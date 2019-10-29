@@ -2,8 +2,11 @@ from kimonet.core.processes import Transfer
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from scipy import stats
 import warnings
+
+_ground_state_ = 'gs'
 
 
 class TrajectoryGraph:
@@ -24,9 +27,9 @@ class TrajectoryGraph:
                                 cell_state=[list(system.molecules[center].cell_state)],
                                 time=[0],
                                 event_time=0,
-                                index=[center]
+                                index=[center],
+                                finished=False,
                                 )
-            # print(system.molecules[center].state)
 
         self.supercell = system.supercell
         self.system = system
@@ -40,16 +43,44 @@ class TrajectoryGraph:
         for center in system.centers:
             self.states.add(system.molecules[center].state)
 
-    def _close_donor(self, change_step, node):
-        # Close donor
-        index = (change_step['donor'])
-        node['index'].append(index)
-        node['coordinates'].append(list(self.system.molecules[index].get_coordinates()))
-        node['time'].append(self.times[-1] - node['event_time'])
-        node['cell_state'].append(node['cell_state'][-1])
-        node['finished'] = True
+    def _finish_node(self, inode):
 
-    def add(self, change_step, time_step):
+        node = self.graph.nodes[inode]
+        if not node['finished']:
+            # index = change_step['donor']
+            node['index'].append(node['index'][-1])
+            node['coordinates'].append(node['coordinates'][-1])
+            node['time'].append(self.times[-1] - node['event_time'])
+            node['cell_state'].append(node['cell_state'][-1])
+            node['finished'] = True
+
+    def _add_node(self, from_node, new_on_molecule):
+
+        if self.system.molecules[new_on_molecule].state == 'gs':
+            print('state', self.system.molecules[new_on_molecule].state)
+            exit()
+        self.graph.add_edge(from_node, self.node_count)
+        self.graph.add_node(self.node_count,
+                            coordinates=[list(self.system.molecules[new_on_molecule].get_coordinates())],
+                            state=self.system.molecules[new_on_molecule].state,
+                            cell_state=[list(self.system.molecules[new_on_molecule].cell_state)],
+                            # cell_state=[[0, 0]],
+                            time=[0],
+                            event_time=self.times[-1],
+                            index=[new_on_molecule],
+                            finished=False
+                            )
+        self.node_count += 1
+
+    def _append_node(self, from_node, link_to_molecule):
+        node = self.graph.nodes[from_node]
+
+        node['index'].append(link_to_molecule)
+        node['coordinates'].append(list(self.system.molecules[link_to_molecule].get_coordinates()))
+        node['cell_state'].append(list(self.system.molecules[link_to_molecule].cell_state))
+        node['time'].append(self.times[-1] - node['event_time'])
+
+    def add_step(self, change_step, time_step):
         """
         Adds trajectory step
 
@@ -60,94 +91,121 @@ class TrajectoryGraph:
         self.times.append(self.times[-1] + time_step)
 
         end_points = [node for node in self.graph.nodes
-                      if len(list(self.graph.successors(node))) == 0 and not 'finished' in self.graph.nodes[node]]
+                      if len(list(self.graph.successors(node))) == 0 and not self.graph.nodes[node]['finished']]
+
+        node_link = {'donor': None, 'acceptor': None}
+        for inode in end_points:
+            node = self.graph.nodes[inode]
+            if node['index'][-1] == change_step['donor']:
+                node_link['donor'] = inode
+            if node['index'][-1] == change_step['acceptor']:
+                node_link['acceptor'] = inode
 
         process = change_step['process']
-        for i in end_points:
-            # print('-> ', self.G.nodes[i]['index'][-1], change_step['donor'])
-            node = self.graph.nodes[i]
-            if node['index'][-1] == change_step['donor']:
 
-                # print(process[0], process[1])
-                # print('>--<', process[0][0], process[1][1])
-                if type(process.initial) != str:
-                    # Intermolecular process
-                    if process.initial[0] != process.final[1] and process.final[1] != 'gs':
-                        # s1, X  -> s2, X
+        if change_step['donor'] == change_step['acceptor']:
+            # Intramolecular conversion
+            self._finish_node(node_link['donor'])
 
-                        # Close donor
-                        self._close_donor(change_step, node)
+            # Check if not ground state
+            final_state = self.system.molecules[change_step['acceptor']].state
+            if final_state != _ground_state_:
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['acceptor'])
 
-                        index = change_step['acceptor']
+        else:
+            # Intermolecular process
+            if process.initial[0] == process.final[1] and process.final[1] != _ground_state_:
+                # s1, X  -> X, s1
+                # Simple transfer
+                self._append_node(from_node=node_link['donor'],
+                                  link_to_molecule=change_step['acceptor'])
 
-                        self.graph.add_edge(i, self.node_count)
-                        self.graph.add_node(self.node_count,
-                                            coordinates=[list(self.system.molecules[index].get_coordinates())],
-                                            state=self.system.molecules[index].state,
-                                            cell_state=[list(self.system.molecules[index].cell_state)],
-                                            #cell_state=[[0, 0]],
-                                            time=[0],
-                                            event_time=self.times[-1],
-                                            index=[index]
-                                            )
-                        self.node_count += 1
+            if (process.initial[0] != process.final[1]
+                    and process.initial[0] != _ground_state_ and process.final[1] != _ground_state_
+                    and process.final[0] == _ground_state_ and process.initial[1] == _ground_state_):
+                # s1, X  -> X, s2
+                # Transfer with change
+                self._finish_node(node_link['donor'])
 
-                    if process.initial[0] != process.final[0] and process.final[0] != 'gs':
-                        # s1, X  -> X, s2
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['acceptor'])
 
-                        # Close donor
-                        self._close_donor(change_step, node)
+            if (process.initial[0] != process.final[0] and process.initial[0] != process.final[1]
+                    and process.initial[0] != _ground_state_
+                    and process.final[0] != _ground_state_
+                    and process.final[1] != _ground_state_
+                    and process.initial[1] == _ground_state_):
+                # s1, X  -> s2, s3
+                # Exciton splitting
 
-                        index = change_step['acceptor']
+                self._finish_node(node_link['donor'])
 
-                        self.graph.add_edge(i, self.node_count)
-                        self.graph.add_node(self.node_count,
-                                            coordinates=[list(self.system.molecules[index].get_coordinates())],
-                                            state=self.system.molecules[index].state,
-                                            cell_state=[list(self.system.molecules[index].cell_state)],
-                                            #cell_state=[[0, 0]],
-                                            time=[0],
-                                            event_time=self.times[-1],
-                                            index=[index]
-                                            )
-                        self.node_count += 1
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['donor'])
 
-                    if process.initial[0] == process.final[1] and process.final[1] != 'gs':
-                        # s1, X  -> X, s1
-                        # print('->', process.initial[0], process.final[1])
-                        # print(process)
-                        index = (change_step['acceptor'])
-                        node['index'].append(index)
-                        node['coordinates'].append(list(self.system.molecules[index].get_coordinates()))
-                        # nodei['state'].append(self.system.molecules[index].electronic_state())
-                        node['cell_state'].append(list(self.system.molecules[index].cell_state))
-                        node['time'].append(self.times[-1] - node['event_time'])
-                        # print('->', i, list(self.system.molecules[index].cell_state))
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['acceptor'])
 
-                        # print('jeje', np.linalg.norm(np.array(node['cell_state'][-1]) - np.array(node['cell_state'][-2])))
-                        #if np.linalg.norm(np.array(node['cell_state'][-1]) - np.array(node['cell_state'][-2])) > 2:
-                        #    print('here:', node['cell_state'][-1], node['cell_state'][-2])
-                        #    print(process, node['state'])
-                        #    exit()
-                else:
-                    # Close donor
-                    self._close_donor(change_step, node)
+            if (process.initial[0] != process.final[0] and process.initial[1] != process.final[0]
+                    and process.initial[0] != _ground_state_
+                    and process.initial[1] != _ground_state_
+                    and process.final[0] != _ground_state_
+                    and process.final[1] == _ground_state_):
+                # s1, s2  ->  X, s3
+                # Exciton merge type 1
 
-                    # Intramolecular conversion
-                    if process.initial != process.final and process.final != 'gs':
-                        index = change_step['acceptor']
-                        # print(process.initial, '>>>', process.final)
-                        self.graph.add_edge(i, self.node_count)
-                        self.graph.add_node(self.node_count,
-                                            coordinates=[list(self.system.molecules[index].get_coordinates())],
-                                            state=self.system.molecules[index].state,
-                                            cell_state=[list(self.system.molecules[index].cell_state)],
-                                            # cell_state=[[0, 0]],
-                                            event_time=self.times[-1],
-                                            time=[0],
-                                            index=[index]
-                                            )
-                        self.node_count += 1
+                self._finish_node(node_link['donor'])
+                self._finish_node(node_link['acceptor'])
+
+                print('C2')
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['acceptor'])
+
+                self.graph.add_edge(node_link['acceptor'], self.node_count-1)
+
+            if (process.initial[0] != process.final[0] and process.initial[1] != process.final[0]
+                    and process.initial[0] != _ground_state_
+                    and process.initial[1] != _ground_state_
+                    and process.final[0] != _ground_state_
+                    and process.final[1] == _ground_state_):
+                # s1, s2  ->  s3, X
+                # Exciton merge type 2
+
+                self._finish_node(node_link['donor'])
+                self._finish_node(node_link['acceptor'])
+
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['donor'])
+
+                self.graph.add_edge(node_link['acceptor'], self.node_count-1)
+
+    def plot_graph(self):
+
+        cmap = cm.get_cmap('Spectral')
+
+        colors_map = {}
+        node_map = {}
+        for i, state in enumerate(self.get_states()):
+            colors_map[state] = cmap(0.1+i/len(self.get_states()))
+            node_map[state] = []
+
+        for node in self.graph:
+            state = self.graph.nodes[node]['state']
+            node_map[state].append(node)
+
+        pos = nx.spring_layout(self.graph)
+        for state in self.get_states():
+            nx.draw_networkx_nodes(self.graph,
+                                   pos=pos,
+                                   nodelist=node_map[state],
+                                   node_color=colors_map[state],
+                                   label=state)
+        nx.draw_networkx_edges(self.graph, pos=pos)
+        nx.draw_networkx_labels(self.graph, pos=pos)
+        plt.legend()
+
+        plt.show()
 
     def get_states(self):
         return self.states

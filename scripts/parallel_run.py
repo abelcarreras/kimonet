@@ -68,7 +68,7 @@ def run_trajectory(system, index):
         if system.is_finished:
             break
 
-        trajectory.add(change_step, step_time)
+        trajectory.add_step(change_step, step_time)
 
     print('trajectory {} done!'.format(index))
     return trajectory
