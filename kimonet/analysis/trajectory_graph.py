@@ -54,12 +54,13 @@ class TrajectoryGraph:
             node['cell_state'].append(node['cell_state'][-1])
             node['finished'] = True
 
-    def _add_node(self, from_node, new_on_molecule):
+    def _add_node(self, from_node, new_on_molecule, process_label=None):
 
-        if self.system.molecules[new_on_molecule].state == 'gs':
-            print('state', self.system.molecules[new_on_molecule].state)
+        if self.system.molecules[new_on_molecule].state == _ground_state_:
+            print('Error in state: ', self.system.molecules[new_on_molecule].state)
             exit()
-        self.graph.add_edge(from_node, self.node_count)
+
+        self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
                             coordinates=[list(self.system.molecules[new_on_molecule].get_coordinates())],
                             state=self.system.molecules[new_on_molecule].state,
@@ -111,7 +112,8 @@ class TrajectoryGraph:
             final_state = self.system.molecules[change_step['acceptor']].state
             if final_state != _ground_state_:
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'])
+                               new_on_molecule=change_step['acceptor'],
+                               process_label=process.description)
 
         else:
             # Intermolecular process
@@ -129,7 +131,8 @@ class TrajectoryGraph:
                 self._finish_node(node_link['donor'])
 
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'])
+                               new_on_molecule=change_step['acceptor'],
+                               process_label=process.description)
 
             if (process.initial[0] != process.final[0] and process.initial[0] != process.final[1]
                     and process.initial[0] != _ground_state_
@@ -142,27 +145,29 @@ class TrajectoryGraph:
                 self._finish_node(node_link['donor'])
 
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['donor'])
+                               new_on_molecule=change_step['donor'],
+                               process_label=process.description)
 
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'])
+                               new_on_molecule=change_step['acceptor'],
+                               process_label=process.description)
 
-            if (process.initial[0] != process.final[0] and process.initial[1] != process.final[0]
+            if (process.initial[0] != process.final[1] and process.initial[1] != process.final[1]
                     and process.initial[0] != _ground_state_
                     and process.initial[1] != _ground_state_
-                    and process.final[0] != _ground_state_
-                    and process.final[1] == _ground_state_):
+                    and process.final[0] == _ground_state_
+                    and process.final[1] != _ground_state_):
                 # s1, s2  ->  X, s3
                 # Exciton merge type 1
 
                 self._finish_node(node_link['donor'])
                 self._finish_node(node_link['acceptor'])
 
-                print('C2')
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'])
+                               new_on_molecule=change_step['acceptor'],
+                               process_label=process.description)
 
-                self.graph.add_edge(node_link['acceptor'], self.node_count-1)
+                self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
 
             if (process.initial[0] != process.final[0] and process.initial[1] != process.final[0]
                     and process.initial[0] != _ground_state_
@@ -176,9 +181,10 @@ class TrajectoryGraph:
                 self._finish_node(node_link['acceptor'])
 
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['donor'])
+                               new_on_molecule=change_step['donor'],
+                               process_label=process.description)
 
-                self.graph.add_edge(node_link['acceptor'], self.node_count-1)
+                self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
 
     def plot_graph(self):
 
@@ -194,7 +200,8 @@ class TrajectoryGraph:
             state = self.graph.nodes[node]['state']
             node_map[state].append(node)
 
-        pos = nx.spring_layout(self.graph)
+        #pos = nx.spring_layout(self.graph)
+        pos = nx.drawing.nx_agraph.graphviz_layout(self.graph, prog='dot')
         for state in self.get_states():
             nx.draw_networkx_nodes(self.graph,
                                    pos=pos,

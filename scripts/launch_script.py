@@ -12,10 +12,10 @@ np.random.seed(1)  # for testing
 
 
 processes.transfer_scheme = {
-                             # Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='test2'): forster_coupling,
-                             # Transfer(initial=('s2', 's2'), final=('s1', 'gs'), description='test3'): dexter_coupling
+                             Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
+                             Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
+                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='test2'): lambda x, y, z, k: 1.0,
+                             Transfer(initial=('s2', 's2'), final=('gs', 's1'), description='test3'): lambda x, y, z, k: 1.0
                              }
 
 decay_scheme = {
