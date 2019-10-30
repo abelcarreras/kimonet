@@ -14,13 +14,13 @@ np.random.seed(1)  # for testing
 processes.transfer_scheme = {
                              Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
                              Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='test2'): lambda x, y, z, k: 1.0,
-                             Transfer(initial=('s2', 's2'), final=('gs', 's1'), description='test3'): lambda x, y, z, k: 1.0
+                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 0.1,
+                             Transfer(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 0.1
                              }
 
 decay_scheme = {
                 Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s2', final='s1', description='test1'): einstein_singlet_decay
+                Decay(initial='s2', final='gs', description='test1'): einstein_singlet_decay
                 }
 
 # excitation energies of the electronic states (eV)
@@ -51,7 +51,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 #######################################################################################################################
 
 num_trajectories = 50                          # number of trajectories that will be simulated
-max_steps = 100                              # maximum number of steps for trajectory allowed
+max_steps = 549                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
                           molecule=molecule,
@@ -102,6 +102,9 @@ for j in range(num_trajectories):
 
     system.reset()
 
+    # plt = trajectory.plot_2d()
+    #plt = trajectory.plot_2d('s2')
+    # plt.show()
     #print(trajectory.get_lifetime_ratio('s1'), trajectory.get_lifetime_ratio('s2'), trajectory.get_lifetime_ratio('s3'))
     #print(trajectory.get_lifetime_ratio('s3'), trajectory.get_lifetime_ratio('s1') + trajectory.get_lifetime_ratio('s2'))
     #print('---')
@@ -110,8 +113,8 @@ for j in range(num_trajectories):
     #print(trajectoryg.get_lifetime_ratio('s3'), trajectoryg.get_lifetime_ratio('s1') + trajectoryg.get_lifetime_ratio('s2'))
     #print('***')
 
-    plt = trajectory.plot_distances('s1')
-    plt.show()
+    # plt = trajectory.plot_distances('s1')
+    # plt.show()
 
     trajectories.append(trajectory)
 
@@ -145,6 +148,11 @@ print(analysis.diffusion_length_tensor('s1'))
 
 plt = analysis.plot_2d('s1')
 plt.figure()
+plt = analysis.plot_2d('s2')
+plt.figure()
 analysis.plot_distances('s1')
+plt.figure()
+analysis.plot_distances('s2')
+
 
 plt.show()

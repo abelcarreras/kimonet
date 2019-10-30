@@ -62,6 +62,7 @@ def update_step(chosen_process, system):
         system.add_excitation_index(donor_state, chosen_process['donor'])  # des excitation of the donor
         system.add_excitation_index(acceptor_state, chosen_process['acceptor'])  # excitation of the acceptor
         system.molecules[chosen_process['acceptor']].cell_state = system.molecules[chosen_process['donor']].cell_state - chosen_process['cell_increment']
+
         # system.molecules[chosen_process['donor']].cell_state *= 0
 
         if chosen_process['process'].final[0] == 'gs':

@@ -32,7 +32,7 @@ def visualize_system(system):
               's1': 'green',
               't1': 'orange'}
 
-    for molecule in system.molecules:
+    for i, molecule in enumerate(system.molecules):
         c = molecule.coordinates
         o = molecule.get_transition_moment()
 
@@ -40,6 +40,7 @@ def visualize_system(system):
             ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state])
         if ndim == 2:
             ax.quiver(c[0], c[1], o[0], o[1], color=colors[molecule.state])
+            ax.text(c[0], c[1], '{}'.format(i), fontsize=12)
         if ndim == 3:
             ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=False, color=colors[molecule.state])
             # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
