@@ -19,9 +19,10 @@ processes.transfer_scheme = {
                              }
 
 decay_scheme = {
-                Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s2', final='gs', description='test1'): einstein_singlet_decay
-                }
+                # Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                Decay(initial='s1', final='gs', description='test1'): lambda x: 1/30,
+                # Decay(initial='s2', final='gs', description='test1'): lambda x: 1/30
+}
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
@@ -51,7 +52,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 #######################################################################################################################
 
 num_trajectories = 50                          # number of trajectories that will be simulated
-max_steps = 549                              # maximum number of steps for trajectory allowed
+max_steps = 10000                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
                           molecule=molecule,
@@ -79,7 +80,7 @@ for j in range(num_trajectories):
 
     system.add_excitation_center('s1')
     # system.add_excitation_index('s1', 0)
-    system.add_excitation_random('s2', 1)
+    system.add_excitation_random('s2', 2)
 
     # visualize_system(system)
 
@@ -127,7 +128,9 @@ for j in range(num_trajectories):
 
     #exit()
 
-    trajectory.plot_graph()
+    # trajectory.plot_graph()
+    # plt = trajectory.plot_number_of_excitons()
+    # plt.show()
 
     # exit()
 
@@ -145,7 +148,8 @@ print('diffusion length tensor')
 print(analysis.diffusion_length_tensor('s1'))
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
-
+plt = analysis.plot_excitations()
+plt.figure()
 plt = analysis.plot_2d('s1')
 plt.figure()
 plt = analysis.plot_2d('s2')

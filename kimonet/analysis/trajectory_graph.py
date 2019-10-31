@@ -9,6 +9,13 @@ import warnings
 _ground_state_ = 'gs'
 
 
+def count_keys_dict(dictionary, key):
+    if key in dictionary:
+        dictionary[key] += 1
+    else:
+        dictionary[key] = 1
+
+
 class TrajectoryGraph:
     def __init__(self, system):
         """
@@ -40,8 +47,12 @@ class TrajectoryGraph:
         self.times = [0]
 
         self.states = set()
+        ce = {}
         for center in system.centers:
-            self.states.add(system.molecules[center].state)
+            state = system.molecules[center].state
+            self.states.add(state)
+            count_keys_dict(ce, state)
+        self.current_excitons = [ce]
 
     def _finish_node(self, inode):
 
@@ -80,8 +91,6 @@ class TrajectoryGraph:
         node['coordinates'].append(list(self.system.molecules[link_to_molecule].get_coordinates()))
         node['cell_state'].append(list(self.system.molecules[link_to_molecule].cell_state))
         node['time'].append(self.times[-1] - node['event_time'])
-
-
 
     def add_step(self, change_step, time_step):
         """
@@ -193,8 +202,13 @@ class TrajectoryGraph:
 
                 self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
 
+        ce = {}
         for center in self.system.centers:
-            self.states.add(self.system.molecules[center].state)
+            state = self.system.molecules[center].state
+            self.states.add(state)
+            count_keys_dict(ce, state)
+
+        self.current_excitons.append(ce)
 
     def plot_graph(self):
 
@@ -232,6 +246,9 @@ class TrajectoryGraph:
 
     def get_graph(self):
         return self.graph
+
+    def get_times(self):
+        return self.times
 
     def _vector_list(self, state):
         node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == state]
@@ -290,6 +307,43 @@ class TrajectoryGraph:
 
         return np.array(tensor_x)/2
 
+    def get_number_of_cumulative_excitons(self, state=None):
+        time = []
+        node_count = []
+        print('THis is wrong!!, accumulated')
+        for node in self.graph.nodes:
+            time.append(self.graph.nodes[node]['event_time'])
+            if state is not None:
+                if self.graph.nodes[node]['event_time'] == state:
+                    node_count.append(node_count[-1]+1)
+            else:
+                node_count.append(node)
+        return time, node_count
+
+    def get_number_of_excitons(self, state=None):
+        excitations_count = []
+        for t, status in zip(self.times, self.current_excitons):
+            if state is None:
+                excitations_count.append(np.sum(list(status.values())))
+            else:
+                if state in status:
+                    excitations_count.append(status[state])
+                else:
+                    excitations_count.append(0)
+
+        return excitations_count
+
+    def plot_number_of_cumulative_excitons(self, state=None):
+        t, n = self.get_number_of_cumulative_excitons(state)
+        plt.plot(t, n, '-o')
+        return plt
+
+    def plot_number_of_excitons(self, state=None):
+        n = self.get_number_of_excitons(state)
+        plt.plot(self.times, n, '-o')
+        return plt
+
+
     def get_number_of_nodes(self):
         return self.graph.number_of_nodes()
 
@@ -330,6 +384,7 @@ class TrajectoryGraph:
             return plt
 
         # plt.plot(coordinates[0], coordinates[1], '-o')
+        plt.title('exciton trajectories ({})'.format(state))
 
         return plt
 
@@ -369,6 +424,7 @@ class TrajectoryGraph:
         vector = np.linalg.norm(vector, axis=0)
 
         # print(t)
+        plt.title('diffusion distances ({})'.format(state))
         plt.plot(t, vector, '.')
 
         return plt

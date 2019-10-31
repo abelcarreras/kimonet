@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 class TrajectoryAnalysis:
 
@@ -119,3 +119,22 @@ class TrajectoryAnalysis:
         for traj in self.trajectories:
             plt = traj.plot_distances(state)
         return plt
+
+    def plot_excitations(self, state=None):
+
+        time_max = np.max([traj.get_times()[-1] for traj in self.trajectories]) * 1.1
+        t_range = np.linspace(0, time_max, 50)
+
+        ne_interp = []
+        for traj in self.trajectories:
+            ne = traj.get_number_of_excitons(state)
+            t = traj.get_times()
+            ne_interp.append(np.interp(t_range, t, ne, right=0))
+
+        plt.title('Averaged excitatons number ({})'.format(state))
+        plt.ylim(bottom=0, top=np.max(ne_interp))
+        plt.xlim(left=0, right=time_max)
+        plt.plot(t_range, np.average(ne_interp, axis=0))
+        return plt
+
+
