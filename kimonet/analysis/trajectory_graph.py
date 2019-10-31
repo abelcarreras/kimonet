@@ -280,8 +280,8 @@ class TrajectoryGraph:
 
         return np.array(tensor_x)/2
 
-    def get_number_of_centers(self):
-        return 1
+    def get_number_of_nodes(self):
+        return self.graph.number_of_nodes()
 
     def plot_2d(self, state=None, supercell_only=False):
 

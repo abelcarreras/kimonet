@@ -5,7 +5,6 @@ class TrajectoryAnalysis:
 
     def __init__(self, trajectories):
         self.trajectories = trajectories
-        self.n_centers = trajectories[0].get_number_of_centers()
         self.n_dim = trajectories[0].get_dimension()
         self.n_traj = len(trajectories)
 
@@ -20,10 +19,13 @@ class TrajectoryAnalysis:
         txt_data += '------------------------------\n'
         txt_data += 'Number of trajectories: {}\n'.format(self.n_traj)
         txt_data += 'Dimension: {}\n'.format(self.n_dim)
-        txt_data += 'Number of centers: {}\n'.format(self.n_centers)
+        txt_data += 'Number of nodes: {}\n'.format(self.get_number_of_nodes())
         txt_data += 'States: {}\n'.format(self.states)
 
         return txt_data
+
+    def get_number_of_nodes(self):
+        return len([traj.get_number_of_nodes() for traj in self.trajectories])
 
     def get_states(self):
         return self.states
