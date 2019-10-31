@@ -81,6 +81,8 @@ class TrajectoryGraph:
         node['cell_state'].append(list(self.system.molecules[link_to_molecule].cell_state))
         node['time'].append(self.times[-1] - node['event_time'])
 
+
+
     def add_step(self, change_step, time_step):
         """
         Adds trajectory step
@@ -88,6 +90,9 @@ class TrajectoryGraph:
         :param change_step: process occurred during time_step: {donor, process, acceptor}
         :param time_step: duration of the chosen process
         """
+        # print(change_step)
+        # print(self.system.molecules[change_step['donor']].get_coordinates(), self.system.molecules[change_step['acceptor']].get_coordinates())
+        # print(self.system.molecules[change_step['donor']].cell_state, self.system.molecules[change_step['acceptor']].cell_state)
 
         self.times.append(self.times[-1] + time_step)
 
@@ -120,6 +125,7 @@ class TrajectoryGraph:
             if process.initial[0] == process.final[1] and process.final[1] != _ground_state_:
                 # s1, X  -> X, s1
                 # Simple transfer
+                # print('C1')
                 self._append_node(from_node=node_link['donor'],
                                   link_to_molecule=change_step['acceptor'])
 
@@ -128,6 +134,7 @@ class TrajectoryGraph:
                     and process.final[0] == _ground_state_ and process.initial[1] == _ground_state_):
                 # s1, X  -> X, s2
                 # Transfer with change
+                # print('C2')
                 self._finish_node(node_link['donor'])
 
                 self._add_node(from_node=node_link['donor'],
@@ -141,7 +148,7 @@ class TrajectoryGraph:
                     and process.initial[1] == _ground_state_):
                 # s1, X  -> s2, s3
                 # Exciton splitting
-
+                # print('C3')
                 self._finish_node(node_link['donor'])
 
                 self._add_node(from_node=node_link['donor'],
@@ -159,7 +166,7 @@ class TrajectoryGraph:
                     and process.final[1] != _ground_state_):
                 # s1, s2  ->  X, s3
                 # Exciton merge type 1
-
+                # print('C4')
                 self._finish_node(node_link['donor'])
                 self._finish_node(node_link['acceptor'])
 
@@ -176,7 +183,7 @@ class TrajectoryGraph:
                     and process.final[1] == _ground_state_):
                 # s1, s2  ->  s3, X
                 # Exciton merge type 2
-
+                # print('C5')
                 self._finish_node(node_link['donor'])
                 self._finish_node(node_link['acceptor'])
 
@@ -185,6 +192,9 @@ class TrajectoryGraph:
                                process_label=process.description)
 
                 self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
+
+        for center in self.system.centers:
+            self.states.add(self.system.molecules[center].state)
 
     def plot_graph(self):
 
@@ -303,8 +313,12 @@ class TrajectoryGraph:
                 initial = self.graph.nodes[node]['coordinates'][0]
                 for cell_state, coordinate in zip(self.graph.nodes[node]['cell_state'], self.graph.nodes[node]['coordinates']):
                     lattice = np.dot(self.supercell, cell_state)
-                    vector.append(np.array(coordinate) - lattice - initial)
+                    vector.append(np.array(coordinate) - lattice)
+                    # print(lattice)
                 coordinates += vector
+                # print(vector)
+                plt.plot(np.array(vector).T[0], np.array(vector).T[1], '-o')
+                # plt.show()
 
         if self.get_dimension() != 2:
             raise Exception('plot_2d can only be used in 2D systems')
@@ -315,7 +329,7 @@ class TrajectoryGraph:
             warnings.warn('No data for state {}'.format(state))
             return plt
 
-        plt.plot(coordinates[0], coordinates[1], '-o')
+        # plt.plot(coordinates[0], coordinates[1], '-o')
 
         return plt
 

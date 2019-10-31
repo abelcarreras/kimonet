@@ -7,6 +7,8 @@ Requirements
 - Python 3.2+ 
 - numpy
 - scipy
+- networkx
+- pygraphviz (which requires graphviz-dev library) [optional]
 
 Contact info
 ------------
