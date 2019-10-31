@@ -53,9 +53,10 @@ class TrajectoryAnalysis:
         :param state: electronic state to analyze
         :return:
         """
-        dl_tensor = np.average([traj.get_diffusion_length_square_tensor(state) for traj in self.trajectories], axis=0)
+        dl_tensor_list = [traj.get_diffusion_length_square_tensor(state) for traj in self.trajectories
+                          if not np.isnan(traj.get_diffusion_length_square_tensor(state)).any()]
 
-        return np.sqrt(np.abs(dl_tensor))
+        return np.sqrt(np.abs(np.average(dl_tensor_list, axis=0)))
 
     def diffusion_coefficient(self, state=None):
         """
@@ -123,7 +124,7 @@ class TrajectoryAnalysis:
     def plot_excitations(self, state=None):
 
         time_max = np.max([traj.get_times()[-1] for traj in self.trajectories]) * 1.1
-        t_range = np.linspace(0, time_max, 50)
+        t_range = np.linspace(0, time_max, 100)
 
         ne_interp = []
         for traj in self.trajectories:
@@ -134,7 +135,8 @@ class TrajectoryAnalysis:
         plt.title('Averaged excitatons number ({})'.format(state))
         plt.ylim(bottom=0, top=np.max(ne_interp))
         plt.xlim(left=0, right=time_max)
-        plt.plot(t_range, np.average(ne_interp, axis=0))
+        plt.plot(t_range, np.average(ne_interp, axis=0), label='Total' if state is None else state)
+        plt.legend()
         return plt
 
 

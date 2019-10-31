@@ -14,14 +14,14 @@ np.random.seed(1)  # for testing
 processes.transfer_scheme = {
                              Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
                              Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 0.1,
-                             Transfer(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 0.1
+                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 0.02,
+                             Transfer(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 0.2
                              }
 
 decay_scheme = {
                 # Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s1', final='gs', description='test1'): lambda x: 1/30,
-                # Decay(initial='s2', final='gs', description='test1'): lambda x: 1/30
+                Decay(initial='s1', final='gs', description='test1'): lambda x: 1/50,
+                Decay(initial='s2', final='gs', description='test1'): lambda x: 1/30
 }
 
 # excitation energies of the electronic states (eV)
@@ -51,36 +51,37 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 50                          # number of trajectories that will be simulated
+num_trajectories = 10                          # number of trajectories that will be simulated
 max_steps = 10000                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
                           molecule=molecule,
-                          lattice={'size': [3, 3], 'parameters': [3.0, 3.0]},  # Angstroms
+                          lattice={'size': [4, 4], 'parameters': [3.0, 3.0]},  # Angstroms
                           orientation=[0, 0, 0])  # (Rx, Ry, Rz) if None then random orientation
 
 
 system_2 = crystal_system(conditions=conditions,
                           molecule=molecule,
                           scaled_coordinates=[[0, 0],
-                                              [1, 1]],
-                          unitcell=[[2.0, 0.5],
-                                    [0.0, 2.0]],
-                          dimensions=[3, 3],
-                          orientations=[[0, 0, np.pi/2],  # if element is None then random, if list then oriented
-                                      None])
+                                              # [0.5, 0.5]
+                                              ],
+                          unitcell=[[3.0, 1.0],
+                                    [0.5, 1.0]],
+                          dimensions=[5, 5],
+                          orientations=[[0, 0, np.pi],  # if element is None then random, if list then oriented
+                                        None])
 
 
-system = system_1  # choose 1
+system = system_2  # choose 1
 
 visualize_system(system)
 
 trajectories = []
 for j in range(num_trajectories):
 
-    system.add_excitation_center('s1')
+    # system.add_excitation_center('s1')
     # system.add_excitation_index('s1', 0)
-    system.add_excitation_random('s2', 2)
+    system.add_excitation_random('s2', 5)
 
     # visualize_system(system)
 
@@ -103,36 +104,12 @@ for j in range(num_trajectories):
 
     system.reset()
 
-    # plt = trajectory.plot_2d()
-    #plt = trajectory.plot_2d('s2')
-    # plt.show()
-    #print(trajectory.get_lifetime_ratio('s1'), trajectory.get_lifetime_ratio('s2'), trajectory.get_lifetime_ratio('s3'))
-    #print(trajectory.get_lifetime_ratio('s3'), trajectory.get_lifetime_ratio('s1') + trajectory.get_lifetime_ratio('s2'))
-    #print('---')
-    #print(trajectoryg.get_lifetime('s3'))
-    #print(trajectoryg.get_lifetime_ratio('s1'), trajectoryg.get_lifetime_ratio('s2'), trajectoryg.get_lifetime_ratio('s3'))
-    #print(trajectoryg.get_lifetime_ratio('s3'), trajectoryg.get_lifetime_ratio('s1') + trajectoryg.get_lifetime_ratio('s2'))
-    #print('***')
-
-    # plt = trajectory.plot_distances('s1')
-    # plt.show()
-
     trajectories.append(trajectory)
 
-    #print('diff: ', trajectory.get_diffusion('s1'))
-    #print('diffT: ', trajectory.get_diffusion_tensor('s1'))
-    #print('diffTg: ', trajectoryg.get_diffusion_tensor('s1'))
+    trajectory.plot_graph()
+    plt = trajectory.plot_2d()
+    plt.show()
 
-    #print('lengh: ', trajectory.get_diffusion_length_square('s1'))
-    #print('lT: \n', trajectory.get_diffusion_length_square_tensor('s1'))
-
-    #exit()
-
-    # trajectory.plot_graph()
-    # plt = trajectory.plot_number_of_excitons()
-    # plt.show()
-
-    # exit()
 
 # diffusion properties
 analysis = TrajectoryAnalysis(trajectories)
@@ -149,7 +126,11 @@ print(analysis.diffusion_length_tensor('s1'))
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
 plt = analysis.plot_excitations()
+analysis.plot_excitations('s1')
+analysis.plot_excitations('s2')
 plt.figure()
+
+
 plt = analysis.plot_2d('s1')
 plt.figure()
 plt = analysis.plot_2d('s2')

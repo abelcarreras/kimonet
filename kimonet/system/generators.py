@@ -76,7 +76,7 @@ def crystal_system(conditions,
         for subset in itertools.product(*[list(range(n)) for n in dimensions]):
 
             r_cell = np.sum([s * lattice_vector for s, lattice_vector in zip(subset, unitcell)], axis=0)
-            coor = r_cell + coordinate
+            coor = r_cell + np.dot(unitcell.T, coordinate)
 
             molecule = molecule.copy()  # copy of the generic instance
             molecule.set_coordinates(coor)

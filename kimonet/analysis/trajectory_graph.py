@@ -212,12 +212,14 @@ class TrajectoryGraph:
 
     def plot_graph(self):
 
-        cmap = cm.get_cmap('Spectral')
+        # cmap = cm.get_cmap('Spectral')
+        # default matplotlib color cycle list
+        color_list = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
 
         colors_map = {}
         node_map = {}
         for i, state in enumerate(self.get_states()):
-            colors_map[state] = cmap(0.1+i/len(self.get_states()))
+            colors_map[state] = np.roll(color_list, -i)[0]
             node_map[state] = []
 
         for node in self.graph:
@@ -380,7 +382,7 @@ class TrajectoryGraph:
         coordinates = np.array(coordinates).T
 
         if len(coordinates) == 0:
-            warnings.warn('No data for state {}'.format(state))
+            # warnings.warn('No data for state {}'.format(state))
             return plt
 
         # plt.plot(coordinates[0], coordinates[1], '-o')
@@ -418,7 +420,7 @@ class TrajectoryGraph:
         vector = np.array(coordinates).T
 
         if len(coordinates) == 0:
-            warnings.warn('No data for state {}'.format(state))
+            # warnings.warn('No data for state {}'.format(state))
             return plt
 
         vector = np.linalg.norm(vector, axis=0)
@@ -503,6 +505,10 @@ class TrajectoryGraph:
                 tensor_x.append(tensor_y)
 
             tensor.append(np.array(tensor_x))
+
+        # If no data for this state in this particular trajectory return nan matrix
+        if len(tensor) == 0:
+            return np.nan
 
         return np.average(tensor, axis=0)
 
