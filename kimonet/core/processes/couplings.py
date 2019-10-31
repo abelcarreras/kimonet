@@ -34,14 +34,15 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
     r_vector, _ = minimum_distance_vector(r_vector, supercell)
 
-    r = np.linalg.norm(r_vector)
+    distance = np.linalg.norm(r_vector)
+    # print('donor', donor.get_coordinates())
 
     n = conditions['refractive_index']                      # refractive index of the material
 
     k = orientation_factor(mu_d, mu_a, r_vector)              # orientation factor between molecules
 
     k_e = 1.0/(4.0*np.pi*VAC_PERMITTIVITY)
-    forster_coupling = k_e * k**2 * np.dot(mu_d, mu_a) / (n**2 * r**3)
+    forster_coupling = k_e * k**2 * np.dot(mu_d, mu_a) / (n**2 * distance**3)
 
     foster_data[hash_string] = forster_coupling                            # memory update for new couplings
 

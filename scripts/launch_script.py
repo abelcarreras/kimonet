@@ -51,7 +51,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 10                          # number of trajectories that will be simulated
+num_trajectories = 500                          # number of trajectories that will be simulated
 max_steps = 10000                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
@@ -62,12 +62,10 @@ system_1 = regular_system(conditions=conditions,
 
 system_2 = crystal_system(conditions=conditions,
                           molecule=molecule,
-                          scaled_coordinates=[[0, 0],
-                                              # [0.5, 0.5]
-                                              ],
-                          unitcell=[[3.0, 1.0],
+                          scaled_coordinates=[[0, 0]],
+                          unitcell=[[3.0, 0.5],
                                     [0.5, 1.0]],
-                          dimensions=[5, 5],
+                          dimensions=[10, 10],
                           orientations=[[0, 0, np.pi],  # if element is None then random, if list then oriented
                                         None])
 
@@ -76,12 +74,22 @@ system = system_2  # choose 1
 
 visualize_system(system)
 
+from kimonet.utils import minimum_distance_vector
+from kimonet.core.processes.couplings import intermolecular_vector
+r_vector = intermolecular_vector(system.molecules[12], system.molecules[16])  # position vector between donor and acceptor
+print(r_vector, np.linalg.norm(r_vector))
+r_vector, _ = minimum_distance_vector(r_vector, system.supercell)
+print('dist', np.linalg.norm(r_vector))
+print('---')
+system.get_neighbours(12)
+
+
 trajectories = []
 for j in range(num_trajectories):
 
     # system.add_excitation_center('s1')
-    # system.add_excitation_index('s1', 0)
-    system.add_excitation_random('s2', 5)
+    system.add_excitation_index('s1', 12)
+    #system.add_excitation_random('s2', 5)
 
     # visualize_system(system)
 
@@ -106,9 +114,9 @@ for j in range(num_trajectories):
 
     trajectories.append(trajectory)
 
-    trajectory.plot_graph()
-    plt = trajectory.plot_2d()
-    plt.show()
+    #trajectory.plot_graph()
+    #plt = trajectory.plot_2d()
+    #plt.show()
 
 
 # diffusion properties

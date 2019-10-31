@@ -108,7 +108,7 @@ class Trajectory:
 
             vector = []
             for cell_state, coordinate in zip(cell_states, coordinates):
-                lattice = np.dot(self.supercell, cell_state)
+                lattice = np.dot(self.supercell.T, cell_state)
                 vector.append(np.array(coordinate) - lattice - initial)
 
         vector = np.array(vector).T
@@ -127,7 +127,7 @@ class Trajectory:
         vector = []
         # lattice = np.zeros_like(initial)
         for cell_state, coordinate in zip(cell_states, coordinates):
-            lattice = np.dot(self.supercell, cell_state)
+            lattice = np.dot(self.supercell.T, cell_state)
             vector.append(np.array(coordinate) - lattice - initial)
 
         # vector.append(vector[-1])
@@ -157,7 +157,7 @@ class Trajectory:
 
             coord_per = []
             for cell_state, coordinate in zip(cell_states, coordinate_range):
-                lattice = np.dot(self.supercell, cell_state) - np.dot(self.supercell, cell_states[0])
+                lattice = np.dot(self.supercell.T, cell_state) - np.dot(self.supercell.T, cell_states[0])
                 coord_per.append(np.array(coordinate) - lattice - initial)
 
             coordinates += coord_per
@@ -239,7 +239,7 @@ class Trajectory:
                 break
 
             # print('cell', cell_states[-1], cell_states[0])
-            lattice_diff = np.dot(self.supercell, cell_states[-1]) - np.dot(self.supercell, cell_states[0])
+            lattice_diff = np.dot(self.supercell.T, cell_states[-1]) - np.dot(self.supercell.T, cell_states[0])
             distance_vector = self.centers[icenter]['coordinates'][fin['position']] - lattice_diff - initial
 
             distances.append(distance_vector)
@@ -260,7 +260,7 @@ class Trajectory:
             cell_states = self.centers[icenter]['cell_state'][ini['position']: fin['position']+1]
             initial = np.array(self.centers[icenter]['coordinates'][ini['position']])
 
-            lattice_diff = np.dot(self.supercell, cell_states[-1]) - np.dot(self.supercell, cell_states[0])
+            lattice_diff = np.dot(self.supercell.T, cell_states[-1]) - np.dot(self.supercell.T, cell_states[0])
             distance_vector = self.centers[icenter]['coordinates'][fin['position']] - lattice_diff - initial
 
             distances.append(distance_vector)

@@ -266,7 +266,7 @@ class TrajectoryGraph:
 
             # print('cell**', self.G.nodes[node]['cell_state'], len(self.G.nodes[node]['cell_state']))
             for coordinate, cell_state in zip(self.graph.nodes[node]['coordinates'], self.graph.nodes[node]['cell_state']):
-                lattice = np.dot(self.supercell, cell_state) - np.dot(self.supercell, cell_state_i)
+                lattice = np.dot(self.supercell.T, cell_state) - np.dot(self.supercell.T, cell_state_i)
                 vector.append(np.array(coordinate) - lattice - initial)
 
         vector = np.array(vector).T
@@ -368,7 +368,7 @@ class TrajectoryGraph:
                 vector = []
                 initial = self.graph.nodes[node]['coordinates'][0]
                 for cell_state, coordinate in zip(self.graph.nodes[node]['cell_state'], self.graph.nodes[node]['coordinates']):
-                    lattice = np.dot(self.supercell, cell_state)
+                    lattice = np.dot(self.supercell.T, cell_state)
                     vector.append(np.array(coordinate) - lattice)
                     # print(lattice)
                 coordinates += vector
@@ -407,7 +407,7 @@ class TrajectoryGraph:
             cell_state_i = self.graph.nodes[node]['cell_state'][0]
 
             for cell_state, coordinate in zip(self.graph.nodes[node]['cell_state'], self.graph.nodes[node]['coordinates']):
-                lattice = np.dot(self.supercell, cell_state) - np.dot(self.supercell, cell_state_i)
+                lattice = np.dot(self.supercell.T, cell_state) - np.dot(self.supercell.T, cell_state_i)
                 vector.append(np.array(coordinate) - lattice - initial)
                 # print('lattice: ', lattice)
 
@@ -464,7 +464,7 @@ class TrajectoryGraph:
             cell_state_f = np.array(self.graph.nodes[node]['cell_state'][-1])
 
             # print('cell', cell_state_f, cell_state_i)
-            lattice_diff = np.dot(self.supercell, cell_state_f) - np.dot(self.supercell, cell_state_i)
+            lattice_diff = np.dot(self.supercell.T, cell_state_f) - np.dot(self.supercell.T, cell_state_i)
 
             vector = coordinates_f - lattice_diff - coordinates_i
 
@@ -489,7 +489,7 @@ class TrajectoryGraph:
             coordinates_f = np.array(self.graph.nodes[node]['coordinates'][-1])
             cell_state_f = np.array(self.graph.nodes[node]['cell_state'][-1])
 
-            lattice_diff = np.dot(self.supercell, cell_state_f) - np.dot(self.supercell, cell_state_i)
+            lattice_diff = np.dot(self.supercell.T, cell_state_f) - np.dot(self.supercell.T, cell_state_i)
 
             vector = coordinates_f - lattice_diff - coordinates_i
 
