@@ -20,8 +20,8 @@ processes.transfer_scheme = {
 
 decay_scheme = {
                 # Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s1', final='gs', description='test1'): lambda x: 1/50,
-                Decay(initial='s2', final='gs', description='test1'): lambda x: 1/30
+                Decay(initial='s1', final='gs', description='decay s1'): lambda x: 1/50,
+                Decay(initial='s2', final='gs', description='decay s2'): lambda x: 1/30
 }
 
 # excitation energies of the electronic states (eV)
@@ -125,8 +125,6 @@ for state in ['s1', 's2']:
     print('diffusion length tensor (angs)')
     print(analysis.diffusion_length_tensor(state))
 
-
-# print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
 plt = analysis.plot_excitations('s1')
 analysis.plot_excitations('s2')

@@ -90,5 +90,5 @@ def crystal_system(conditions,
             molecules.append(molecule)
 
     supercell = np.dot(unitcell.T, np.diag(dimensions)).T
-    print(supercell)
+
     return System(molecules, conditions, supercell)
