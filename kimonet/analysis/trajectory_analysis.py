@@ -132,7 +132,7 @@ class TrajectoryAnalysis:
             t = traj.get_times()
             ne_interp.append(np.interp(t_range, t, ne, right=0))
 
-        plt.title('Averaged excitatons number ({})'.format(state))
+        plt.title('Averaged excitatons number ({})'.format('' if state is None else state))
         plt.ylim(bottom=0, top=np.max(ne_interp))
         plt.xlim(left=0, right=time_max)
         plt.plot(t_range, np.average(ne_interp, axis=0), label='Total' if state is None else state)

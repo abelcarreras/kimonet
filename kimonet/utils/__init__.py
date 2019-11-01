@@ -11,7 +11,7 @@ def minimum_distance_vector(r_vector, supercell):
         half_cell = np.array(lattice) / 2
         dot_ref = np.dot(half_cell, half_cell)
         dot = np.dot(half_cell, r_vector)
-        n_n = (np.abs(dot) // dot_ref) * np.sign(dot)
+        n_n = (np.sqrt(np.abs(dot)) // np.sqrt(dot_ref)) * np.sign(dot)
         r_vector += np.array(lattice) * -n_n
         cell_vector.append(-n_n)
 

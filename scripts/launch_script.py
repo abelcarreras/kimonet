@@ -51,7 +51,7 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 500                          # number of trajectories that will be simulated
+num_trajectories = 50                          # number of trajectories that will be simulated
 max_steps = 10000                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
@@ -65,31 +65,22 @@ system_2 = crystal_system(conditions=conditions,
                           scaled_coordinates=[[0, 0]],
                           unitcell=[[3.0, 0.5],
                                     [0.5, 1.0]],
-                          dimensions=[10, 10],
+                          dimensions=[5, 5],
                           orientations=[[0, 0, np.pi],  # if element is None then random, if list then oriented
                                         None])
 
 
-system = system_2  # choose 1
+system = system_2  # choose 2
 
 visualize_system(system)
-
-from kimonet.utils import minimum_distance_vector
-from kimonet.core.processes.couplings import intermolecular_vector
-r_vector = intermolecular_vector(system.molecules[12], system.molecules[16])  # position vector between donor and acceptor
-print(r_vector, np.linalg.norm(r_vector))
-r_vector, _ = minimum_distance_vector(r_vector, system.supercell)
-print('dist', np.linalg.norm(r_vector))
-print('---')
-system.get_neighbours(12)
 
 
 trajectories = []
 for j in range(num_trajectories):
 
     # system.add_excitation_center('s1')
-    system.add_excitation_index('s1', 12)
-    #system.add_excitation_random('s2', 5)
+    # system.add_excitation_index('s1', 12)
+    system.add_excitation_random('s2', 5)
 
     # visualize_system(system)
 
@@ -114,9 +105,9 @@ for j in range(num_trajectories):
 
     trajectories.append(trajectory)
 
-    #trajectory.plot_graph()
-    #plt = trajectory.plot_2d()
-    #plt.show()
+    # trajectory.plot_graph()
+    # plt = trajectory.plot_2d()
+    # plt.show()
 
 
 # diffusion properties
@@ -124,20 +115,23 @@ analysis = TrajectoryAnalysis(trajectories)
 
 print(analysis)
 
-print('diffusion coefficient (s1): {} angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
-print('lifetime: {} ns'.format(analysis.lifetime('s1')))
-print('diffusion length: {} angs'.format(analysis.diffusion_length('s1')))
-print('diffusion tensor')
-print(analysis.diffusion_coeff_tensor('s1'))
-print('diffusion length tensor')
-print(analysis.diffusion_length_tensor('s1'))
+for state in ['s1', 's2']:
+    print('\nState: {}\n--------------------------------'.format(state))
+    print('diffusion coefficient: {} angs^2/ns'.format(analysis.diffusion_coefficient(state)))
+    print('lifetime: {} ns'.format(analysis.lifetime(state)))
+    print('diffusion length: {} angs'.format(analysis.diffusion_length(state)))
+    print('diffusion tensor (angs^2/ns)')
+    print(analysis.diffusion_coeff_tensor(state))
+    print('diffusion length tensor (angs)')
+    print(analysis.diffusion_length_tensor(state))
+
+
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
-plt = analysis.plot_excitations()
-analysis.plot_excitations('s1')
+plt = analysis.plot_excitations('s1')
 analysis.plot_excitations('s2')
+analysis.plot_excitations()
 plt.figure()
-
 
 plt = analysis.plot_2d('s1')
 plt.figure()
@@ -146,6 +140,5 @@ plt.figure()
 analysis.plot_distances('s1')
 plt.figure()
 analysis.plot_distances('s2')
-
 
 plt.show()
