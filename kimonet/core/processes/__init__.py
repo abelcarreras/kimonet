@@ -4,6 +4,7 @@ from collections import namedtuple
 
 
 Transfer = namedtuple("Transfer", ["initial", "final", "description"])
+Direct = namedtuple("Direct", ["initial", "final", "description"])
 Decay = namedtuple("Decay", ["initial", "final", "description"])
 
 
@@ -57,7 +58,15 @@ def get_transfer_rates(center, system):
         for process, coupling_function in allowed_processes.items():
 
             e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
-            transfer_rates.append(2*np.pi * e_coupling**2 * spectral_overlap)  # Fermi's Golden Rule
+
+            # Fermi's Golden Rule
+            if type(process) == Transfer:
+                transfer_rates.append(2*np.pi * e_coupling**2 * spectral_overlap)  # with FCWD
+            elif type(process) == Direct:
+                transfer_rates.append(2*np.pi * e_coupling**2)  # without FCWD
+            else:
+                print('Transfer type not recognized')
+                exit()
 
             transfer_processes.append({'donor': int(center), 'process': process, 'acceptor': int(neighbour),
                                        'cell_increment': cell_incr})

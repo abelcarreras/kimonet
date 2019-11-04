@@ -4,7 +4,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
-from kimonet.core.processes import Transfer, Decay
+from kimonet.core.processes import Transfer, Decay, Direct
 import kimonet.core.processes as processes
 
 import numpy as np
@@ -14,8 +14,8 @@ np.random.seed(1)  # for testing
 processes.transfer_scheme = {
                              Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
                              Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Transfer(initial=('s1', 'gs'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 0.02,
-                             Transfer(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 0.2
+                             Direct(initial=('s1', 'gs'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1/100,
+                             Direct(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 1/10
                              }
 
 decay_scheme = {
@@ -105,9 +105,9 @@ for j in range(num_trajectories):
 
     trajectories.append(trajectory)
 
-    # trajectory.plot_graph()
-    # plt = trajectory.plot_2d()
-    # plt.show()
+    #trajectory.plot_graph()
+    #plt = trajectory.plot_2d()
+    #plt.show()
 
 
 # diffusion properties
@@ -115,7 +115,7 @@ analysis = TrajectoryAnalysis(trajectories)
 
 print(analysis)
 
-for state in ['s1', 's2']:
+for state in analysis.get_states():
     print('\nState: {}\n--------------------------------'.format(state))
     print('diffusion coefficient: {} angs^2/ns'.format(analysis.diffusion_coefficient(state)))
     print('lifetime: {} ns'.format(analysis.lifetime(state)))
@@ -138,5 +138,9 @@ plt.figure()
 analysis.plot_distances('s1')
 plt.figure()
 analysis.plot_distances('s2')
+plt.figure()
+analysis.plot_histogram('s1')
+plt.figure()
+analysis.plot_histogram('s2')
 
 plt.show()

@@ -1,4 +1,4 @@
-from kimonet.core.processes import Transfer
+# from kimonet.core.processes import Transfer
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
@@ -390,7 +390,7 @@ class TrajectoryGraph:
 
         return plt
 
-    def plot_distances(self, state=None):
+    def get_distances_vs_times(self, state=None):
 
         if state is None:
             node_list = [node for node in self.graph.nodes]
@@ -424,6 +424,46 @@ class TrajectoryGraph:
             return plt
 
         vector = np.linalg.norm(vector, axis=0)
+
+        return vector, t
+
+    def get_max_distances_vs_times(self, state):
+
+        if state is None:
+            node_list = [node for node in self.graph.nodes]
+        else:
+            node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == state]
+
+        t = []
+        coordinates = []
+        for node in node_list:
+            t += self.graph.nodes[node]['time']
+
+            vector = []
+            initial = np.array(self.graph.nodes[node]['coordinates'][0])
+            cell_state_i = self.graph.nodes[node]['cell_state'][0]
+            final = np.array(self.graph.nodes[node]['coordinates'][-1])
+            cell_state_f = self.graph.nodes[node]['cell_state'][-1]
+
+            lattice = np.dot(self.supercell.T, cell_state_f) - np.dot(self.supercell.T, cell_state_i)
+            vector.append(final - lattice - initial)
+
+            coordinates += vector
+
+        vector = np.array(coordinates).T
+
+        if len(coordinates) == 0:
+            # warnings.warn('No data for state {}'.format(state))
+            return plt
+
+        vector = np.linalg.norm(vector, axis=0)
+
+        return vector, t
+
+
+    def plot_distances(self, state=None):
+
+        vector, t = self.get_distances_vs_times(state)
 
         # print(t)
         plt.title('diffusion distances ({})'.format(state))

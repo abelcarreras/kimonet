@@ -139,4 +139,16 @@ class TrajectoryAnalysis:
         plt.legend()
         return plt
 
+    def plot_histogram(self, state=None):
 
+        distances = []
+        for traj in self.trajectories:
+            d, _ = traj.get_max_distances_vs_times(state)
+            distances += list(d)
+
+        plt.title('Distances histogram  ({})'.format('' if state is None else state))
+        plt.xlabel('Distance')
+        plt.ylabel('# of occurrences')
+
+        plt.hist(distances)
+        return plt

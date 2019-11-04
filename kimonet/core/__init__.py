@@ -1,5 +1,6 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes_and_rates
+from kimonet.core.processes import Transfer, Direct, Decay
 import warnings
 
 
@@ -54,7 +55,7 @@ def update_step(chosen_process, system):
     New if(s) entrances shall be defined for more processes.
     """
 
-    if type(chosen_process['process']).__name__ == 'Transfer':
+    if type(chosen_process['process']) in (Transfer, Direct):
 
         donor_state = chosen_process['process'].final[0]
         acceptor_state = chosen_process['process'].final[1]
@@ -68,7 +69,7 @@ def update_step(chosen_process, system):
         if chosen_process['process'].final[0] == 'gs':
             system.molecules[chosen_process['donor']].cell_state *= 0
 
-    if type(chosen_process['process']).__name__ == 'Decay':
+    if type(chosen_process['process']) == Decay:
         final_state = chosen_process['process'].final
         # print('final_state', final_state)
         system.add_excitation_index(final_state, chosen_process['donor'])
