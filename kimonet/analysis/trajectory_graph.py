@@ -84,12 +84,12 @@ class TrajectoryGraph:
                             )
         self.node_count += 1
 
-    def _append_node(self, from_node, link_to_molecule):
-        node = self.graph.nodes[from_node]
+    def _append_to_node(self, on_node, add_molecule):
+        node = self.graph.nodes[on_node]
 
-        node['index'].append(link_to_molecule)
-        node['coordinates'].append(list(self.system.molecules[link_to_molecule].get_coordinates()))
-        node['cell_state'].append(list(self.system.molecules[link_to_molecule].cell_state))
+        node['index'].append(add_molecule)
+        node['coordinates'].append(list(self.system.molecules[add_molecule].get_coordinates()))
+        node['cell_state'].append(list(self.system.molecules[add_molecule].cell_state))
         node['time'].append(self.times[-1] - node['event_time'])
 
     def add_step(self, change_step, time_step):
@@ -131,12 +131,14 @@ class TrajectoryGraph:
 
         else:
             # Intermolecular process
-            if process.initial[0] == process.final[1] and process.final[1] != _ground_state_:
+            if (process.initial[0] == process.final[1]
+                    and process.final[1] != _ground_state_
+                    and process.final[0] == _ground_state_):
                 # s1, X  -> X, s1
                 # Simple transfer
                 # print('C1')
-                self._append_node(from_node=node_link['donor'],
-                                  link_to_molecule=change_step['acceptor'])
+                self._append_to_node(on_node=node_link['donor'],
+                                     add_molecule=change_step['acceptor'])
 
             if (process.initial[0] != process.final[1]
                     and process.initial[0] != _ground_state_ and process.final[1] != _ground_state_
@@ -201,6 +203,45 @@ class TrajectoryGraph:
                                process_label=process.description)
 
                 self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
+
+            if (process.initial[0] != process.final[0] and process.initial[1] != process.final[1]
+            and process.initial[0] == process.final[1] and process.initial[0] == process.final[1]
+                    and process.initial[0] != _ground_state_
+                    and process.initial[1] != _ground_state_
+                    and process.final[0] != _ground_state_
+                    and process.final[1] != _ground_state_):
+                # s1, s2  ->  s2, s1
+                # Exciton cross interaction (treated as double transport)
+                # print('C6')
+
+                self._append_to_node(on_node=node_link['donor'],
+                                     add_molecule=change_step['acceptor'])
+
+                self._append_to_node(on_node=node_link['acceptor'],
+                                     add_molecule=change_step['donor'])
+
+            if (process.initial[0] != process.final[0] and process.initial[1] != process.final[1]
+            and process.initial[0] != process.final[1] and process.initial[0] != process.final[1]
+                    and process.initial[0] != _ground_state_
+                    and process.initial[1] != _ground_state_
+                    and process.final[0] != _ground_state_
+                    and process.final[1] != _ground_state_):
+                # s1, s2  ->  s3, s4
+                # Exciton double evolution
+                # print('C7')
+                self._finish_node(node_link['donor'])
+                self._finish_node(node_link['acceptor'])
+
+                self._add_node(from_node=node_link['donor'],
+                               new_on_molecule=change_step['acceptor'],
+                               process_label=process.description)
+
+                self._add_node(from_node=node_link['acceptor'],
+                               new_on_molecule=change_step['donor'],
+                               process_label=process.description)
+
+                self.graph.add_edge(node_link['acceptor'], self.node_count-2, process_label=process.description)
+                self.graph.add_edge(node_link['donor'], self.node_count-1, process_label=process.description)
 
         ce = {}
         for center in self.system.centers:

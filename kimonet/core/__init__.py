@@ -3,6 +3,8 @@ from kimonet.core.processes import get_processes_and_rates
 from kimonet.core.processes import Transfer, Direct, Decay
 import warnings
 
+_ground_state_ = 'gs'
+
 
 def do_simulation_step(system):
     """
@@ -62,18 +64,26 @@ def update_step(chosen_process, system):
 
         system.add_excitation_index(donor_state, chosen_process['donor'])  # des excitation of the donor
         system.add_excitation_index(acceptor_state, chosen_process['acceptor'])  # excitation of the acceptor
-        system.molecules[chosen_process['acceptor']].cell_state = system.molecules[chosen_process['donor']].cell_state - chosen_process['cell_increment']
+
+        # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
+        acceptor_cell_state = system.molecules[chosen_process['acceptor']].cell_state
+        donor_cell_state = system.molecules[chosen_process['donor']].cell_state
+        system.molecules[chosen_process['acceptor']].cell_state = donor_cell_state - chosen_process['cell_increment']
+        system.molecules[chosen_process['donor']].cell_state = acceptor_cell_state + chosen_process['cell_increment']
 
         # system.molecules[chosen_process['donor']].cell_state *= 0
 
-        if chosen_process['process'].final[0] == 'gs':
+        if chosen_process['process'].final[0] == _ground_state_:
             system.molecules[chosen_process['donor']].cell_state *= 0
+
+        if chosen_process['process'].final[1] == _ground_state_:
+            system.molecules[chosen_process['acceptor']].cell_state *= 0
 
     if type(chosen_process['process']) == Decay:
         final_state = chosen_process['process'].final
         # print('final_state', final_state)
         system.add_excitation_index(final_state, chosen_process['donor'])
 
-        if final_state == 'gs':
+        if final_state == _ground_state_:
             system.molecules[chosen_process['donor']].cell_state *= 0
 

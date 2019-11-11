@@ -59,11 +59,11 @@ def get_transfer_rates(center, system):
 
             e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
 
-            # Fermi's Golden Rule
             if type(process) == Transfer:
-                transfer_rates.append(2*np.pi * e_coupling**2 * spectral_overlap)  # with FCWD
+                transfer_rates.append(2*np.pi * e_coupling**2 * spectral_overlap)  # Fermi's Golden Rule
             elif type(process) == Direct:
-                transfer_rates.append(2*np.pi * e_coupling**2)  # without FCWD
+                rate = e_coupling
+                transfer_rates.append(rate)  # Direct case: e_coupling == rate
             else:
                 print('Transfer type not recognized')
                 exit()

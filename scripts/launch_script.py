@@ -14,7 +14,9 @@ np.random.seed(1)  # for testing
 processes.transfer_scheme = {
                              Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
                              Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Direct(initial=('s1', 'gs'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1/100,
+                             Transfer(initial=('s1', 'gs'), final=('s2t', 's2t'), description='transition'): lambda x, y, z, k: 1/100,
+                             Direct(initial=('s2t', 's2t'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1 / 10,
+                             Direct(initial=('s1', 's2'), final=('s2', 's1'), description='cross'): lambda x, y, z, k: 1 / 10,
                              Direct(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 1/10
                              }
 
@@ -27,12 +29,14 @@ decay_scheme = {
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
                   's1': 1,
-                  's2': 1}
+                  's2': 1,
+                  's2t': 1}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
                            's1': 0.2,
-                           's2': 0.2}
+                           's2': 0.2,
+                           's2t': 0.2}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
@@ -113,7 +117,6 @@ for j in range(num_trajectories):
 # diffusion properties
 analysis = TrajectoryAnalysis(trajectories)
 
-print(analysis)
 
 for state in analysis.get_states():
     print('\nState: {}\n--------------------------------'.format(state))
