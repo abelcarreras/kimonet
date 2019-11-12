@@ -101,3 +101,6 @@ class System:
                 index = i
 
         self.add_excitation_index(type, index)
+
+    def get_volume(self):
+        return np.linalg.det(self.supercell)
