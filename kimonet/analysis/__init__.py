@@ -12,7 +12,7 @@ def visualize_system(system):
     #fig, ax = plt.subplots()
     fig = plt.figure()
 
-    fig.suptitle('Transition moment')
+    fig.suptitle('Orientation')
     if ndim == 3:
         ax = fig.gca(projection='3d')
         ax.set_zlabel('Z')
@@ -34,7 +34,8 @@ def visualize_system(system):
 
     for i, molecule in enumerate(system.molecules):
         c = molecule.coordinates
-        o = molecule.get_transition_moment()
+        o = molecule.get_orientation_vector()
+
 
         if ndim == 1:
             ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state])

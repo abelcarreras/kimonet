@@ -31,7 +31,7 @@ reorganization_energies = {'gs': 0,
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                    transition_moment={('s1', 'gs'): [2.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme
                     )
 

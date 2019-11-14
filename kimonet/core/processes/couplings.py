@@ -28,8 +28,8 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     if hash_string in foster_data:
         return foster_data[hash_string]
 
-    mu_d = donor.get_transition_moment()                     # transition dipole moment (donor) a.u
-    mu_a = acceptor.get_transition_moment()                  # transition dipole moment (acceptor) a.u
+    mu_d = donor.get_transition_moment(to_state='gs')                     # transition dipole moment (donor) a.u
+    mu_a = acceptor.get_transition_moment(to_state=donor.state)                  # transition dipole moment (acceptor) a.u
 
     r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
     r_vector, _ = minimum_distance_vector(r_vector, supercell)

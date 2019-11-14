@@ -44,7 +44,7 @@ class TestKimonet(unittest.TestCase):
 
         self.molecule = Molecule(state_energies={'gs': 0, 's1': 1},
                                  reorganization_energies={'gs': 0, 's1': 0.2},
-                                 transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                                 transition_moment={('s1', 'gs'):[2.0, 0]},  # transition dipole moment of the molecule (Debye)
                                  decays=decay_scheme
                                  )
 

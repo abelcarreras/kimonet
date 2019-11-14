@@ -40,7 +40,7 @@ reorganization_energies = {'gs': 0,
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                    transition_moment={('s1', 'gs'): [2.0, 0], ('s2', 'gs'): [2.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
                     vdw_radius=1.7
                     )
@@ -66,7 +66,7 @@ system_1 = regular_system(conditions=conditions,
 
 system_2 = crystal_system(conditions=conditions,
                           molecule=molecule,
-                          scaled_coordinates=[[0, 0]],
+                          scaled_coordinates=[[0, 0],],
                           unitcell=[[3.0, 0.5],
                                     [0.5, 1.0]],
                           dimensions=[5, 5],

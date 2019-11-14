@@ -16,8 +16,9 @@ processes.transfer_scheme = {
                              Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='triplet transport'): dexter_coupling,
                              Direct(initial=('s1', 'gs'), final=('tp', 'tp'), description='singlet fission'): lambda x, y, z, k: 8.3,
                              Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet fusion'): lambda x, y, z, k: 1.0,
-                             Direct(initial=('tp', 'tp'), final=('t1', 't1'), description='triplet dissociation'): lambda x, y, z, k: 1 / 10,
-                             Direct(initial=('t1', 't1'), final=('s1', 'gs'), description='triplet annihilation'): lambda x, y, z, k: 1/10
+                             Direct(initial=('tp', 'tp'), final=('t1', 't1'), description='triplet dissociation'): lambda x, y, z, k: 2.0,
+                             Direct(initial=('t1', 't1'), final=('s1', 'gs'), description='triplet annihilation'): lambda x, y, z, k: 0.45,
+
                              }
 
 decay_scheme = {Decay(initial='s1', final='gs', description='decay s1'): lambda x: 8.0e-2,
@@ -26,9 +27,9 @@ decay_scheme = {Decay(initial='s1', final='gs', description='decay s1'): lambda 
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 1,
-                  't1': 2,
-                  'tp': 2}
+                  's1': 6.0773,
+                  't1': 2.118,
+                  'tp': 2.118}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
@@ -38,7 +39,7 @@ reorganization_energies = {'gs': 0,
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment=[2.0, 0],  # transition dipole moment of the molecule (Debye)
+                    transition_moment={('s1', 'gs'): [3.550, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
                     vdw_radius=1.7
                     )
@@ -62,20 +63,18 @@ system = crystal_system(conditions=conditions,
                                             [0.5, 0.5]],
                         unitcell=[[7.3347, 0.0],
                                   [-0.2242, 6.0167]],
-                        dimensions=[2, 2],
+                        dimensions=[5, 5],
                         orientations=[[0, 0, 68*np.pi/180],  # if element is None then random, if list then oriented
                                       [0, 0, 115*np.pi/180]])
 
 
 
 visualize_system(system)
-print(system.get_volume())
-exit()
 
 trajectories = []
 for j in range(num_trajectories):
 
-    system.add_excitation_random('s1', 1)
+    system.add_excitation_random('s1', 5)
 
     # visualize_system(system)
 
@@ -100,9 +99,9 @@ for j in range(num_trajectories):
 
     trajectories.append(trajectory)
 
-    #trajectory.plot_graph()
-    #plt = trajectory.plot_2d()
-    #plt.show()
+    # trajectory.plot_graph()
+    # plt = trajectory.plot_2d()
+    # plt.show()
 
 
 # diffusion properties
