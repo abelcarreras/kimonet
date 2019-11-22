@@ -1,18 +1,19 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from kimonet.analysis.trajectory_graph import TrajectoryGraph as Trajectory
 from kimonet.analysis.trajectory_analysis import TrajectoryAnalysis
 
 
-def visualize_system(system):
+def visualize_system(system, dipole=None):
 
     ndim = system.molecules[0].get_dim()
     #fig, ax = plt.subplots()
     fig = plt.figure()
 
-    fig.suptitle('Orientation')
+    fig.suptitle('Orientation' if dipole is None else 'TDM {}'.format(dipole))
     if ndim == 3:
         ax = fig.gca(projection='3d')
         ax.set_zlabel('Z')
@@ -34,8 +35,10 @@ def visualize_system(system):
 
     for i, molecule in enumerate(system.molecules):
         c = molecule.coordinates
-        o = molecule.get_orientation_vector()
-
+        if dipole is None:
+            o = molecule.get_orientation_vector()
+        else:
+            o = molecule.get_transition_moment(to_state=dipole)
 
         if ndim == 1:
             ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state])
@@ -43,8 +46,10 @@ def visualize_system(system):
             ax.quiver(c[0], c[1], o[0], o[1], color=colors[molecule.state])
             ax.text(c[0], c[1], '{}'.format(i), fontsize=12)
         if ndim == 3:
-            ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=False, color=colors[molecule.state])
+            ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=False, length=5, color=colors[molecule.state])
             # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
+            ax.text(c[0], c[1], c[2], '{}'.format(i), fontsize=12)
+
 
     # Plot lattice vectors
     for lattice_vector in system.supercell:
