@@ -61,12 +61,6 @@ class System:
     def get_num_molecules(self):
         return len(self.molecules)
 
-    def get_data(self):
-        return {'molecules': self.molecules,
-                'conditions': self.conditions,
-                'supercell': self.supercell,
-                'centres': self.get_centers()}
-
     def get_number_of_excitations(self):
         return len(self.centers)
 
@@ -101,3 +95,6 @@ class System:
                 index = i
 
         self.add_excitation_index(type, index)
+
+    def get_volume(self):
+        return np.abs(np.linalg.det(self.supercell))

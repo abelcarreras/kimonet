@@ -12,35 +12,34 @@ np.random.seed(1)  # for testing
 
 
 processes.transfer_scheme = {
-                             Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                             Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Transfer(initial=('s1', 'gs'), final=('s2t', 's2t'), description='transition'): lambda x, y, z, k: 1/100,
-                             Direct(initial=('s2t', 's2t'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1 / 10,
-                             Direct(initial=('s1', 's2'), final=('s2', 's1'), description='cross'): lambda x, y, z, k: 1 / 10,
-                             Direct(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 1/10
+                             Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='singlet transport'): forster_coupling,
+                             Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='triplet transport'): dexter_coupling,
+                             Direct(initial=('s1', 'gs'), final=('tp', 'tp'), description='singlet fission'): lambda x, y, z, k: 8.3,
+                             Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet fusion'): lambda x, y, z, k: 1.0,
+                             Direct(initial=('tp', 'tp'), final=('t1', 't1'), description='triplet dissociation'): lambda x, y, z, k: 2.0,
+                             Direct(initial=('t1', 't1'), final=('s1', 'gs'), description='triplet annihilation'): lambda x, y, z, k: 0.45,
+
                              }
 
-decay_scheme = {
-                # Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s1', final='gs', description='decay s1'): lambda x: 1/50,
-                Decay(initial='s2', final='gs', description='decay s2'): lambda x: 1/30
+decay_scheme = {Decay(initial='s1', final='gs', description='decay s1'): lambda x: 8.0e-2,
+                Decay(initial='t1', final='gs', description='decay s2'): lambda x: 1.6e-5
 }
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
-                  's1': 1,
-                  's2': 1,
-                  's2t': 1}
+                  's1': 6.0773,
+                  't1': 2.118,
+                  'tp': 2.118}
 
 # reorganization energies of the states (eV)
 reorganization_energies = {'gs': 0,
                            's1': 0.2,
-                           's2': 0.2,
-                           's2t': 0.2}
+                           't1': 0.2,
+                           'tp': 0.2}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment={('s1', 'gs'): [2.0, 0], ('s2', 'gs'): [2.0, 0]},  # transition dipole moment of the molecule (Debye)
+                    transition_moment={('s1', 'gs'): [3.550, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
                     vdw_radius=1.7
                     )
@@ -50,7 +49,7 @@ molecule = Molecule(state_energies=state_energies,
 # physical conditions of the system (as a dictionary)
 conditions = {'temperature': 273.15,            # temperature of the system (K)
               'refractive_index': 1,            # refractive index of the material (adimensional)
-              'cutoff_radius': 3.1,             # maximum interaction distance (Angstroms)
+              'cutoff_radius': 8.0,             # maximum interaction distance (Angstroms)
               'dexter_k': 1.0}                  # eV
 
 #######################################################################################################################
@@ -58,33 +57,24 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 num_trajectories = 50                          # number of trajectories that will be simulated
 max_steps = 10000                              # maximum number of steps for trajectory allowed
 
-system_1 = regular_system(conditions=conditions,
-                          molecule=molecule,
-                          lattice={'size': [4, 4], 'parameters': [3.0, 3.0]},  # Angstroms
-                          orientation=[0, 0, 0])  # (Rx, Ry, Rz) if None then random orientation
+system = crystal_system(conditions=conditions,
+                        molecule=molecule,
+                        scaled_coordinates=[[0.0, 0.0],
+                                            [0.5, 0.5]],
+                        unitcell=[[7.3347, 0.0],
+                                  [-0.2242, 6.0167]],
+                        dimensions=[5, 5],
+                        orientations=[[0, 0, 68*np.pi/180],  # if element is None then random, if list then oriented
+                                      [0, 0, 115*np.pi/180]])
 
 
-system_2 = crystal_system(conditions=conditions,
-                          molecule=molecule,
-                          scaled_coordinates=[[0, 0],],
-                          unitcell=[[3.0, 0.5],
-                                    [0.5, 1.0]],
-                          dimensions=[5, 5],
-                          orientations=[[0, 0, np.pi],  # if element is None then random, if list then oriented
-                                        None])
-
-
-system = system_2  # choose 2
 
 visualize_system(system)
-
 
 trajectories = []
 for j in range(num_trajectories):
 
-    # system.add_excitation_center('s1')
-    # system.add_excitation_index('s1', 12)
-    system.add_excitation_random('s2', 5)
+    system.add_excitation_random('s1', 5)
 
     # visualize_system(system)
 
@@ -109,9 +99,9 @@ for j in range(num_trajectories):
 
     trajectories.append(trajectory)
 
-    #trajectory.plot_graph()
-    #plt = trajectory.plot_2d()
-    #plt.show()
+    # trajectory.plot_graph()
+    # plt = trajectory.plot_2d()
+    # plt.show()
 
 
 # diffusion properties

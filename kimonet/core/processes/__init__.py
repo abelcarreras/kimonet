@@ -1,7 +1,7 @@
 import numpy as np
 from kimonet.core.processes.fcwd import marcus_fcwd
 from collections import namedtuple
-
+from kimonet.utils.units import HBAR_PLANCK
 
 Transfer = namedtuple("Transfer", ["initial", "final", "description"])
 Direct = namedtuple("Direct", ["initial", "final", "description"])
@@ -60,7 +60,7 @@ def get_transfer_rates(center, system):
             e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
 
             if type(process) == Transfer:
-                transfer_rates.append(2*np.pi * e_coupling**2 * spectral_overlap)  # Fermi's Golden Rule
+                transfer_rates.append(e_coupling**2 * spectral_overlap / HBAR_PLANCK)  # Fermi's Golden Rule
             elif type(process) == Direct:
                 rate = e_coupling
                 transfer_rates.append(rate)  # Direct case: e_coupling == rate

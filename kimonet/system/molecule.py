@@ -3,6 +3,8 @@ from kimonet.utils import rotate_vector
 import copy
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 
+_ground_state_ = 'gs'
+
 
 class Molecule:
 
@@ -37,11 +39,16 @@ class Molecule:
         self.state = state
         self.state_energies = state_energies
         self.reorganization_energies = reorganization_energies
-        self.transition_moment = np.array(transition_moment) * DEBYE_TO_ANGS_EL  # Debye -> Angs * e
         self.coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
+
+        self.transition_moment = {}
+        for k, v in transition_moment.items():
+            self.transition_moment[k] = np.array(v) * DEBYE_TO_ANGS_EL
+        # self.transition_moment = np.array(transition_moment) * DEBYE_TO_ANGS_EL  # Debye -> Angs * e
+
 
         self.decays = {} if decays is None else decays
         self.decay_dict = {}
@@ -140,8 +147,13 @@ class Molecule:
 
         return decay_rates
 
-    def get_transition_moment(self):
-        return rotate_vector(self.transition_moment, self.orientation)
+    def get_transition_moment(self, to_state=_ground_state_):
+        if (self.state, to_state) in self.transition_moment:
+            return rotate_vector(self.transition_moment[(self.state, to_state)], self.orientation)
+        elif (to_state, self.state) in self.transition_moment:
+            return rotate_vector(self.transition_moment[(to_state, self.state)], self.orientation)
+        else:
+            return np.zeros(self.get_dim())
 
     def copy(self):
         return copy.deepcopy(self)
