@@ -462,7 +462,7 @@ class TrajectoryGraph:
 
         if len(coordinates) == 0:
             # warnings.warn('No data for state {}'.format(state))
-            return plt
+            return [], []
 
         vector = np.linalg.norm(vector, axis=0)
 
@@ -495,7 +495,7 @@ class TrajectoryGraph:
 
         if len(coordinates) == 0:
             # warnings.warn('No data for state {}'.format(state))
-            return plt
+            return [], []
 
         vector = np.linalg.norm(vector, axis=0)
 
