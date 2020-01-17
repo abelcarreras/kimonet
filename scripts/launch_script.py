@@ -38,6 +38,12 @@ reorganization_energies = {'gs': 0,
                            's2': 0.2,
                            's2t': 0.2}
 
+reorganization_energies = {('s1', 'gs'): 0.2,
+                           ('gs', 's1'): 0.2,
+                           ('s2', 'gs'): 0.2,
+                           ('gs', 's2'): 0.2,
+                           }
+
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
                     transition_moment={('s1', 'gs'): [2.0, 0], ('s2', 'gs'): [2.0, 0]},  # transition dipole moment of the molecule (Debye)

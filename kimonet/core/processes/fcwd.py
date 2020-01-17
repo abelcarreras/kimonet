@@ -1,10 +1,77 @@
 import numpy as np
 from kimonet.utils.units import BOLTZMANN_CONSTANT
+from scipy.integrate import quad
+import math
 
 ###########################################################################################################
 #                                 Frank-Condon weighted density
 ###########################################################################################################
 overlap_data = {}
+
+
+def general_fcwd(donor, acceptor, process, conditions=None):
+    """
+    :param donor:
+    :param acceptor:
+    :param process:
+    :param conditions:
+    :return: The spectral overlap between the donor and the acceptor
+    """
+
+    # testing normalization
+
+    info = str(hash((donor, acceptor, process, str(conditions), 'general_fcwd')))
+
+    if info in overlap_data:
+        # the memory is used if the overlap has been already computed
+        return overlap_data[info]
+
+    transition_donor = (process.initial[0], process.final[0])
+    transition_acceptor = (process.initial[1], process.final[1])
+
+
+    donor_vib_spectrum = donor.get_vib_spectrum(transition_donor)
+    if donor_vib_spectrum is None:
+        donor_vib_spectrum = marcus_vib_spectrum(donor, transition_donor, conditions)
+
+    acceptor_vib_spectrum = acceptor.get_vib_spectrum(transition_acceptor)
+    if acceptor_vib_spectrum is None:
+        acceptor_vib_spectrum = marcus_vib_spectrum(donor, transition_acceptor, conditions)
+
+    test_donor = quad(donor_vib_spectrum, 0, np.inf,  epsabs=1e-20)[0]
+    test_acceptor = quad(acceptor_vib_spectrum, 0, np.inf,  epsabs=1e-20)[0]
+
+    # print('test_donor', test_donor)
+    # print('test_acceptor', test_acceptor)
+
+    assert math.isclose(test_donor, 1.0, abs_tol=0.01)
+    assert math.isclose(test_acceptor, 1.0, abs_tol=0.01)
+
+    def integrand(x):
+        return donor_vib_spectrum(x) * acceptor_vib_spectrum(x)
+
+    overlap_data[info] = quad(integrand, 0, np.inf,  epsabs=1e-20)[0]
+
+    return overlap_data[info]
+
+    # return quad(integrand, 0, np.inf, args=(donor, acceptor))[0]
+
+
+def marcus_vib_spectrum(molecule, transition, conditions):
+
+    temp = conditions['temperature']       # temperature (K)
+    reorg_ene = molecule.reorganization_energies[transition]
+
+    elec_trans_ene = molecule.state_energies[transition[1]] - molecule.state_energies[transition[0]]
+    sign = np.sign(elec_trans_ene)
+
+    # print('T', temp, molecule.reorganization_energies[transition], elec_trans_ene, -sign)
+
+    def vib_spectrum(e):
+        return 1.0 / (np.sqrt(4.0 * np.pi * BOLTZMANN_CONSTANT * temp * reorg_ene)) * \
+               np.exp(-(elec_trans_ene - e * sign + reorg_ene) ** 2 / (4 * BOLTZMANN_CONSTANT * temp * reorg_ene))
+
+    return vib_spectrum
 
 
 def marcus_fcwd(donor, acceptor, conditions):
@@ -20,7 +87,7 @@ def marcus_fcwd(donor, acceptor, conditions):
     gibbs_energy = donor.state_energies[excited_state] - acceptor.state_energies[excited_state]
     # Gibbs energy: energy difference between the equilibrium points of the excited states
 
-    reorganization = acceptor.reorganization_energies[excited_state]
+    reorganization = acceptor.reorganization_energies[('gs', 's1')] + acceptor.reorganization_energies[('s1', 'gs')]
     # acceptor reorganization energy of the excited state
 
     info = str(hash((T, gibbs_energy, reorganization, 'marcus')))
