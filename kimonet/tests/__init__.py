@@ -42,9 +42,10 @@ class TestKimonet(unittest.TestCase):
 
         self.parameters = [3.0, 3.0]
 
-        self.molecule = Molecule(state_energies={'gs': 0, 's1': 1},
-                                 reorganization_energies={'gs': 0, 's1': 0.2},
-                                 transition_moment={('s1', 'gs'):[2.0, 0]},  # transition dipole moment of the molecule (Debye)
+        self.molecule = Molecule(state_energies={'gs': 0, 's1': 3},
+                                 reorganization_energies={('s1', 'gs'): 0.5, ('gs', 's1'): 0.5},
+                                 # reorganization_energies={'gs': 0, 's1': 0.2},
+                                 transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
                                  decays=decay_scheme
                                  )
 
@@ -58,12 +59,13 @@ class TestKimonet(unittest.TestCase):
                                      orientation=[0, 0, 0])
 
     def test_kmc_algorithm(self):
-        num_trajectories = 50                           # number of trajectories that will be simulated
+        num_trajectories = 100                           # number of trajectories that will be simulated
         max_steps = 100000                              # maximum number of steps for trajectory allowed
 
         trajectories = []
         for j in range(num_trajectories):
 
+            # print('traj', j)
             self.system.add_excitation_center('s1')
 
             trajectory = Trajectory(self.system)
@@ -93,13 +95,13 @@ class TestKimonet(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 2.713221,
-               'lifetime': 1601.843545,
-               'diffusion length': 129.200077,
-               'diffusion tensor': [[5.169843, 0.318825],
-                                    [0.318825, 0.256599]],
-               'diffusion length tensor': [[126.724347, 32.767362],
-                                           [32.767362, 25.171412]]
+        ref = {'diffusion coefficient': 20.164265,
+               'lifetime': 239.244162,
+               'diffusion length': 136.504615,
+               'diffusion tensor': [[38.002607, 2.282159],
+                                    [2.282159, 2.325924]],
+               'diffusion length tensor': [[133.376572, 35.03327],
+                                           [35.03327, 29.05512]]
                }
 
 

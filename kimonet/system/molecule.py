@@ -16,7 +16,8 @@ class Molecule:
                  state='gs',
                  vdw_radius=1.0,                # Angstrom
                  coordinates=(0,),              # Angstrom
-                 orientation=(0, 0, 0)):        # Rx, Ry, Rz (radians)
+                 orientation=(0, 0, 0),        # Rx, Ry, Rz (radians)
+                 vib_spectrum=None):
         """
         :param states_energies: dictionary {'state': energy}
         :param state: sting of the name of the state
@@ -43,6 +44,7 @@ class Molecule:
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
+        self.vib_spectrum = {} if vib_spectrum is None else vib_spectrum
 
         self.transition_moment = {}
         for k, v in transition_moment.items():
@@ -93,8 +95,23 @@ class Molecule:
         """
         return self.orientation
 
-    def get_reorganization_state_energy(self):
-        return self.reorganization_energies[self.state]
+    def get_reorganization_energy(self, state=None):
+        if state is None:
+            return self.reorganization_energies[self.state]
+        else:
+            return self.reorganization_energies[state]
+
+    def get_state_energy(self, state=None):
+        if state is None:
+            return self.state_energies[self.state]
+        else:
+            return self.state_energies[state]
+
+    def get_vib_spectrum(self, transition):
+        if transition in self.vib_spectrum:
+            return self.vib_spectrum[transition]
+        else:
+            return None
 
     def electronic_state(self):
         """

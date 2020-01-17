@@ -1,5 +1,5 @@
 import numpy as np
-from kimonet.core.processes.fcwd import marcus_fcwd
+from kimonet.core.processes.fcwd import general_fcwd, marcus_fcwd
 from collections import namedtuple
 from kimonet.utils.units import HBAR_PLANCK
 
@@ -51,7 +51,7 @@ def get_transfer_rates(center, system):
         acceptor = system.molecules[neighbour]
 
         # compute the spectral overlap using Marcus formula
-        spectral_overlap = marcus_fcwd(donor, acceptor, conditions)
+        # spectral_overlap = marcus_fcwd(donor, acceptor, conditions)
 
         allowed_processes = get_allowed_processes(donor, acceptor)
 
@@ -60,7 +60,9 @@ def get_transfer_rates(center, system):
             e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
 
             if type(process) == Transfer:
-                transfer_rates.append(e_coupling**2 * spectral_overlap / HBAR_PLANCK)  # Fermi's Golden Rule
+                spectral_overlap = general_fcwd(donor, acceptor, process, conditions)
+
+                transfer_rates.append(2*np.pi/HBAR_PLANCK * e_coupling**2 * spectral_overlap )  # Fermi's Golden Rule
             elif type(process) == Direct:
                 rate = e_coupling
                 transfer_rates.append(rate)  # Direct case: e_coupling == rate

@@ -5,7 +5,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
-from kimonet.core.processes import Transfer, Decay
+from kimonet.core.processes import Transfer, Decay, Direct
 import kimonet.core.processes as processes
 import concurrent.futures as futures
 
@@ -26,12 +26,12 @@ state_energies = {'gs': 0,
                   's1': 1}
 
 # reorganization energies of the states (eV)
-reorganization_energies = {'gs': 0,
-                           's1': 0.2}
+reorganization_energies = {('s1', 'gs'): 0.5,
+                           ('gs', 's1'): 0.5}
 
 molecule = Molecule(state_energies=state_energies,
                     reorganization_energies=reorganization_energies,
-                    transition_moment={('s1', 'gs'): [2.0, 0]},  # transition dipole moment of the molecule (Debye)
+                    transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme
                     )
 
