@@ -9,15 +9,15 @@ _ground_state_ = 'gs'
 class Molecule:
 
     def __init__(self,
-                 state_energies,                # eV
-                 reorganization_energies,       # eV
-                 transition_moment,             # Debye
+                 state_energies,  # eV
+                 reorganization_energies,  # eV
+                 transition_moment,  # Debye
                  decays=None,
                  state='gs',
-                 vdw_radius=1.0,                # Angstrom
-                 coordinates=(0,),              # Angstrom
-                 orientation=(0, 0, 0),        # Rx, Ry, Rz (radians)
-                 vib_spectrum=None):
+                 vdw_radius=1.0,  # Angstrom
+                 coordinates=(0,),  # Angstrom
+                 orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
+                 vib_dos=None):
         """
         :param states_energies: dictionary {'state': energy}
         :param state: sting of the name of the state
@@ -44,7 +44,7 @@ class Molecule:
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
-        self.vib_spectrum = {} if vib_spectrum is None else vib_spectrum
+        self.vib_dos = {} if vib_dos is None else vib_dos
 
         self.transition_moment = {}
         for k, v in transition_moment.items():
@@ -107,9 +107,9 @@ class Molecule:
         else:
             return self.state_energies[state]
 
-    def get_vib_spectrum(self, transition):
-        if transition in self.vib_spectrum:
-            return self.vib_spectrum[transition]
+    def get_vib_dos(self, transition):
+        if transition in self.vib_dos:
+            return self.vib_dos[transition]
         else:
             return None
 

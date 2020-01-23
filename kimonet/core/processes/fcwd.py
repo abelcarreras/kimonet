@@ -29,17 +29,16 @@ def general_fcwd(donor, acceptor, process, conditions=None):
     transition_donor = (process.initial[0], process.final[0])
     transition_acceptor = (process.initial[1], process.final[1])
 
+    donor_vib_dos = donor.get_vib_dos(transition_donor)
+    if donor_vib_dos is None:
+        donor_vib_dos = marcus_vib_spectrum(donor, transition_donor, conditions)
 
-    donor_vib_spectrum = donor.get_vib_spectrum(transition_donor)
-    if donor_vib_spectrum is None:
-        donor_vib_spectrum = marcus_vib_spectrum(donor, transition_donor, conditions)
+    acceptor_vib_dos = acceptor.get_vib_dos(transition_acceptor)
+    if acceptor_vib_dos is None:
+        acceptor_vib_dos = marcus_vib_spectrum(donor, transition_acceptor, conditions)
 
-    acceptor_vib_spectrum = acceptor.get_vib_spectrum(transition_acceptor)
-    if acceptor_vib_spectrum is None:
-        acceptor_vib_spectrum = marcus_vib_spectrum(donor, transition_acceptor, conditions)
-
-    test_donor = quad(donor_vib_spectrum, 0, np.inf,  epsabs=1e-20)[0]
-    test_acceptor = quad(acceptor_vib_spectrum, 0, np.inf,  epsabs=1e-20)[0]
+    test_donor = quad(donor_vib_dos, 0, np.inf,  epsabs=1e-20)[0]
+    test_acceptor = quad(acceptor_vib_dos, 0, np.inf,  epsabs=1e-20)[0]
 
     # print('test_donor', test_donor)
     # print('test_acceptor', test_acceptor)
@@ -48,7 +47,7 @@ def general_fcwd(donor, acceptor, process, conditions=None):
     assert math.isclose(test_acceptor, 1.0, abs_tol=0.01)
 
     def integrand(x):
-        return donor_vib_spectrum(x) * acceptor_vib_spectrum(x)
+        return donor_vib_dos(x) * acceptor_vib_dos(x)
 
     overlap_data[info] = quad(integrand, 0, np.inf,  epsabs=1e-20)[0]
 
