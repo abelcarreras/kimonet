@@ -35,7 +35,7 @@ def general_fcwd(donor, acceptor, process, conditions=None):
 
     acceptor_vib_dos = acceptor.get_vib_dos(transition_acceptor)
     if acceptor_vib_dos is None:
-        acceptor_vib_dos = marcus_vib_spectrum(donor, transition_acceptor, conditions)
+        acceptor_vib_dos = marcus_vib_spectrum(acceptor, transition_acceptor, conditions)
 
     test_donor = quad(donor_vib_dos, 0, np.inf,  epsabs=1e-20)[0]
     test_acceptor = quad(acceptor_vib_dos, 0, np.inf,  epsabs=1e-20)[0]
@@ -58,8 +58,30 @@ def general_fcwd(donor, acceptor, process, conditions=None):
 
 def marcus_vib_spectrum(molecule, transition, conditions):
 
+    import warnings
+    warnings.warn('Using Marcus method')
+
+    temp = conditions['temperature']  # temperature (K)
+    reorg_ene = np.sum(molecule.reorganization_energies[transition])
+
+    elec_trans_ene = molecule.state_energies[transition[1]] - molecule.state_energies[transition[0]]
+    sign = np.sign(elec_trans_ene)
+
+    # print('T', temp, molecule.reorganization_energies[transition], elec_trans_ene, -sign)
+
+    def vib_spectrum(e):
+        return 1.0 / (np.sqrt(4.0 * np.pi * BOLTZMANN_CONSTANT * temp * reorg_ene)) * \
+               np.exp(-(elec_trans_ene - e * sign + reorg_ene) ** 2 / (4 * BOLTZMANN_CONSTANT * temp * reorg_ene))
+
+    return vib_spectrum
+
+
+def levich_jortner_vib_spectrum(molecule, transition, conditions):
+
     temp = conditions['temperature']       # temperature (K)
     reorg_ene = molecule.reorganization_energies[transition]
+    reorg_ene = molecule.frequencies[transition]
+
 
     elec_trans_ene = molecule.state_energies[transition[1]] - molecule.state_energies[transition[0]]
     sign = np.sign(elec_trans_ene)

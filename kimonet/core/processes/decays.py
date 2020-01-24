@@ -15,7 +15,7 @@ def triplet_triplet_annihilation(molecule):
     f = 1
     ct = 1
     ptta = 50
-    lifetime=10
-    a0=0.529177249
-    t=ct*a0**-3
+    lifetime = 10
+    a0 = 0.529177249
+    t = ct*a0**-3
     return 1/(f*lifetime*t)*(1/ptta-1)**-1
