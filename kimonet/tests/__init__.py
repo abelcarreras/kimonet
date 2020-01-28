@@ -6,6 +6,7 @@ from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
 from kimonet.core.processes import Transfer, Decay
 import kimonet.core.processes as processes
+from kimonet.system.vibrations import MarcusModel
 
 import unittest
 import numpy as np
@@ -42,11 +43,13 @@ class TestKimonet(unittest.TestCase):
 
         self.parameters = [3.0, 3.0]
 
+        vib = MarcusModel(reorganization_energies={('s1', 'gs'): 0.5,
+                                                   ('gs', 's1'): 0.5})
+
         self.molecule = Molecule(state_energies={'gs': 0, 's1': 3},
-                                 reorganization_energies={('s1', 'gs'): 0.5, ('gs', 's1'): 0.5},
-                                 # reorganization_energies={'gs': 0, 's1': 0.2},
                                  transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
-                                 decays=decay_scheme
+                                 vibrations=vib,
+                                 decays=decay_scheme,
                                  )
 
         conditions = {'temperature': 273.15,            # temperature of the system (K)
@@ -103,7 +106,6 @@ class TestKimonet(unittest.TestCase):
                'diffusion length tensor': [[133.376572, 35.03327],
                                            [35.03327, 29.05512]]
                }
-
 
         # This is just for visual comparison (not accounted in the test)
         from kimonet.core.processes import get_transfer_rates, get_decay_rates

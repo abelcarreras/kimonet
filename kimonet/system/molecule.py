@@ -10,47 +10,45 @@ class Molecule:
 
     def __init__(self,
                  state_energies,  # eV
-                 reorganization_energies,  # eV
                  transition_moment,  # Debye
+                 vibrations,
                  decays=None,
                  state='gs',
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
-                 vib_dos=None):
+                 ):
         """
         :param states_energies: dictionary {'state': energy}
         :param state: sting of the name of the state
         The name of the state should coincide with some key of the dictionary in order to identify the state with
         its energy.
-        :param reorganization_energies: dictionary {'state': relaxation energy of the state}
-        Names of 'state' would be: g_s (ground state), s_1 (first singlet), t_1 (first triplet), etc.
-        Energies should be given with eV.
-
         :param transition_moment: Dipole transition moment vector (3d). The vector is given in respect to the RS
         of the molecule. So for all molecules of a same type if will be equal.
         This dipole moment is given in atomic units.
-
+        :param vibrations: Vibrations object. This contains all the information about how to handle temperature
+        dependence
         :param coordinates: 3d vector. Gives the position of the molecule in the system (in general the 0 position
         will coincide with the center of the distribution). Units: nm. If the system has less than 3 dimensions,
         the extra coordinates will be taken as 0.
         :param orientation: 3d unit vector. Gives the orientation of the molecule in the global reference system.
         """
 
+        # set state energies to vibrations
+        vibrations.set_state_energies(state_energies)
+
         self.state = state
         self.state_energies = state_energies
-        self.reorganization_energies = reorganization_energies
         self.coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
-        self.vib_dos = {} if vib_dos is None else vib_dos
+        self.vibrations = vibrations
 
         self.transition_moment = {}
         for k, v in transition_moment.items():
             self.transition_moment[k] = np.array(v) * DEBYE_TO_ANGS_EL
         # self.transition_moment = np.array(transition_moment) * DEBYE_TO_ANGS_EL  # Debye -> Angs * e
-
 
         self.decays = {} if decays is None else decays
         self.decay_dict = {}
@@ -58,9 +56,10 @@ class Molecule:
     def __hash__(self):
         return hash((str(self.state_energies),
                      self.state,
-                     str(self.reorganization_energies),
+                     # str(self.reorganization_energies),
                      self.coordinates.tostring(),
-                     self.orientation.tostring()))
+                     self.orientation.tostring())) + \
+               hash(self.vibrations)
 
     def get_vdw_radius(self):
         return self.vdw_radius
@@ -95,23 +94,14 @@ class Molecule:
         """
         return self.orientation
 
-    def get_reorganization_energy(self, state=None):
-        if state is None:
-            return self.reorganization_energies[self.state]
-        else:
-            return self.reorganization_energies[state]
-
     def get_state_energy(self, state=None):
         if state is None:
             return self.state_energies[self.state]
         else:
             return self.state_energies[state]
 
-    def get_vib_dos(self, transition):
-        if transition in self.vib_dos:
-            return self.vib_dos[transition]
-        else:
-            return None
+    def get_vib_dos(self, transition, temperature=300):
+        return self.vibrations.get_vib_spectrum(transition, temperature)
 
     def electronic_state(self):
         """
