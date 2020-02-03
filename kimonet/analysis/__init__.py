@@ -29,8 +29,8 @@ def visualize_system(system, dipole=None):
 
     # define color by state
     colors = {'gs': 'red',
-              's0': 'blue',
-              's1': 'green',
+              's1': 'blue',
+              's2': 'green',
               't1': 'orange'}
 
     for i, molecule in enumerate(system.molecules):
@@ -49,7 +49,6 @@ def visualize_system(system, dipole=None):
             ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=False, length=5, color=colors[molecule.state])
             # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
             ax.text(c[0], c[1], c[2], '{}'.format(i), fontsize=12)
-
 
     # Plot lattice vectors
     for lattice_vector in system.supercell:

@@ -142,17 +142,15 @@ class Molecule:
         More if(s) entrances shall be added if more electronic states are considered.
         """
 
-        if self.state in self.decay_dict:
-            return self.decay_dict[self.state]
+        if self.state not in self.decay_dict:
+            decay_rates = {}
+            for coupling in self.decays:
+                if coupling.initial == self.state:
+                    decay_rates[coupling] = self.decays[coupling](self)
 
-        decay_rates = {}
-        for coupling in self.decays:
-            if coupling.initial == self.state:
-                decay_rates[coupling] = self.decays[coupling](self)
+            self.decay_dict[self.state] = decay_rates
 
-        self.decay_dict[self.state] = decay_rates
-
-        return decay_rates
+        return self.decay_dict[self.state]
 
     def get_transition_moment(self, to_state=_ground_state_):
         if (self.state, to_state) in self.transition_moment:
