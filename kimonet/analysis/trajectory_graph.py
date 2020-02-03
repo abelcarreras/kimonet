@@ -649,6 +649,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         if not os.path.exists('test_map'):
             os.mkdir('test_map')
 
+        self.mapped_list = []
         for i, center in enumerate(system.centers):
 
             mem_array = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), i),
@@ -673,6 +674,7 @@ class TrajectoryGraph2(TrajectoryGraph):
                                 index=ArrayHandler(mem_array, 'index'),
                                 finished=False,
                                 )
+            self.mapped_list.append((mem_array, 'test_map/array_{}_{}_{}'.format(id(self), os.getpid(), i)))
 
         self.supercell = system.supercell
         self.system = system
@@ -688,6 +690,7 @@ class TrajectoryGraph2(TrajectoryGraph):
 
         mem_array_t[:] = (0)
         self.times = ArrayHandler(mem_array_t, 'times')
+        self.mapped_list.append((mem_array_t, 'test_map/array_{}_{}_{}'.format(id(self), os.getpid(),'t')))
 
         self.states = set()
         ce = {}
@@ -726,4 +729,12 @@ class TrajectoryGraph2(TrajectoryGraph):
                             index=ArrayHandler(mem_array, 'index'),
                             finished=False
                             )
+
+        self.mapped_list.append((mem_array, 'test_map/array_{}_{}_{}'.format(id(self), os.getpid(), self.node_count)))
+
         self.node_count += 1
+
+    def __del__(self):
+        for mapped_array, filename in self.mapped_list:
+            del mapped_array
+            os.remove(filename)
