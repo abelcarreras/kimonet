@@ -161,7 +161,6 @@ class TrajectoryGraph:
             # Intramolecular conversion
             self._finish_node(node_link['donor'])
 
-            #self._finish_node(node_link['donor'])
             # Check if not ground state
             final_state = self.system.molecules[change_step['acceptor']].state
             if final_state != _ground_state_:
@@ -544,7 +543,6 @@ class TrajectoryGraph:
 
         return vector, t
 
-
     def plot_distances(self, state=None):
 
         vector, t = self.get_distances_vs_times(state)
@@ -652,37 +650,27 @@ class TrajectoryGraph2(TrajectoryGraph):
             os.mkdir('test_map')
 
         for i, center in enumerate(system.centers):
-            # a = np.array([np.array(system.molecules[center].get_coordinates())])
-            # print(a[0])
-            # exit()
 
             mem_array = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), i),
-                                  dtype=[('coordinates', object) , ('cell_state', object), ('time', object), ('index', object)],
-                                  mode='w+', shape=(1,)), requirements=['O'])
+                                             dtype=[('coordinates', object),
+                                                    ('cell_state', object),
+                                                    ('time', object),
+                                                    ('index', object)],
+                                             mode='w+', shape=(1,)),
+                                   requirements=['O'])
 
             mem_array[:] = (system.molecules[center].get_coordinates(),
                             system.molecules[center].cell_state,
                             0.0,
                             center)
 
-            coordinates_array = ArrayHandler(mem_array, 'coordinates')
-            cell_array = ArrayHandler(mem_array, 'cell_state')
-            time_array = ArrayHandler(mem_array, 'time')
-            index_array = ArrayHandler(mem_array, 'index')
-
-            # coordinates_array = np.memmap('test_map/coordinates_{}{}'.format(id(self), center), dtype=float, mode='w+', shape=(1, 2))
-            # coordinates_array[:] = np.array([np.array(system.molecules[center].get_coordinates())])[:]
-
-            # cell_array = np.memmap('test_map/cellstate_{}{}'.format(id(self), center), dtype=int, mode='w+', shape=(1, 2))
-            # cell_array[:] = np.array([np.array(system.molecules[center].cell_state)])[:]
-
             self.graph.add_node(i,
-                                coordinates=coordinates_array,
+                                coordinates=ArrayHandler(mem_array, 'coordinates'),
                                 state=system.molecules[center].state,
-                                cell_state=cell_array,
-                                time=time_array,
+                                cell_state=ArrayHandler(mem_array, 'cell_state'),
+                                time=ArrayHandler(mem_array, 'time'),
                                 event_time=0,
-                                index=index_array,
+                                index=ArrayHandler(mem_array, 'index'),
                                 finished=False,
                                 )
 
@@ -693,16 +681,13 @@ class TrajectoryGraph2(TrajectoryGraph):
         self.n_centers = len(system.centers)
         self.labels = {}
 
-        if False:
-            mem_array_t = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), 't'),
-                                               dtype=[('times', object)],
-                                               mode='w+', shape=(1,)), requirements=['O'])
-            mem_array_t[:] = (0)
-            times_array = ArrayHandler(mem_array_t, 'times')
+        mem_array_t = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), 't'),
+                                           dtype=[('times', object)],
+                                           mode='w+', shape=(1,)),
+                                 requirements=['O'])
 
-            self.times = times_array
-
-        self.times = [0]
+        mem_array_t[:] = (0)
+        self.times = ArrayHandler(mem_array_t, 'times')
 
         self.states = set()
         ce = {}
@@ -719,37 +704,26 @@ class TrajectoryGraph2(TrajectoryGraph):
             exit()
 
         mem_array = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), self.node_count),
-                              dtype=[('coordinates', object) , ('cell_state', object), ('time', object), ('index', object)],
-                              mode='w+', shape=(1,)), requirements=['O'])
+                                         dtype=[('coordinates', object),
+                                                ('cell_state', object),
+                                                ('time', object),
+                                                ('index', object)],
+                                         mode='w+', shape=(1,)),
+                               requirements=['O'])
 
         mem_array[:] = (self.system.molecules[new_on_molecule].get_coordinates(),
                         self.system.molecules[new_on_molecule].cell_state,
                         0.0,
                         new_on_molecule)
 
-        coordinates_array = ArrayHandler(mem_array, 'coordinates')
-        cell_array = ArrayHandler(mem_array, 'cell_state')
-        time_array = ArrayHandler(mem_array, 'time')
-        index_array = ArrayHandler(mem_array, 'index')
-
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
-                            coordinates=coordinates_array,
+                            coordinates=ArrayHandler(mem_array, 'coordinates'),
                             state=self.system.molecules[new_on_molecule].state,
-                            cell_state=cell_array,
-                            # cell_state=[[0, 0]],
-                            time=time_array,
+                            cell_state=ArrayHandler(mem_array, 'cell_state'),
+                            time=ArrayHandler(mem_array, 'time'),
                             event_time=self.times[-1],
-                            index=index_array,
+                            index=ArrayHandler(mem_array, 'index'),
                             finished=False
                             )
         self.node_count += 1
-
-    def _append_to_node(self, on_node, add_molecule):
-
-        node = self.graph.nodes[on_node]
-
-        node['coordinates'].append(self.system.molecules[add_molecule].get_coordinates())
-        node['cell_state'].append(self.system.molecules[add_molecule].cell_state)
-        node['time'].append(self.times[-1] - node['event_time'])
-        node['index'].append(add_molecule)
