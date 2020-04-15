@@ -4,7 +4,7 @@ from kimonet.utils.rotation import rotate_vector
 
 def minimum_distance_vector(r_vector, supercell):
     # lattice periodicity
-    r_vector = np.array(r_vector).copy()
+    r_vector = np.array(r_vector, dtype=float).copy()
     cell_vector = []
 
     for lattice in supercell:
