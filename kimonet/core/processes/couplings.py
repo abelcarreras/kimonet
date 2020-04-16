@@ -58,6 +58,8 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
     :param acceptor: neighbouring molecule. Possible acceptor
     :param conditions: dictionary with physical conditions
     :param supercell: the supercell of the system
+    :param longitude: extension length of the dipole
+    :param n_divisions: number of subdivisions. To use with longitude. Increase until convergence.
     :return: Forster coupling
     """
 
