@@ -6,6 +6,8 @@ from kimonet.core.processes.couplings import forster_coupling, dexter_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
 from kimonet.core.processes import Transfer, Decay, Direct
 import kimonet.core.processes as processes
+from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
+from kimonet.fileio import store_trajectory_list, load_trajectory_list
 
 import numpy as np
 np.random.seed(1)  # for testing
@@ -13,17 +15,17 @@ np.random.seed(1)  # for testing
 
 processes.transfer_scheme = {
                              Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                             Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                             Transfer(initial=('s1', 'gs'), final=('s2t', 's2t'), description='transition'): lambda x, y, z, k: 1/100,
-                             Direct(initial=('s2t', 's2t'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1 / 10,
-                             Direct(initial=('s1', 's2'), final=('s2', 's1'), description='cross'): lambda x, y, z, k: 1 / 10,
-                             Direct(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 1/10
+                             #Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
+                             #Transfer(initial=('s1', 'gs'), final=('s2t', 's2t'), description='transition'): lambda x, y, z, k: 1/100,
+                             #Direct(initial=('s2t', 's2t'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1 / 10,
+                             #Direct(initial=('s1', 's2'), final=('s2', 's1'), description='cross'): lambda x, y, z, k: 1 / 10,
+                             #Direct(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 1/10
                              }
 
 decay_scheme = {
-                # Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                Decay(initial='s1', final='gs', description='decay s1'): lambda x: 1/50,
-                Decay(initial='s2', final='gs', description='decay s2'): lambda x: 1/30
+                Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                #Decay(initial='s1', final='gs', description='decay s1'): lambda x: 1/50,
+                #Decay(initial='s2', final='gs', description='decay s2'): lambda x: 1/30
 }
 
 # excitation energies of the electronic states (eV)
@@ -33,11 +35,6 @@ state_energies = {'gs': 0,
                   's2t': 1}
 
 # reorganization energies of the states (eV)
-reorganization_energies = {'gs': 0,
-                           's1': 0.2,
-                           's2': 0.2,
-                           's2t': 0.2}
-
 reorganization_energies = {('s1', 'gs'): 0.2,
                            ('gs', 's1'): 0.2,
                            ('s2', 'gs'): 0.2,
@@ -45,7 +42,7 @@ reorganization_energies = {('s1', 'gs'): 0.2,
                            }
 
 molecule = Molecule(state_energies=state_energies,
-                    reorganization_energies=reorganization_energies,
+                    vibrations=MarcusModel(reorganization_energies),
                     transition_moment={('s1', 'gs'): [2.0, 0], ('s2', 'gs'): [2.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
                     vdw_radius=1.7
@@ -61,8 +58,8 @@ conditions = {'temperature': 273.15,            # temperature of the system (K)
 
 #######################################################################################################################
 
-num_trajectories = 50                          # number of trajectories that will be simulated
-max_steps = 10000                              # maximum number of steps for trajectory allowed
+num_trajectories = 5                          # number of trajectories that will be simulated
+max_steps = 100                              # maximum number of steps for trajectory allowed
 
 system_1 = regular_system(conditions=conditions,
                           molecule=molecule,
@@ -74,8 +71,8 @@ system_2 = crystal_system(conditions=conditions,
                           molecule=molecule,
                           scaled_coordinates=[[0, 0],],
                           unitcell=[[3.0, 0.5],
-                                    [0.5, 1.0]],
-                          dimensions=[5, 5],
+                                    [0.5, 2.0]],
+                          dimensions=[4, 4],
                           orientations=[[0, 0, np.pi],  # if element is None then random, if list then oriented
                                         None])
 
@@ -88,9 +85,9 @@ visualize_system(system)
 trajectories = []
 for j in range(num_trajectories):
 
-    # system.add_excitation_center('s1')
-    # system.add_excitation_index('s1', 12)
-    system.add_excitation_random('s2', 5)
+    system.add_excitation_center('s1')
+    #system.add_excitation_index('s1', 1)
+    #system.add_excitation_random('s2', 5)
 
     # visualize_system(system)
 
@@ -115,9 +112,9 @@ for j in range(num_trajectories):
 
     trajectories.append(trajectory)
 
-    #trajectory.plot_graph()
-    #plt = trajectory.plot_2d()
-    #plt.show()
+    # trajectory.plot_graph()
+    # plt = trajectory.plot_2d()
+    # plt.show()
 
 
 # diffusion properties
@@ -135,21 +132,43 @@ for state in analysis.get_states():
     print(analysis.diffusion_length_tensor(state))
 
 
-plt = analysis.plot_excitations('s1')
-analysis.plot_excitations('s2')
-analysis.plot_excitations()
-plt.figure()
+store_trajectory_list(trajectories, 'test.h5')
 
-plt = analysis.plot_2d('s1')
-plt.figure()
-plt = analysis.plot_2d('s2')
-plt.figure()
-analysis.plot_distances('s1')
-plt.figure()
-analysis.plot_distances('s2')
-plt.figure()
-analysis.plot_histogram('s1')
-plt.figure()
-analysis.plot_histogram('s2')
+trajectory_list = load_trajectory_list('test.h5')
 
-plt.show()
+
+print('--------**************----------')
+analysis = TrajectoryAnalysis(trajectory_list)
+
+
+for state in analysis.get_states():
+    print('\nState: {}\n--------------------------------'.format(state))
+    print('diffusion coefficient: {} angs^2/ns'.format(analysis.diffusion_coefficient(state)))
+    print('lifetime: {} ns'.format(analysis.lifetime(state)))
+    print('diffusion length: {} angs'.format(analysis.diffusion_length(state)))
+    print('diffusion tensor (angs^2/ns)')
+    print(analysis.diffusion_coeff_tensor(state))
+    print('diffusion length tensor (angs)')
+    print(analysis.diffusion_length_tensor(state))
+
+exit()
+
+
+#plt.figure(1)
+#analysis.plot_excitations('s1')
+#plt.show()
+#analysis.plot_excitations('s2')
+#analysis.plot_excitations()
+
+analysis.plot_2d('s1').show()
+#plt.figure()
+#plt = analysis.plot_2d('s2')
+analysis.plot_distances('s1').show()
+#plt.figure()
+#analysis.plot_distances('s2')
+#analysis.plot_histogram('s1').savefig('test.png')
+analysis.plot_histogram('s1').show()
+
+#plt.figure()
+#analysis.plot_histogram('s2')
+

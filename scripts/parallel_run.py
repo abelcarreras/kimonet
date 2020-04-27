@@ -6,6 +6,7 @@ from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
 from kimonet.core.processes import Transfer, Decay, Direct
+from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 import kimonet.core.processes as processes
 import concurrent.futures as futures
 
@@ -30,7 +31,7 @@ reorganization_energies = {('s1', 'gs'): 0.5,
                            ('gs', 's1'): 0.5}
 
 molecule = Molecule(state_energies=state_energies,
-                    reorganization_energies=reorganization_energies,
+                    vibrations=MarcusModel(reorganization_energies),
                     transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme
                     )
