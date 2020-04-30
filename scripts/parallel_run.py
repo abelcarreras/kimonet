@@ -96,7 +96,7 @@ print('diffusion length: {} angs'.format(analysis.diffusion_length('s1')))
 print('diffusion tensor')
 print(analysis.diffusion_coeff_tensor('s1'))
 print('diffusion length tensor')
-print(analysis.diffusion_length_tensor('s1'))
+print(analysis.diffusion_length_square_tensor('s1'))
 # print(np.sqrt(analysis.diffusion_coeff_tensor()*analysis.lifetime()*2))
 
 plt = analysis.plot_2d()

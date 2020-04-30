@@ -8,6 +8,7 @@ Requirements
 - numpy
 - scipy
 - networkx
+- h5py
 - pygraphviz (which requires graphviz-dev library) [optional]
 
 Contact info

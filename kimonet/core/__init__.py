@@ -87,3 +87,53 @@ def update_step(chosen_process, system):
         if final_state == _ground_state_:
             system.molecules[chosen_process['donor']].cell_state *= 0
 
+
+def system_test_info(system):
+    from kimonet.core.processes.fcwd import general_fcwd, marcus_fcwd
+    from collections import namedtuple
+    from kimonet.utils.units import HBAR_PLANCK
+    import numpy as np
+    from kimonet.utils import minimum_distance_vector
+
+    molecules = system.molecules                # list of all instances of Molecule
+
+    for center in system.centers:
+        total_r = 0
+        # anal_data = []
+        if type(center) == int:
+            # looks for the all molecules in a circle of radius centered at the position of the excited molecule
+
+            print('*'*80 + '\n CENTER {}\n'.format(center) + '*'*80)
+            process_list, rate_list = get_processes_and_rates(center, system)
+            for p, r in zip(process_list, rate_list):
+                # print('{}'.format(p))
+                print('Process: {}'.format(p['process']))
+                print('Donor: {} / Acceptor: {}'.format(p['donor'], p['acceptor']))
+
+                if type(p['process']) == Transfer:
+                    print('Cell_increment: {} '.format(p['cell_increment']))
+
+                    position_d = molecules[p['donor']].get_coordinates()
+                    position_a = molecules[p['acceptor']].get_coordinates()
+                    distance = np.linalg.norm(minimum_distance_vector(position_a - position_d, system.supercell))
+                    print('Distance: ', distance , 'angs')
+
+                    spectral_overlap = general_fcwd(molecules[p['donor']],
+                                                    molecules[p['acceptor']],
+                                                              p['process'],
+                                                              system.conditions)
+                    e_coupling = np.sqrt(r / (2 * np.pi) * HBAR_PLANCK / spectral_overlap)
+
+                    print('Electronic coupling: ', e_coupling, 'eV')
+                    print('Spectral overlap:    ', spectral_overlap, 'eV-1')
+                    # anal_data.append([distance, r])
+
+                print('Rate constant :      ', r, 'ns-1')
+
+                print('-' * 80)
+                total_r += r
+
+        print('Total rate sum: {}'.format(total_r))
+        # import matplotlib.pyplot as plt
+        # plt.scatter(np.array(anal_data).T[0], np.array(anal_data).T[1])
+        # plt.show()

@@ -177,7 +177,7 @@ for state in analysis.get_states():
     print('diffusion tensor (angs^2/ns)')
     print(analysis.diffusion_coeff_tensor(state))
     print('diffusion length tensor (angs)')
-    print(analysis.diffusion_length_tensor(state))
+    print(analysis.diffusion_length_square_tensor(state))
 
     eval, evec = np.linalg.eig(analysis.diffusion_coeff_tensor(state))
     print('eval', eval)

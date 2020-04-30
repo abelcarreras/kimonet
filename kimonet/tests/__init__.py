@@ -94,7 +94,7 @@ class TestKimonet(unittest.TestCase):
                 'lifetime': np.around(analysis.lifetime('s1'), decimals=6),
                 'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=6),
                 'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=6).tolist(),
-                'diffusion length tensor': np.around(analysis.diffusion_length_tensor('s1'), decimals=6).tolist()
+                'diffusion length tensor': np.around(analysis.diffusion_length_square_tensor('s1'), decimals=6).tolist()
                 }
 
         print(test)

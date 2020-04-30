@@ -1,6 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def normalize_cell(supercell):
+    normalize = []
+    for r in np.array(supercell):
+        normalize.append(r/np.linalg.norm(r))
+    return np.array(normalize)
+
 
 class TrajectoryAnalysis:
 
@@ -34,7 +40,7 @@ class TrajectoryAnalysis:
     def get_lifetime_ratio(self, state):
         return np.average([traj.get_lifetime_ratio(state) for traj in self.trajectories])
 
-    def diffusion_coeff_tensor(self, state):
+    def diffusion_coeff_tensor(self, state, unit_cell=None):
         """
         calculate the average diffusion tensor defined as:
 
@@ -43,13 +49,21 @@ class TrajectoryAnalysis:
         :param state: electronic state to analyze
         :return:
         """
-        return np.nanmean([traj.get_diffusion_tensor(state) for traj in self.trajectories], axis=0)
+        tensor = np.nanmean([traj.get_diffusion_tensor(state) for traj in self.trajectories], axis=0)
 
-    def diffusion_length_tensor(self, state):
+        if unit_cell is not None:
+            trans_mat = normalize_cell(unit_cell)
+            mat_inv = np.linalg.inv(trans_mat)
+
+            tensor = np.dot(mat_inv.T, np.dot(tensor, mat_inv))
+
+        return tensor
+
+    def diffusion_length_square_tensor(self, state, unit_cell=None):
         """
         calculate the average diffusion length tensor defined as:
 
-        DiffLenTen = SQRT( |2 * DiffTensor * lifetime| )
+        DiffLenTen = 2 * DiffTensor * lifetime
 
         :param state: electronic state to analyze
         :return:
@@ -57,7 +71,15 @@ class TrajectoryAnalysis:
         dl_tensor_list = [traj.get_diffusion_length_square_tensor(state) for traj in self.trajectories
                           if not np.isnan(traj.get_diffusion_length_square_tensor(state)).any()]
 
-        return np.sqrt(np.abs(np.average(dl_tensor_list, axis=0)))
+        tensor = np.abs(np.average(dl_tensor_list, axis=0))
+
+        if unit_cell is not None:
+            trans_mat = normalize_cell(unit_cell)
+            mat_inv = np.linalg.inv(trans_mat)
+
+            tensor = np.dot(mat_inv.T, np.dot(tensor, mat_inv))
+
+        return tensor
 
     def diffusion_coefficient(self, state=None):
         """

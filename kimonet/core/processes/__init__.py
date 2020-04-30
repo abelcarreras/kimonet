@@ -57,15 +57,15 @@ def get_transfer_rates(center, system):
 
         for process, coupling_function in allowed_processes.items():
 
-            e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
-
             if type(process) == Transfer:
+                e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
                 spectral_overlap = general_fcwd(donor, acceptor, process, conditions)
-
                 transfer_rates.append(2*np.pi/HBAR_PLANCK * e_coupling**2 * spectral_overlap )  # Fermi's Golden Rule
+
             elif type(process) == Direct:
-                rate = e_coupling
+                rate = coupling_function(donor, acceptor, conditions, system.supercell)
                 transfer_rates.append(rate)  # Direct case: e_coupling == rate
+
             else:
                 print('Transfer type not recognized')
                 exit()
@@ -116,9 +116,8 @@ def get_allowed_processes(donor, acceptor):
 
 
 # Transfer tuple format:
-
 transfer_scheme = {# Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
-          # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
-          # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
-          # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
-          }
+                   # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
+                   # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
+                   # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
+                  }
