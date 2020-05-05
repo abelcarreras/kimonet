@@ -9,11 +9,11 @@ class MarcusModel:
 
     def __init__(self,
                  reorganization_energies=None,  # eV
-                 state_energies=None,
+                 drift_term=0  # aN -> eV / angs [to be implemented]
                  ):
 
         self.reorganization_energies = reorganization_energies
-        self.state_energies = state_energies
+        self.state_energies = None
 
         # symmetrize external reorganization energies
         """
@@ -53,13 +53,13 @@ class LevichJortnerModel:
                  frequencies=None,
                  reorganization_energies=None,  # eV
                  external_reorganization_energies=None,  # eV
-                 state_energies=None,
+                 # state_energies=None,
                  ):
 
         self.frequencies = frequencies
         self.reorganization_energies = reorganization_energies
         self.external_reorganization_energies = external_reorganization_energies
-        self.state_energies = state_energies
+        self.state_energies = None
 
         # symmetrize external reorganization energies
         """
@@ -147,11 +147,11 @@ class GaussianModel:
     def __init__(self,
                  deviations=None,
                  reorganization_energies=None,  # eV
-                 state_energies=None,
+                 # state_energies=None,
                  ):
 
         self.reorganization_energies = reorganization_energies
-        self.state_energies = state_energies
+        self.state_energies = None
         self.deviations = deviations
 
         # symmetrize external reorganization energies

@@ -92,7 +92,14 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
         x = np.cos(i)
         y = np.sin(i)
 
-        r.append(np.linalg.norm(np.array(tensor[0])*x + np.array(tensor[1])*y))
+        rmat = np.array([np.cos(i), np.sin(i)])
+
+        np.linalg.norm(np.dot(rmat, tensor))
+
+        # print(np.linalg.norm([a,b]), np.linalg.norm(tensor[0]*x + tensor[1]*y))
+        r.append(np.linalg.norm(np.dot(tensor, rmat)))
+
+        # r.append(np.linalg.norm(tensor[0]*x + tensor[1]*y))
         theta.append(i)
 
     labels = {'cartesian': ['x', 'y', 'z'],
@@ -104,16 +111,16 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
         labels_plot = [labels['cartesian'][i] for i in plane]
 
     ax = plt.subplot(111, projection='polar')
+    ax.arrow(0., 0., np.pi, max,  edgecolor='black', lw=1, zorder=5)
+    ax.arrow(0., 0., 3./2*np.pi, max,  edgecolor='black', lw=1, zorder=5)
+    ax.annotate("", xy=(0, max), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
+    ax.annotate("", xy=(np.pi/2, max), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
     ax.plot(theta, r)
     ax.set_rmax(max)
-    ax.set_rticks(np.linspace(0, max, 8))  # Less radial ticks
+    ax.set_rticks(list(np.linspace(0.0, max, 8)))  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
     ax.set_xticklabels(['{}'.format(labels_plot[0]), '', '{}'.format(labels_plot[1]), '', '', '', '', ''])
-    ax.arrow(0, 0, np.pi, max,  edgecolor='black', lw=1, zorder=5)
-    ax.arrow(0, 0, 3*np.pi/2, max,  edgecolor='black', lw=1, zorder=5)
-    ax.annotate("", xy=(0, max*0.99), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
-    ax.annotate("", xy=(np.pi/2, max*0.99), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
 
     ax.set_title(title, va='bottom')
     plt.show()

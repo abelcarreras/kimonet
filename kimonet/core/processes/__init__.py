@@ -53,7 +53,7 @@ def get_transfer_rates(center, system):
         # compute the spectral overlap using Marcus formula
         # spectral_overlap = marcus_fcwd(donor, acceptor, conditions)
 
-        allowed_processes = get_allowed_processes(donor, acceptor)
+        allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme)
 
         for process, coupling_function in allowed_processes.items():
 
@@ -98,7 +98,7 @@ def get_decay_rates(center, system):
     return decay_processes, decay_rates
 
 
-def get_allowed_processes(donor, acceptor):
+def get_allowed_processes(donor, acceptor, transfer_scheme):
     """
     Get the allowed processes for a given donor and acceptor
 
@@ -116,8 +116,8 @@ def get_allowed_processes(donor, acceptor):
 
 
 # Transfer tuple format:
-transfer_scheme = {# Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
-                   # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
-                   # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
-                   # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
-                  }
+#transfer_scheme = {# Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+#                   # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
+#                   # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
+#                   # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
+#                  }

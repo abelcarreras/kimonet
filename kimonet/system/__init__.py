@@ -9,13 +9,18 @@ class System:
     def __init__(self,
                  molecules,
                  conditions,
-                 supercell):
+                 supercell,
+                 transfers=None,
+                 cutoff_radius=10):
 
         self.molecules = molecules
         self.conditions = conditions
         self.supercell = supercell
         self.neighbors = {}
         self.is_finished = False
+
+        self.transfer_scheme = transfers if transfers is not None else {}
+        self.cutoff_radius = cutoff_radius
 
         # search centers
         self.centers = []
@@ -24,7 +29,7 @@ class System:
                 self.centers.append(i)
 
     def get_neighbours(self, center):
-        radius = self.conditions['cutoff_radius']
+        radius = self.cutoff_radius
         center_position = self.molecules[center].get_coordinates()
 
         from kimonet.utils import minimum_distance_vector

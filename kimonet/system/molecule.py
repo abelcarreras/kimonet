@@ -19,19 +19,12 @@ class Molecule:
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
                  ):
         """
-        :param states_energies: dictionary {'state': energy}
-        :param state: sting of the name of the state
-        The name of the state should coincide with some key of the dictionary in order to identify the state with
-        its energy.
-        :param transition_moment: Dipole transition moment vector (3d). The vector is given in respect to the RS
-        of the molecule. So for all molecules of a same type if will be equal.
-        This dipole moment is given in atomic units.
-        :param vibrations: Vibrations object. This contains all the information about how to handle temperature
-        dependence
-        :param coordinates: 3d vector. Gives the position of the molecule in the system (in general the 0 position
-        will coincide with the center of the distribution). Units: nm. If the system has less than 3 dimensions,
-        the extra coordinates will be taken as 0.
-        :param orientation: 3d unit vector. Gives the orientation of the molecule in the global reference system.
+        :param states_energies: dictionary {'state': energy} (eV)
+        :param state: string containing the current state
+        :param transition_moment: Transition dipole moment dictionary (Debye)
+        :param vibrations: Vibrations object. This contains all the information about how to handle temperature dependence
+        :param coordinates: the coordinates vector of the molecule within the system (Angstrom)
+        :param orientation: 3d unit vector containing the orientation angles of the molecule defined in radiants respect X, Y and Z axes.
         """
 
         # set state energies to vibrations
@@ -39,7 +32,7 @@ class Molecule:
 
         self.state = state
         self.state_energies = state_energies
-        self.coordinates = np.array(coordinates)
+        self._coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
@@ -57,7 +50,7 @@ class Molecule:
         return hash((str(self.state_energies),
                      self.state,
                      # str(self.reorganization_energies),
-                     self.coordinates.tostring(),
+                     self._coordinates.tostring(),
                      self.orientation.tostring())) + \
                hash(self.vibrations)
 
@@ -65,32 +58,33 @@ class Molecule:
         return self.vdw_radius
 
     def get_dim(self):
-        return len(self.coordinates)
+        return len(self._coordinates)
 
-    def set_coordinates(self, coordinate_list):
+    def set_coordinates(self, coordinates):
         """
-        :param coordinate_list: List [x, y, z] with the coordinates of the molecule. Units: nm
-        Changes self.coordinates to this new position. Format: numpy array.
+        sets the coordinates of the molecule
+        :param coordinates: coordinate vector
         """
-        self.coordinates = np.array(coordinate_list)
-        self.cell_state = np.zeros_like(self.coordinates, dtype=int)
+        self._coordinates = np.array(coordinates)
+        self.cell_state = np.zeros_like(self._coordinates, dtype=int)
 
     def get_coordinates(self):
         """
+        sets the molecule coordinates
         :return: Array with the molecular coordinates.
         """
-        return self.coordinates
+        return self._coordinates
 
     def set_orientation(self, orientation):
         """
-        :param orientation: list with the coordinates of the orientation vector
-        Changes self.orientation to this new orientation. Format: numpy array
+        sets the orientation angles
+        :param orientation: the orientation angles
         """
         self.orientation = np.array(orientation)
 
     def molecular_orientation(self):
         """
-        :return: Array with the molecular orientation
+        :return: Array with the molecular orientation angles
         """
         return self.orientation
 
@@ -112,34 +106,15 @@ class Molecule:
     def set_state(self, new_state):
         """
         :param new_state:
-        No return method. Only changes the molecular state when the exciton is transferred.
+        Changes the molecular state of the molecule.
         """
         self.state = new_state
 
-    def desexcitation_energies(self):
-        """
-        IS NOT USED (19/08/2019).
-        Given an electronic state, calculates the possible desexcitation energy. Generates and sorts
-        a list with the energies, then calculates the possible desexcitation energies (the energy difference
-        between the given state and the less energetic states).
-        :return: Dictionary with the decay processes as key, e.g. 'State1_to_State0', and the energy as argument
-        """
-        desexcitations = {}
-
-        for state_key in self.state_energies:
-            if self.state_energies[self.state] > self.state_energies[state_key]:
-                decay_process = 'from_'+self.state+'_to_'+state_key
-                energy_gap = self.state_energies[self.state] - self.state_energies[state_key]
-                desexcitations[decay_process] = energy_gap
-
-        return desexcitations
-
     def decay_rates(self):
         """
-        :return: A list of two elements: list of the possible decay processes and another with the respective rates
-        for a given electronic state.
+        returns the dacay rate for the current state
+        :return: decay rate.
 
-        More if(s) entrances shall be added if more electronic states are considered.
         """
 
         if self.state not in self.decay_dict:
@@ -153,6 +128,11 @@ class Molecule:
         return self.decay_dict[self.state]
 
     def get_transition_moment(self, to_state=_ground_state_):
+        """
+        returns the transition dipole moment between the current state and the requested state (by default ground state)
+        :param to_state: the transition dipole moment is given between this state and the current state
+        :return:
+        """
         if (self.state, to_state) in self.transition_moment:
             return rotate_vector(self.transition_moment[(self.state, to_state)], self.orientation)
         elif (to_state, self.state) in self.transition_moment:
@@ -161,7 +141,17 @@ class Molecule:
             return np.zeros(self.get_dim())
 
     def copy(self):
+        """
+        returns a deep copy of this molecule
+        :return: a copy of molecule
+        """
         return copy.deepcopy(self)
 
     def get_orientation_vector(self):
+        """
+        return a vector that indicates the main reference orientation axis of the molecule.
+        All other vector properties of the molecule are defined respect the molecule orientation
+        This vector does not define the orientation completely, just serves as visual reference
+        :return:
+        """
         return rotate_vector([1, 0, 0][:self.get_dim()], self.orientation)

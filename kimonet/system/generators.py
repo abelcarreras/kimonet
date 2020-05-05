@@ -6,7 +6,8 @@ from kimonet.system import System
 def regular_ordered_system(conditions,
                            molecule,
                            lattice=None,
-                           orientation=(0, 0, 0)
+                           orientation=(0, 0, 0),
+                           transfers={}
                            ):
 
     if lattice is None:
@@ -23,7 +24,7 @@ def regular_ordered_system(conditions,
 
     supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
 
-    return System(molecules, conditions, supercell)
+    return System(molecules, conditions, supercell, transfers)
 
 
 def regular_system(conditions,
@@ -57,7 +58,7 @@ def crystal_system(conditions,
                    scaled_coordinates,
                    dimensions=None,
                    unitcell=None,
-                   orientations = None,
+                   orientations=None,
                    ):
 
     unitcell = np.array(unitcell)

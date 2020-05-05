@@ -50,7 +50,7 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     return forster_coupling
 
 
-def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=1, n_divisions=1):
+def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=1, n_divisions=10):
     """
     Compute Forster coupling in eV
 

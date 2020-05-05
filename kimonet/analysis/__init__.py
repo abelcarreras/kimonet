@@ -34,11 +34,14 @@ def visualize_system(system, dipole=None):
               't1': 'orange'}
 
     for i, molecule in enumerate(system.molecules):
-        c = molecule.coordinates
+        c = molecule.get_coordinates()
         if dipole is None:
             o = molecule.get_orientation_vector()
         else:
             o = molecule.get_transition_moment(to_state=dipole)
+
+        if np.linalg.norm(o) == 0:
+            continue
 
         if ndim == 1:
             ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state])
@@ -54,12 +57,13 @@ def visualize_system(system, dipole=None):
     for lattice_vector in system.supercell:
         ax.plot(*np.array([[0]*ndim, lattice_vector]).T)
 
-    for i in range(3):
-        for j in range(i+1, 3):
+    for i in range(ndim):
+        for j in range(i+1, ndim):
             ax.plot(*np.array([system.supercell[i], system.supercell[i] + system.supercell[j]]).T, color='black')
             ax.plot(*np.array([system.supercell[j], system.supercell[j] + system.supercell[i]]).T, color='black')
-            ax.plot(*np.array([system.supercell[i]+system.supercell[j],
-                               system.supercell[0]+system.supercell[1]+system.supercell[2]]).T, color='black')
+            if ndim == 3:
+                ax.plot(*np.array([system.supercell[i]+system.supercell[j],
+                                   system.supercell[0]+system.supercell[1]+system.supercell[2]]).T, color='black')
 
     # ax.quiverkey(q, X=0.3, Y=1.1, U=10,
     #               label='Quiver key, length = 10', labelpos='E')
