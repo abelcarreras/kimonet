@@ -58,10 +58,14 @@ visualize_system(system)
 visualize_system(system, dipole='s1')
 
 # do the kinetic Monte Carlo simulation
-trajectories = calculate_kmc_parallel(system,
-                             num_trajectories=50,    # number of trajectories that will be simulated
+trajectories = calculate_kmc(system,
+                             num_trajectories=5,    # number of trajectories that will be simulated
                              max_steps=100000,         # maximum number of steps for trajectory allowed
                              silent=False)
+
+# specific trajectory plot
+trajectories[0].plot_graph().show()
+trajectories[0].plot_2d().show()
 
 # resulting trajectories analysis
 analysis = TrajectoryAnalysis(trajectories)

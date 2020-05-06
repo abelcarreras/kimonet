@@ -7,7 +7,6 @@ def regular_ordered_system(conditions,
                            molecule,
                            lattice=None,
                            orientation=(0, 0, 0),
-                           transfers={}
                            ):
 
     if lattice is None:
@@ -24,7 +23,7 @@ def regular_ordered_system(conditions,
 
     supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
 
-    return System(molecules, conditions, supercell, transfers)
+    return System(molecules, conditions, supercell)
 
 
 def regular_system(conditions,

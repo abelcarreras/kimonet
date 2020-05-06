@@ -321,7 +321,7 @@ class TrajectoryGraph:
         nx.draw_networkx_labels(self.graph, pos=pos)
         plt.legend()
 
-        plt.show()
+        return plt
 
     def get_states(self):
         return self.states
