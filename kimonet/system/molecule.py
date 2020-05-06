@@ -12,6 +12,7 @@ class Molecule:
                  state_energies,  # eV
                  transition_moment,  # Debye
                  vibrations,
+                 name=None,
                  decays=None,
                  state='gs',
                  vdw_radius=1.0,  # Angstrom
@@ -37,6 +38,7 @@ class Molecule:
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
         self.vibrations = vibrations
+        self.name = name
 
         self.transition_moment = {}
         for k, v in transition_moment.items():
