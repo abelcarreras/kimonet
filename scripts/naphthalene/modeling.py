@@ -2,55 +2,11 @@ from pymatgen import Lattice, Structure, Molecule
 import numpy as np
 from scipy.optimize import fmin
 from kimonet.utils.rotation import rotate_vector
-from kimonet.system.molecule import Molecule
-from kimonet.system.vibrations import MarcusModel
 from kimonet.system.generators import crystal_system
-from kimonet.analysis import Trajectory, visualize_system
-import csv
+from kimonet.analysis import visualize_system
 
+DEBYE_TO_AU = 0.393430
 
-lattice = Lattice.from_parameters(a=7.6778,
-                                  b=5.7210,
-                                  c=8.395,
-                                  alpha=90.0,
-                                  beta=124.55,
-                                  gamma=90.0)
-
-with open('molecules.csv', newline='') as csvfile:
-    spamreader = csv.DictReader(csvfile, delimiter=',')
-    scaled_coord = []
-    for row in spamreader:
-        # print(row['Label'], row['Xfrac + ESD'].split('(')[0], row['Yfrac + ESD'].split('(')[0], row['Zfrac + ESD'].split('(')[0])
-        scaled_coord.append([float(row['Xfrac + ESD'].split('(')[0]), float(row['Yfrac + ESD'].split('(')[0]), float(row['Zfrac + ESD'].split('(')[0])])
-
-print(scaled_coord)
-
-
-print('lattice')
-print(lattice.matrix)
-
-#     8.2592000000       0.0000000000       0.0000000000
-#     0.0000000000       5.9835000000       0.0000000000
-#    -4.6806096939       0.0000000000       7.3045323700
-
-symbols_monomer = ['C', 'H', 'C', 'H', 'C', 'C', 'H', 'C', 'H',
-                   'C', 'H', 'C', 'H', 'C', 'C', 'H', 'C', 'H']
-
-#symbols_monomer = ['C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H',
-#                   'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
-
-
-coor_mol1 = np.array(scaled_coord)[:18]
-coor_mol2 = np.array(scaled_coord)[-36:-18]
-
-coor_mol = np.vstack([coor_mol1, coor_mol2])
-
-
-
-struct1 = Structure(lattice, symbols_monomer, coor_mol1, coords_are_cartesian=False)
-struct2 = Structure(lattice, symbols_monomer, coor_mol2, coords_are_cartesian=False)
-#struct_c = Structure(lattice, symbols_monomer * 2, coor_mol, coords_are_cartesian=True)
-struct_c = Structure(lattice, symbols_monomer * 2, coor_mol, coords_are_cartesian=False)
 
 def xyz_file(coordinates, symbols):
     # print(symbols_monomer)
@@ -110,23 +66,240 @@ def get_fragment_position_and_orientation(coordinates, masses):
 
 
 def get_dipole_in_basis(dipole, basis_dipole, basis_new):
-
     return np.dot(np.array(basis_new).T, np.dot(basis_dipole, dipole))
 
+
+# define lattice
+lattice = Lattice.from_parameters(a=7.6778,
+                                  b=5.7210,
+                                  c=8.395,
+                                  alpha=90.0,
+                                  beta=124.55,
+                                  gamma=90.0)
+
+#import csv
+#with open('molecules.csv', newline='') as csvfile:
+#    spamreader = csv.DictReader(csvfile, delimiter=',')
+#    scaled_coord = []
+#    for row in spamreader:
+#        scaled_coord.append([float(row['Xfrac + ESD'].split('(')[0]), float(row['Yfrac + ESD'].split('(')[0]), float(row['Zfrac + ESD'].split('(')[0])])
+#
+#print(np.array(scaled_coord))
+
+# coordinates of the molecules in scaled coordinates (10 molecules)
+scaled_coord = [[ 0.0842 , 0.0203 , 0.3373],
+                [ 0.1272 , 0.063  , 0.4615],
+                [ 0.1147 , 0.1718 , 0.228 ],
+                [ 0.179  , 0.3157 , 0.2791],
+                [ 0.0486 , 0.1098 , 0.0371],
+                [ 0.0773 , 0.263  ,-0.0797],
+                [ 0.1412 , 0.4077 ,-0.0311],
+                [-0.0121 ,-0.1998 , 0.2623],
+                [-0.031  ,-0.3016 , 0.3377],
+                [-0.0842 ,-0.0203 ,-0.3373],
+                [-0.1272 ,-0.063  ,-0.4615],
+                [-0.1147 ,-0.1718 ,-0.228 ],
+                [-0.179  ,-0.3157 ,-0.2791],
+                [-0.0486 ,-0.1098 ,-0.0371],
+                [-0.0773 ,-0.263  , 0.0797],
+                [-0.1412 ,-0.4077 , 0.0311],
+                [ 0.0121 , 0.1998 ,-0.2623],
+                [ 0.031  , 0.3016 ,-0.3377],
+                [ 0.0842 , 0.0203 , 1.3373],
+                [ 0.1272 , 0.063  , 1.4615],
+                [ 0.1147 , 0.1718 , 1.228 ],
+                [ 0.179  , 0.3157 , 1.2791],
+                [ 0.0486 , 0.1098 , 1.0371],
+                [ 0.0773 , 0.263  , 0.9203],
+                [ 0.1412 , 0.4077 , 0.9689],
+                [-0.0121 ,-0.1998 , 1.2623],
+                [-0.031  ,-0.3016 , 1.3377],
+                [-0.0842 ,-0.0203 , 0.6627],
+                [-0.1272 ,-0.063  , 0.5385],
+                [-0.1147 ,-0.1718 , 0.772 ],
+                [-0.179  ,-0.3157 , 0.7209],
+                [-0.0486 ,-0.1098 , 0.9629],
+                [-0.0773 ,-0.263  , 1.0797],
+                [-0.1412 ,-0.4077 , 1.0311],
+                [ 0.0121 , 0.1998 , 0.7377],
+                [ 0.031  , 0.3016 , 0.6623],
+                [ 0.0842 , 1.0203 , 0.3373],
+                [ 0.1272 , 1.063  , 0.4615],
+                [ 0.1147 , 1.1718 , 0.228 ],
+                [ 0.179  , 1.3157 , 0.2791],
+                [ 0.0486 , 1.1098 , 0.0371],
+                [ 0.0773 , 1.263  ,-0.0797],
+                [ 0.1412 , 1.4077 ,-0.0311],
+                [-0.0121 , 0.8002 , 0.2623],
+                [-0.031  , 0.6984 , 0.3377],
+                [-0.0842 , 0.9797 ,-0.3373],
+                [-0.1272 , 0.937  ,-0.4615],
+                [-0.1147 , 0.8282 ,-0.228 ],
+                [-0.179  , 0.6843 ,-0.2791],
+                [-0.0486 , 0.8902 ,-0.0371],
+                [-0.0773 , 0.737  , 0.0797],
+                [-0.1412 , 0.5923 , 0.0311],
+                [ 0.0121 , 1.1998 ,-0.2623],
+                [ 0.031  , 1.3016 ,-0.3377],
+                [ 0.0842 , 1.0203 , 1.3373],
+                [ 0.1272 , 1.063  , 1.4615],
+                [ 0.1147 , 1.1718 , 1.228 ],
+                [ 0.179  , 1.3157 , 1.2791],
+                [ 0.0486 , 1.1098 , 1.0371],
+                [ 0.0773 , 1.263  , 0.9203],
+                [ 0.1412 , 1.4077 , 0.9689],
+                [-0.0121 , 0.8002 , 1.2623],
+                [-0.031  , 0.6984 , 1.3377],
+                [-0.0842 , 0.9797 , 0.6627],
+                [-0.1272 , 0.937  , 0.5385],
+                [-0.1147 , 0.8282 , 0.772 ],
+                [-0.179  , 0.6843 , 0.7209],
+                [-0.0486 , 0.8902 , 0.9629],
+                [-0.0773 , 0.737  , 1.0797],
+                [-0.1412 , 0.5923 , 1.0311],
+                [ 0.0121 , 1.1998 , 0.7377],
+                [ 0.031  , 1.3016 , 0.6623],
+                [ 1.0842 , 0.0203 , 0.3373],
+                [ 1.1272 , 0.063  , 0.4615],
+                [ 1.1147 , 0.1718 , 0.228 ],
+                [ 1.179  , 0.3157 , 0.2791],
+                [ 1.0486 , 0.1098 , 0.0371],
+                [ 1.0773 , 0.263  ,-0.0797],
+                [ 1.1412 , 0.4077 ,-0.0311],
+                [ 0.9879 ,-0.1998 , 0.2623],
+                [ 0.969  ,-0.3016 , 0.3377],
+                [ 0.9158 ,-0.0203 ,-0.3373],
+                [ 0.8728 ,-0.063  ,-0.4615],
+                [ 0.8853 ,-0.1718 ,-0.228 ],
+                [ 0.821  ,-0.3157 ,-0.2791],
+                [ 0.9514 ,-0.1098 ,-0.0371],
+                [ 0.9227 ,-0.263  , 0.0797],
+                [ 0.8588 ,-0.4077 , 0.0311],
+                [ 1.0121 , 0.1998 ,-0.2623],
+                [ 1.031  , 0.3016 ,-0.3377],
+                [ 1.0842 , 0.0203 , 1.3373],
+                [ 1.1272 , 0.063  , 1.4615],
+                [ 1.1147 , 0.1718 , 1.228 ],
+                [ 1.179  , 0.3157 , 1.2791],
+                [ 1.0486 , 0.1098 , 1.0371],
+                [ 1.0773 , 0.263  , 0.9203],
+                [ 1.1412 , 0.4077 , 0.9689],
+                [ 0.9879 ,-0.1998 , 1.2623],
+                [ 0.969  ,-0.3016 , 1.3377],
+                [ 0.9158 ,-0.0203 , 0.6627],
+                [ 0.8728 ,-0.063  , 0.5385],
+                [ 0.8853 ,-0.1718 , 0.772 ],
+                [ 0.821  ,-0.3157 , 0.7209],
+                [ 0.9514 ,-0.1098 , 0.9629],
+                [ 0.9227 ,-0.263  , 1.0797],
+                [ 0.8588 ,-0.4077 , 1.0311],
+                [ 1.0121 , 0.1998 , 0.7377],
+                [ 1.031  , 0.3016 , 0.6623],
+                [ 1.0842 , 1.0203 , 0.3373],
+                [ 1.1272 , 1.063  , 0.4615],
+                [ 1.1147 , 1.1718 , 0.228 ],
+                [ 1.179  , 1.3157 , 0.2791],
+                [ 1.0486 , 1.1098 , 0.0371],
+                [ 1.0773 , 1.263  ,-0.0797],
+                [ 1.1412 , 1.4077 ,-0.0311],
+                [ 0.9879 , 0.8002 , 0.2623],
+                [ 0.969  , 0.6984 , 0.3377],
+                [ 0.9158 , 0.9797 ,-0.3373],
+                [ 0.8728 , 0.937  ,-0.4615],
+                [ 0.8853 , 0.8282 ,-0.228 ],
+                [ 0.821  , 0.6843 ,-0.2791],
+                [ 0.9514 , 0.8902 ,-0.0371],
+                [ 0.9227 , 0.737  , 0.0797],
+                [ 0.8588 , 0.5923 , 0.0311],
+                [ 1.0121 , 1.1998 ,-0.2623],
+                [ 1.031  , 1.3016 ,-0.3377],
+                [ 1.0842 , 1.0203 , 1.3373],
+                [ 1.1272 , 1.063  , 1.4615],
+                [ 1.1147 , 1.1718 , 1.228 ],
+                [ 1.179  , 1.3157 , 1.2791],
+                [ 1.0486 , 1.1098 , 1.0371],
+                [ 1.0773 , 1.263  , 0.9203],
+                [ 1.1412 , 1.4077 , 0.9689],
+                [ 0.9879 , 0.8002 , 1.2623],
+                [ 0.969  , 0.6984 , 1.3377],
+                [ 0.9158 , 0.9797 , 0.6627],
+                [ 0.8728 , 0.937  , 0.5385],
+                [ 0.8853 , 0.8282 , 0.772 ],
+                [ 0.821  , 0.6843 , 0.7209],
+                [ 0.9514 , 0.8902 , 0.9629],
+                [ 0.9227 , 0.737  , 1.0797],
+                [ 0.8588 , 0.5923 , 1.0311],
+                [ 1.0121 , 1.1998 , 0.7377],
+                [ 1.031  , 1.3016 , 0.6623],
+                [ 0.4158 , 0.5203 ,-0.3373],
+                [ 0.3728 , 0.563  ,-0.4615],
+                [ 0.3853 , 0.6718 ,-0.228 ],
+                [ 0.321  , 0.8157 ,-0.2791],
+                [ 0.4514 , 0.6098 ,-0.0371],
+                [ 0.4227 , 0.763  , 0.0797],
+                [ 0.3588 , 0.9077 , 0.0311],
+                [ 0.5121 , 0.3002 ,-0.2623],
+                [ 0.531  , 0.1984 ,-0.3377],
+                [ 0.5842 , 0.4797 , 0.3373],
+                [ 0.6272 , 0.437  , 0.4615],
+                [ 0.6147 , 0.3282 , 0.228 ],
+                [ 0.679  , 0.1843 , 0.2791],
+                [ 0.5486 , 0.3902 , 0.0371],
+                [ 0.5773 , 0.237  ,-0.0797],
+                [ 0.6412 , 0.0923 ,-0.0311],
+                [ 0.4879 , 0.6998 , 0.2623],
+                [ 0.469  , 0.8016 , 0.3377],
+                [ 0.4158 , 0.5203 , 0.6627],
+                [ 0.3728 , 0.563  , 0.5385],
+                [ 0.3853 , 0.6718 , 0.772 ],
+                [ 0.321  , 0.8157 , 0.7209],
+                [ 0.4514 , 0.6098 , 0.9629],
+                [ 0.4227 , 0.763  , 1.0797],
+                [ 0.3588 , 0.9077 , 1.0311],
+                [ 0.5121 , 0.3002 , 0.7377],
+                [ 0.531  , 0.1984 , 0.6623],
+                [ 0.5842 , 0.4797 , 1.3373],
+                [ 0.6272 , 0.437  , 1.4615],
+                [ 0.6147 , 0.3282 , 1.228 ],
+                [ 0.679  , 0.1843 , 1.2791],
+                [ 0.5486 , 0.3902 , 1.0371],
+                [ 0.5773 , 0.237  , 0.9203],
+                [ 0.6412 , 0.0923 , 0.9689],
+                [ 0.4879 , 0.6998 , 1.2623],
+                [ 0.469  , 0.8016 , 1.3377]]
+
+
+print('lattice')
+print(lattice.matrix)
+
+symbols_monomer = ['C', 'H', 'C', 'H', 'C', 'C', 'H', 'C', 'H',
+                   'C', 'H', 'C', 'H', 'C', 'C', 'H', 'C', 'H']
+
+coor_mol1 = np.array(scaled_coord)[:18]
+coor_mol2 = np.array(scaled_coord)[-36:-18]
+
+coor_mol = np.vstack([coor_mol1, coor_mol2])
+
+# define structures
+struct1 = Structure(lattice, symbols_monomer, coor_mol1, coords_are_cartesian=False)
+struct2 = Structure(lattice, symbols_monomer, coor_mol2, coords_are_cartesian=False)
+struct_c = Structure(lattice, symbols_monomer * 2, coor_mol, coords_are_cartesian=False)
+
+
+#transition dipole moment of state1
 dipole = [0.0892, -0.0069, -0.000]
-
-
 # dipole = [0.0749, 1.7657, 0.0134]
 
+# reference dipole
 ev_dipole = [[ 9.99999137e-01, -1.30587822e-03, -1.43334210e-04],
              [ 1.30597043e-03,  9.99998939e-01,  6.45107322e-04],
              [ 1.42491626e-04, -6.45293955e-04,  9.99999782e-01]]
 
-
+# transition dipole moment of state2
 dipole2 = [0.0130, -0.0750, -1.7570]
 # dipole2 = [-0.0130, 0.0750, 1.7570]
 
-
+# reference dipole2
 ev_dipole2 = [[ 1.433e-04,  1.000e+00, -1.306e-03],
               [ 6.451e-04, -1.306e-03, -1.000e+00],
               [-1.000e+00,  1.425e-04, -6.453e-04]]
@@ -134,14 +307,11 @@ ev_dipole2 = [[ 1.433e-04,  1.000e+00, -1.306e-03],
 dipole = get_dipole_in_basis(dipole, ev_dipole, np.identity(3))
 dipole2 = get_dipole_in_basis(dipole2, ev_dipole2, np.identity(3))
 
-DEBYE_TO_AU = 0.393430
-
+# print dipole
 print('\ndipole (debye)', np.array(dipole)/DEBYE_TO_AU)
 print('dipole2 (debye)', np.array(dipole2)/DEBYE_TO_AU)
 
-#for s,c in zip(struct1.atomic_numbers, struct1.cart_coords):
-#    print(s, '{:10.5f} {:10.5f} {:10.5f}'.format(*c))
-
+# plot data for visual inspection
 for i, struct in enumerate([struct1, struct2]):
     position, ev = get_fragment_position_and_orientation(struct, [1] * 18)
 
@@ -151,13 +321,14 @@ for i, struct in enumerate([struct1, struct2]):
     print('orientation: {} {} {}'.format(*params))
     print('position', position)
 
+    # store structure in file
     struct_c.to(filename='naphtalene.cif')
     struct_c.to(filename='POSCAR')
 
+    scale_factor = 50
     molecule = Molecule(state_energies={'gs': 0, 's1': 1},
-                        vibrations=MarcusModel(),
-                        transition_moment={('s1', 'gs'): dipole,
-                                           ('s2', 'gs'): dipole},  # transition dipole moment of the molecule (Debye)
+                        transition_moment={('s1', 'gs'): dipole*scale_factor,
+                                           ('s2', 'gs'): dipole2*scale_factor},  # transition dipole moment of the molecule (Debye)
                         )
 
     system = crystal_system(conditions={},
@@ -169,4 +340,3 @@ for i, struct in enumerate([struct1, struct2]):
 
     visualize_system(system)
     visualize_system(system, dipole='s1')
-
