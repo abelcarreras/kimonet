@@ -1,6 +1,6 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes_and_rates
-from kimonet.core.processes import Transfer, Direct, Decay
+from kimonet.core.processes import GoldenRule, DirectRate, DecayRate
 import warnings
 
 _ground_state_ = 'gs'
@@ -57,7 +57,7 @@ def update_step(chosen_process, system):
     New if(s) entrances shall be defined for more processes.
     """
 
-    if type(chosen_process['process']) in (Transfer, Direct):
+    if type(chosen_process['process']) in (GoldenRule, DirectRate):
 
         donor_state = chosen_process['process'].final[0]
         acceptor_state = chosen_process['process'].final[1]
@@ -79,7 +79,7 @@ def update_step(chosen_process, system):
         if chosen_process['process'].final[1] == _ground_state_:
             system.molecules[chosen_process['acceptor']].cell_state *= 0
 
-    if type(chosen_process['process']) == Decay:
+    if type(chosen_process['process']) == DecayRate:
         final_state = chosen_process['process'].final
         # print('final_state', final_state)
         system.add_excitation_index(final_state, chosen_process['donor'])
@@ -110,7 +110,7 @@ def system_test_info(system):
                 print('Process: {}'.format(p['process']))
                 print('Donor: {} / Acceptor: {}'.format(p['donor'], p['acceptor']))
 
-                if type(p['process']) == Transfer:
+                if type(p['process']) == GoldenRule:
                     print('Cell_increment: {} '.format(p['cell_increment']))
 
                     position_d = molecules[p['donor']].get_coordinates()

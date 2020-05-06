@@ -4,7 +4,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_singlet_decay
-from kimonet.core.processes import Transfer, Decay
+from kimonet.core.processes import GoldenRule, DecayRate
 import kimonet.core.processes as processes
 from kimonet.system.vibrations import MarcusModel
 
@@ -13,13 +13,13 @@ import numpy as np
 np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
 
-processes.transfer_scheme = {Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+processes.transfer_scheme = {GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
                              # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
                              # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
                              # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
                              }
 
-decay_scheme = {Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+decay_scheme = {DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
                 # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
                 # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
                 }

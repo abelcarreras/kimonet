@@ -4,7 +4,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step, system_test_info
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, forster_coupling_extended
 from kimonet.core.processes.decays import einstein_singlet_decay
-from kimonet.core.processes import Transfer, Decay, Direct
+from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis.diffusion.diffusion_plots import plot_polar_plot
@@ -14,7 +14,7 @@ import numpy as np
 
 
 transfer_scheme = {
-                   Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
+                   GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
                    #Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
                    #Transfer(initial=('s1', 'gs'), final=('s2t', 's2t'), description='transition'): lambda x, y, z, k: 1/100,
                    #Direct(initial=('s2t', 's2t'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1 / 10,
@@ -23,7 +23,7 @@ transfer_scheme = {
                    }
 
 decay_scheme = {
-                Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+                DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
                 #Decay(initial='s1', final='gs', description='decay s1'): lambda x: 1/50,
                 #Decay(initial='s2', final='gs', description='decay s2'): lambda x: 1/30
 }

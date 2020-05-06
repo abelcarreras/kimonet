@@ -4,7 +4,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, intermolecular_vector, unit_vector
 from kimonet.core.processes.decays import einstein_singlet_decay
-from kimonet.core.processes import Transfer, Decay, Direct
+from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 import kimonet.core.processes as processes
 import concurrent.futures as futures
@@ -41,7 +41,7 @@ def singlet_coupling(donor, acceptor, conditions, supercell):
 
 
 processes.transfer_scheme = {
-                             Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='singlet transport'): forster_coupling,  # lambda x, y, z, k: 0.04048,
+                             GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='singlet transport'): forster_coupling,  # lambda x, y, z, k: 0.04048,
                              # Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='triplet transport'): dexter_coupling  # lambda x, y, z, k: 0.00586,
                              # Direct(initial=('s1', 'gs'), final=('tp', 'tp'), description='singlet fission'): lambda x, y, z, k: 8.3,
                              # Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet fusion'): lambda x, y, z, k: 1.0,
@@ -49,7 +49,7 @@ processes.transfer_scheme = {
                              # Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet annihilation'): lambda x, y, z, k: 0.45,
                              }
 
-decay_scheme = {Decay(initial='s1', final='gs', description='decay s1'): einstein_singlet_decay}
+decay_scheme = {DecayRate(initial='s1', final='gs', description='decay s1'): einstein_singlet_decay}
 
 
 # excitation energies of the electronic states (eV)

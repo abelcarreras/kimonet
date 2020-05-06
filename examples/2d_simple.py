@@ -4,7 +4,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import system_test_info
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, forster_coupling_extended
 from kimonet.core.processes.decays import einstein_singlet_decay
-from kimonet.core.processes import Transfer, Decay, Direct
+from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis.diffusion.diffusion_plots import plot_polar_plot
@@ -14,12 +14,12 @@ import numpy as np
 
 # list of transfer functions by state
 transfer_scheme = {
-    Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
+    GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
 }
 
 # list of decay functions by state
 decay_scheme = {
-    Decay(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
+    DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
 }
 
 molecule = Molecule(state_energies={'gs': 0,

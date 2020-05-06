@@ -3,9 +3,9 @@ from kimonet.core.processes.fcwd import general_fcwd, marcus_fcwd
 from collections import namedtuple
 from kimonet.utils.units import HBAR_PLANCK
 
-Transfer = namedtuple("Transfer", ["initial", "final", "description"])
-Direct = namedtuple("Direct", ["initial", "final", "description"])
-Decay = namedtuple("Decay", ["initial", "final", "description"])
+GoldenRule = namedtuple("GoldenRule", ["initial", "final", "description"])
+DirectRate = namedtuple("DirectRate", ["initial", "final", "description"])
+DecayRate = namedtuple("DecayRate", ["initial", "final", "description"])
 
 
 def get_processes_and_rates(centre, system):
@@ -57,12 +57,12 @@ def get_transfer_rates(center, system):
 
         for process, coupling_function in allowed_processes.items():
 
-            if type(process) == Transfer:
+            if type(process) == GoldenRule:
                 e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
                 spectral_overlap = general_fcwd(donor, acceptor, process, conditions)
                 transfer_rates.append(2*np.pi/HBAR_PLANCK * e_coupling**2 * spectral_overlap )  # Fermi's Golden Rule
 
-            elif type(process) == Direct:
+            elif type(process) == DirectRate:
                 rate = coupling_function(donor, acceptor, conditions, system.supercell)
                 transfer_rates.append(rate)  # Direct case: e_coupling == rate
 
@@ -113,11 +113,3 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
             allowed_couplings[coupling] = transfer_scheme[coupling]
 
     return allowed_couplings
-
-
-# Transfer tuple format:
-#transfer_scheme = {# Transfer(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
-#                   # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): compute_forster_coupling,
-#                   # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): compute_forster_coupling,
-#                   # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): compute_forster_coupling
-#                  }
