@@ -1,7 +1,7 @@
+_ground_state_ = 'gs'
 from kimonet.core import do_simulation_step, system_test_info
 from kimonet.analysis import Trajectory
 from warnings import warn
-import matplotlib.pyplot as plt
 
 
 def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
@@ -12,7 +12,7 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
         system_copy = system.copy()
 
         if not silent:
-            print('iteration: ', j)
+            print('Trajectory: ', j)
 
         trajectory = Trajectory(system_copy)
 
@@ -51,7 +51,7 @@ def _run_trajectory(system, index, max_steps, silent):
             warn('Maximum number of steps reached!!')
 
     if not silent:
-        print('trajectory {} done!'.format(index))
+        print('Trajectory {} done!'.format(index))
     return trajectory
 
 

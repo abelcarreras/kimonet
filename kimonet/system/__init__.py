@@ -3,7 +3,7 @@ from scipy.spatial import distance
 import itertools
 import warnings
 import copy
-
+_ground_state = 'gs'
 
 class System:
     def __init__(self,
@@ -25,7 +25,7 @@ class System:
         # search centers
         self.centers = []
         for i, molecule in enumerate(self.molecules):
-            if molecule.state != 'gs':
+            if molecule.state != _ground_state:
                 self.centers.append(i)
 
     def get_neighbours(self, center):
@@ -55,7 +55,7 @@ class System:
 
     def reset(self):
         for molecule in self.molecules:
-            molecule.state = 'gs'
+            molecule.state = _ground_state
             molecule.cell_state = np.zeros(molecule.get_dim())
         self.centers = []
         self.is_finished = False
@@ -71,7 +71,7 @@ class System:
 
     def add_excitation_index(self, type, index):
         self.molecules[index].state = type
-        if type == 'gs':
+        if type == _ground_state:
             try:
                 self.centers.remove(index)
             except ValueError:
@@ -84,7 +84,7 @@ class System:
         for i in range(n):
             while True:
                 num = np.random.randint(0, self.get_num_molecules())
-                if self.molecules[num].state == 'gs':
+                if self.molecules[num].state == _ground_state:
                     # self.molecules[num] = type
                     self.add_excitation_index(type, num)
                     break

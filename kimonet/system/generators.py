@@ -6,7 +6,7 @@ from kimonet.system import System
 def regular_ordered_system(conditions,
                            molecule,
                            lattice=None,
-                           orientation=(0, 0, 0),
+                           orientation=None,
                            ):
 
     if lattice is None:

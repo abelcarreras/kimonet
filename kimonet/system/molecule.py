@@ -2,8 +2,8 @@ import numpy as np
 from kimonet.utils import rotate_vector
 import copy
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
-
-_ground_state_ = 'gs'
+from kimonet.system.vibrations import NoVibration
+from kimonet import _ground_state_
 
 
 class Molecule:
@@ -11,10 +11,10 @@ class Molecule:
     def __init__(self,
                  state_energies,  # eV
                  transition_moment,  # Debye
-                 vibrations,
+                 vibrations=NoVibration(),
                  name=None,
                  decays=None,
-                 state='gs',
+                 state=_ground_state_,
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)

@@ -53,7 +53,8 @@ def general_fcwd(donor, acceptor, process, conditions):
     # return quad(integrand, 0, np.inf, args=(donor, acceptor))[0]
 
 
-def marcus_fcwd(donor, acceptor, conditions):
+# deprecated (only used in test)
+def marcus_fcwd_old(donor, acceptor, conditions):
     """
     :param donor:
     :param acceptor:

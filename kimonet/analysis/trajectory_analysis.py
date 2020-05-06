@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def normalize_cell(supercell):
     normalize = []
     for r in np.array(supercell):
@@ -155,14 +156,14 @@ class TrajectoryAnalysis:
             t = traj.get_times()
             ne_interp.append(np.interp(t_range, t, ne, right=0))
 
-        plt.title('Averaged excitatons number ({})'.format('' if state is None else state))
+        plt.title('Averaged exciton number ({})'.format('' if state is None else state))
         plt.ylim(bottom=0, top=np.max(ne_interp))
         plt.xlim(left=0, right=time_max)
         plt.plot(t_range, np.average(ne_interp, axis=0), label='Total' if state is None else state)
         plt.legend()
         return plt
 
-    def plot_histogram(self, state=None):
+    def plot_histogram(self, state=None, normalized=False, bins=None):
 
         distances = []
         for traj in self.trajectories:
@@ -170,8 +171,11 @@ class TrajectoryAnalysis:
             distances += list(d)
 
         plt.title('Distances histogram  ({})'.format('' if state is None else state))
-        plt.xlabel('Distance')
-        plt.ylabel('# of occurrences')
+        plt.xlabel('Distance (Angs)')
+        if normalized:
+            plt.ylabel('Probability density (Angs^-1)')
+        else:
+            plt.ylabel('# of occurrences')
 
-        plt.hist(distances)
+        plt.hist(distances, normed=normalized, bins=bins)
         return plt

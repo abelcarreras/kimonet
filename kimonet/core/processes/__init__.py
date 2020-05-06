@@ -1,5 +1,5 @@
 import numpy as np
-from kimonet.core.processes.fcwd import general_fcwd, marcus_fcwd
+from kimonet.core.processes.fcwd import general_fcwd
 from collections import namedtuple
 from kimonet.utils.units import HBAR_PLANCK
 

@@ -2,6 +2,7 @@ import numpy as np
 from kimonet.utils import minimum_distance_vector
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
+from kimonet import _ground_state_
 
 
 foster_data = {}
@@ -28,11 +29,10 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     if hash_string in foster_data:
         return foster_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state='gs')            # transition dipole moment (donor) e*angs
+    mu_d = donor.get_transition_moment(to_state=_ground_state_)            # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
-    r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
-    r_vector, _ = minimum_distance_vector(r_vector, supercell)
+    r_vector = intermolecular_vector(donor, acceptor, supercell) # position vector between donor and acceptor
 
     distance = np.linalg.norm(r_vector)
     # print('donor', donor.get_coordinates())
@@ -72,7 +72,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
     if hash_string in foster_data:
         return foster_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state='gs')              # transition dipole moment (donor) e*angs
+    mu_d = donor.get_transition_moment(to_state=_ground_state_)              # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state)    # transition dipole moment (acceptor) e*angs
 
     mu_ai = mu_a / n_divisions
@@ -80,8 +80,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
 
     n = conditions['refractive_index']                      # refractive index of the material
 
-    r_vector = intermolecular_vector(donor, acceptor)  # position vector between donor and acceptor
-    r_vector, _ = minimum_distance_vector(r_vector, supercell)
+    r_vector = intermolecular_vector(donor, acceptor, supercell)  # position vector between donor and acceptor
 
     k_e = 1.0 / (4.0 * np.pi * VAC_PERMITTIVITY)
 
@@ -104,7 +103,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
     return forster_coupling
 
 
-def intermolecular_vector(donor, acceptor):
+def intermolecular_vector(donor, acceptor, supercell):
     """
     :param donor: donor
     :param acceptor: acceptor
@@ -112,7 +111,8 @@ def intermolecular_vector(donor, acceptor):
     """
     position_d = donor.get_coordinates()
     position_a = acceptor.get_coordinates()
-    r = position_a - position_d
+    r_vector = position_a - position_d
+    r, _ = minimum_distance_vector(r_vector, supercell)
 
     return r
 

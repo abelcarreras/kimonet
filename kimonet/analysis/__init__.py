@@ -54,8 +54,9 @@ def visualize_system(system, dipole=None):
             ax.text(c[0], c[1], c[2], '{}'.format(i), fontsize=12)
 
     # Plot lattice vectors
-    for lattice_vector in system.supercell:
-        ax.plot(*np.array([[0]*ndim, lattice_vector]).T)
+    if ndim > 1:
+        for lattice_vector in system.supercell:
+            ax.plot(*np.array([[0]*ndim, lattice_vector]).T)
 
     for i in range(ndim):
         for j in range(i+1, ndim):

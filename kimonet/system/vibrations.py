@@ -186,6 +186,31 @@ class GaussianModel:
         return vib_spectrum
 
 
+class NoVibration:
+
+    def __init__(self,
+                 ):
+
+        self.state_energies = None
+
+    def __hash__(self):
+        return hash((str(self.state_energies)))
+
+    def set_state_energies(self, state_energies):
+        self.state_energies = state_energies
+
+    def get_vib_spectrum(self, transition, temperature=None):
+        elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+
+        def vib_spectrum(e):
+            if elec_trans_ene == e:
+                return 1
+            else:
+                return 0
+
+        return vib_spectrum
+
+
 # To be deprecated
 class Vibrations:
 

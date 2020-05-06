@@ -1,9 +1,9 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes_and_rates
 from kimonet.core.processes import GoldenRule, DirectRate, DecayRate
-import warnings
+from kimonet import _ground_state_
 
-_ground_state_ = 'gs'
+import warnings
 
 
 def do_simulation_step(system):
@@ -89,11 +89,10 @@ def update_step(chosen_process, system):
 
 
 def system_test_info(system):
-    from kimonet.core.processes.fcwd import general_fcwd, marcus_fcwd
-    from collections import namedtuple
+    from kimonet.core.processes.fcwd import general_fcwd
     from kimonet.utils.units import HBAR_PLANCK
-    import numpy as np
     from kimonet.utils import minimum_distance_vector
+    import numpy as np
 
     molecules = system.molecules                # list of all instances of Molecule
 
@@ -110,13 +109,13 @@ def system_test_info(system):
                 print('Process: {}'.format(p['process']))
                 print('Donor: {} / Acceptor: {}'.format(p['donor'], p['acceptor']))
 
+                position_d = molecules[p['donor']].get_coordinates()
+                position_a = molecules[p['acceptor']].get_coordinates()
+                distance = np.linalg.norm(minimum_distance_vector(position_a - position_d, system.supercell))
+                print('Distance: ', distance, 'angs')
+
                 if type(p['process']) == GoldenRule:
                     print('Cell_increment: {} '.format(p['cell_increment']))
-
-                    position_d = molecules[p['donor']].get_coordinates()
-                    position_a = molecules[p['acceptor']].get_coordinates()
-                    distance = np.linalg.norm(minimum_distance_vector(position_a - position_d, system.supercell))
-                    print('Distance: ', distance , 'angs')
 
                     spectral_overlap = general_fcwd(molecules[p['donor']],
                                                     molecules[p['acceptor']],

@@ -13,11 +13,11 @@ import numpy as np
 np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
 
-processes.transfer_scheme = {GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
-                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
-                             }
+transfer_scheme = {GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
+                  # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
+                  # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
+                  # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
+                  }
 
 decay_scheme = {DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
                 # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
@@ -61,6 +61,9 @@ class TestKimonet(unittest.TestCase):
                                      lattice={'size': [3, 3], 'parameters': self.parameters},  # Angstroms
                                      orientation=[0, 0, 0])
 
+        self.system.cutoff_radius = 3.1
+        self.system.transfer_scheme = transfer_scheme
+
     def test_kmc_algorithm(self):
         num_trajectories = 100                           # number of trajectories that will be simulated
         max_steps = 100000                              # maximum number of steps for trajectory allowed
@@ -94,7 +97,7 @@ class TestKimonet(unittest.TestCase):
                 'lifetime': np.around(analysis.lifetime('s1'), decimals=6),
                 'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=6),
                 'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=6).tolist(),
-                'diffusion length tensor': np.around(analysis.diffusion_length_square_tensor('s1'), decimals=6).tolist()
+                'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1')), decimals=6).tolist()
                 }
 
         print(test)
@@ -108,17 +111,20 @@ class TestKimonet(unittest.TestCase):
                }
 
         # This is just for visual comparison (not accounted in the test)
-        from kimonet.core.processes import get_transfer_rates, get_decay_rates
+        try:
+            from kimonet.core.processes import get_transfer_rates, get_decay_rates
 
-        self.system.add_excitation_index('s1', 0)
-        transfer_x, _, transfer_y, _ = get_transfer_rates(0, self.system)[1]
-        decay, = get_decay_rates(0, self.system)[1]
+            self.system.add_excitation_index('s1', 0)
+            transfer_x, _, transfer_y, _ = get_transfer_rates(0, self.system)[1]
+            decay, = get_decay_rates(0, self.system)[1]
 
-        print('analytical model')
-        print('----------------')
-        data = get_analytical_model(self.parameters[0], analysis.n_dim, transfer_x, decay)
-        print('x:', data)
-        data = get_analytical_model(self.parameters[1], analysis.n_dim, transfer_y, decay)
-        print('y:', data)
+            print('analytical model')
+            print('----------------')
+            data = get_analytical_model(self.parameters[0], analysis.n_dim, transfer_x, decay)
+            print('x:', data)
+            data = get_analytical_model(self.parameters[1], analysis.n_dim, transfer_y, decay)
+            print('y:', data)
+        except ValueError:
+            pass
 
         self.assertDictEqual(ref, test)

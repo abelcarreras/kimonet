@@ -7,7 +7,7 @@ from scipy import stats
 import warnings
 import os
 from copy import deepcopy
-_ground_state_ = 'gs'
+from kimonet import _ground_state_
 
 
 def count_keys_dict(dictionary, key):
@@ -77,7 +77,7 @@ class TrajectoryGraph:
                                 finished=False,
                                 )
 
-        self.supercell = system.supercell
+        self.supercell = np.array(system.supercell)
         self.system = system
 
         self.n_dim = len(system.molecules[0].get_coordinates())
