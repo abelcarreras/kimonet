@@ -73,7 +73,7 @@ def crystal_system(conditions,
 
     molecules = []                              # list of instances of class molecule
 
-    for coordinate, orientation in zip(scaled_coordinates, orientations):
+    for i, (coordinate, orientation) in enumerate(zip(scaled_coordinates, orientations)):
         for subset in itertools.product(*[list(range(n)) for n in dimensions]):
 
             r_cell = np.sum([s * lattice_vector for s, lattice_vector in zip(subset, unitcell)], axis=0)
@@ -81,6 +81,7 @@ def crystal_system(conditions,
 
             molecule = molecule.copy()  # copy of the generic instance
             molecule.set_coordinates(coor)
+            molecule.name = 'a{}'.format(i+1)
 
             if orientation is None:
                 final_orientation = np.random.random_sample(3) * 2 * np.pi
