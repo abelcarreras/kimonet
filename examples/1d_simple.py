@@ -9,7 +9,7 @@ import numpy as np
 
 # custom transfer functions
 def transfer_rate(donor, acceptor, conditions, supercell):
-    distance = np.linalg.norm(intermolecular_vector(donor, acceptor, supercell))
+    distance = np.linalg.norm(intermolecular_vector(donor, acceptor, supercell)[0])
     constant = conditions['custom_constant']
 
     return constant/distance**2

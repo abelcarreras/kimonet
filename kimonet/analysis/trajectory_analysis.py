@@ -159,6 +159,8 @@ class TrajectoryAnalysis:
         plt.title('Averaged exciton number ({})'.format('' if state is None else state))
         plt.ylim(bottom=0, top=np.max(ne_interp))
         plt.xlim(left=0, right=time_max)
+        plt.xlabel('time (ns)')
+        plt.ylabel('# of excitons')
         plt.plot(t_range, np.average(ne_interp, axis=0), label='Total' if state is None else state)
         plt.legend()
         return plt
@@ -176,6 +178,8 @@ class TrajectoryAnalysis:
             plt.ylabel('Probability density (Angs^-1)')
         else:
             plt.ylabel('# of occurrences')
-
-        plt.hist(distances, normed=normalized, bins=bins)
+        try:
+            plt.hist(distances, density=normalized, bins=bins)
+        except AttributeError:
+            plt.hist(distances, normed=normalized, bins=bins)
         return plt

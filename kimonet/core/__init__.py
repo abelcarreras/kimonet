@@ -111,7 +111,7 @@ def system_test_info(system):
 
                 position_d = molecules[p['donor']].get_coordinates()
                 position_a = molecules[p['acceptor']].get_coordinates()
-                distance = np.linalg.norm(minimum_distance_vector(position_a - position_d, system.supercell))
+                distance = np.linalg.norm(minimum_distance_vector(position_a - position_d, system.supercell)[0])
                 print('Distance: ', distance, 'angs')
 
                 if type(p['process']) == GoldenRule:

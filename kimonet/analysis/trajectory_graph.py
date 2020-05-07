@@ -550,6 +550,8 @@ class TrajectoryGraph:
         # print(t)
         plt.title('diffusion distances ({})'.format(state))
         plt.plot(t, vector, '.')
+        plt.xlabel('Time (ns)')
+        plt.ylabel('Distance (Angs)')
 
         return plt
 
