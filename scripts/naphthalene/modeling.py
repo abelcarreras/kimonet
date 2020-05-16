@@ -4,8 +4,10 @@ from scipy.optimize import fmin
 from kimonet.utils.rotation import rotate_vector
 from kimonet.system.generators import crystal_system
 from kimonet.analysis import visualize_system
+from kimonet.system.molecule import Molecule
 
 DEBYE_TO_AU = 0.393430
+from kimonet.utils.units import DEBYE_TO_ANGS_EL
 
 
 def xyz_file(coordinates, symbols):
@@ -22,9 +24,9 @@ def rotation(r, x1, x2, x3, y1, y2, y3, z1, z2, z3):
     objective_y = y1, y2, y3
     objective_z = z1, z2, z3
 
-    return np.dot(rotate_vector([0, 0, 1], [rx, ry, rz]), objective_x) * \
-           np.dot(rotate_vector([0, 1, 0], [rx, ry, rz]), objective_y) * \
-           np.dot(rotate_vector([1, 0, 0], [rx, ry, rz]), objective_z)
+    return np.dot(rotate_vector([1, 0, 0], [rx, ry, rz]), objective_x)**2 * \
+           np.dot(rotate_vector([0, 1, 0], [rx, ry, rz]), objective_y)**2 * \
+           np.dot(rotate_vector([0, 0, 1], [rx, ry, rz]), objective_z)**2 * -1.0
 
 def get_rotation_angles(orientation_matrix):
     x_orientation = np.array(orientation_matrix)[0]
@@ -68,6 +70,11 @@ def get_fragment_position_and_orientation(coordinates, masses):
 def get_dipole_in_basis(dipole, basis_dipole, basis_new):
     return np.dot(np.array(basis_new).T, np.dot(basis_dipole, dipole))
 
+
+def print_xyz(coordinates, symbols):
+    print('{}\n'.format(len(coordinates)))
+    for s,c in zip(symbols, coordinates):
+        print('{:3}'.format(s) + '{:10.5f} {:10.5f} {:10.5f}'.format(*c))
 
 # define lattice
 lattice = Lattice.from_parameters(a=7.6778,
@@ -286,9 +293,33 @@ struct2 = Structure(lattice, symbols_monomer, coor_mol2, coords_are_cartesian=Fa
 struct_c = Structure(lattice, symbols_monomer * 2, coor_mol, coords_are_cartesian=False)
 
 
+# define molecule
+coordinates_monomer = [[ 2.4610326539,  0.7054950347, -0.0070507104],
+                       [ 1.2697800226,  1.4213478618,  0.0045894884],
+                       [ 0.0071248839,  0.7134976955,  0.0071917580],
+                       [-1.2465927908,  1.4207541565,  0.0039025332],
+                       [ 2.4498274919, -0.7358510124,  0.0046346543],
+                       [ 3.2528295760,  1.2280710625, -0.0312673955],
+                       [ 1.3575083440,  2.3667492466,  0.0220260183],
+                       [-1.2932627225,  2.3688000888, -0.0152164523],
+                       [ 3.2670227933, -1.2176289251,  0.0251089819],
+                       [-2.4610326539, -0.7054950347,  0.0070507104],
+                       [-1.2697800226, -1.4213478618, -0.0045894884],
+                       [-0.0071248839, -0.7134976955, -0.0071917580],
+                       [ 1.2465927908, -1.4207541565, -0.0039025332],
+                       [-2.4498274919,  0.7358510124, -0.0046346543],
+                       [-3.2528295760, -1.2280710625,  0.0312673955],
+                       [-1.3575083440, -2.3667492466, -0.0220260183],
+                       [ 1.2932627225, -2.3688000888,  0.0152164523],
+                       [-3.2670227933,  1.2176289251, -0.0251089819]]
+
+symbols_monomer = ['C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H',
+                   'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
+
 #transition dipole moment of state1
-dipole = [0.0892, -0.0069, -0.000]
+# dipole = [0.0892, -0.0069, -0.000]
 # dipole = [0.0749, 1.7657, 0.0134]
+dipole = [0.2673, -0.0230, 0.0001]
 
 # reference dipole
 ev_dipole = [[ 9.99999137e-01, -1.30587822e-03, -1.43334210e-04],
@@ -315,6 +346,9 @@ print('dipole2 (debye)', np.array(dipole2)/DEBYE_TO_AU)
 for i, struct in enumerate([struct1, struct2]):
     position, ev = get_fragment_position_and_orientation(struct, [1] * 18)
 
+    print_xyz(coordinates=get_dipole_in_basis(np.array(coordinates_monomer).T, ev_dipole, ev).T + np.array([position]*18),
+              symbols=symbols_monomer)
+
     print('Molecule {}\n---------------'.format(i+1))
     params = get_rotation_angles(ev)
 
@@ -337,6 +371,9 @@ for i, struct in enumerate([struct1, struct2]):
                             unitcell=lattice.matrix,
                             dimensions=[1, 1, 1],
                             orientations=[params])
+
+    print('TM: {}'.format(system.molecules[0].get_transition_moment(to_state='s1')))
+    print('TM_test: {}'.format(get_dipole_in_basis(np.array(dipole)*DEBYE_TO_ANGS_EL*scale_factor, ev_dipole, ev)))
 
     visualize_system(system)
     visualize_system(system, dipole='s1')

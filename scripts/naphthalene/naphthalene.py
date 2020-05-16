@@ -58,12 +58,14 @@ molecule = Molecule(state_energies=state_energies,
                     vibrations=EmpiricalModel({('gs', 's1'): f_abs,
                                                ('s1', 'gs'): f_em}),
                     transition_moment={
-                        ('s1', 'gs'): [0.9, 0.0, 0.0],
-                        # ('s1', 'gs'): [2.26746648e-01, -1.72419493e-02, 4.36234688e-05],
+                        ('s1', 'gs'): [6.79485017e-01, -5.75726945e-02, 3.88708921e-04],
+                        #('s1', 'gs'): np.array([2.26746648e-01, -1.72419493e-02, 4.36234688e-05]),
                         ('s2', 'gs'): [2.0, 0.0, 0.0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
                     vdw_radius=1.7
                     )
+
+
 
 #######################################################################################################################
 
@@ -91,9 +93,9 @@ system_2 = crystal_system(conditions=conditions,
                           unitcell=[[6.32367864, 0.0000000, -4.35427391],
                                     [0.00000000, 5.7210000,  0.00000000],
                                     [0.00000000, 0.0000000,  8.39500000]],
-                          dimensions=[4, 4, 4],
-                          orientations=[[0.1569345, 0.1761809, -0.42690],  # if element is None then random, if list then oriented
-                                        [-0.156866, 0.1761865,  0.42686],
+                          dimensions=[3, 3, 3],
+                          orientations=[[-2.4212, -1.8061,  1.9804],  # if element is None then random, if list then oriented
+                                        [ 2.4212, -1.8061, -1.9804],
                                         None])
 
 system = system_2  # choose 2
