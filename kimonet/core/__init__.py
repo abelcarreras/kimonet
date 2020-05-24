@@ -91,7 +91,7 @@ def update_step(chosen_process, system):
 def system_test_info(system):
     from kimonet.core.processes.fcwd import general_fcwd
     from kimonet.utils.units import HBAR_PLANCK
-    from kimonet.utils import minimum_distance_vector
+    from kimonet.utils import minimum_distance_vector, distance_vector_periodic
     import numpy as np
 
     molecules = system.molecules                # list of all instances of Molecule
@@ -111,8 +111,12 @@ def system_test_info(system):
 
                 position_d = molecules[p['donor']].get_coordinates()
                 position_a = molecules[p['acceptor']].get_coordinates()
-                distance = np.linalg.norm(minimum_distance_vector(position_a - position_d, system.supercell)[0])
-                print('Distance: ', distance, 'angs')
+
+                if type(p['process']) == (GoldenRule or DirectRate):
+                    distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
+                                                                       system.supercell,
+                                                                       p['cell_increment']))
+                    print('Distance: ', distance, 'angs')
 
                 if type(p['process']) == GoldenRule:
                     print('Cell_increment: {} '.format(p['cell_increment']))

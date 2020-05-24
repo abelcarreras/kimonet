@@ -5,7 +5,6 @@ from warnings import warn
 
 
 def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
-    system.add_excitation_center('s1')
 
     trajectories = []
     for j in range(num_trajectories):

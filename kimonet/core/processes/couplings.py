@@ -1,5 +1,5 @@
 import numpy as np
-from kimonet.utils import minimum_distance_vector
+from kimonet.utils import distance_vector_periodic
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet import _ground_state_
@@ -9,7 +9,16 @@ foster_data = {}
 dexter_data = {}
 
 
-def forster_coupling(donor, acceptor, conditions, supercell):
+def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr):
+    # return str(hash((donor, acceptor, function_name))) # No symmetry
+
+    return str(hash((donor, function_name)) +
+               hash((acceptor, function_name)) +
+               hash(frozenset(conditions.items()))
+               ) + np.array2string(np.array(supercell), precision=12) + np.array2string(np.array(cell_incr, dtype=int))
+
+
+def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
     """
     Compute Forster coupling in eV
 
@@ -17,14 +26,14 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     :param acceptor: neighbouring molecule. Possible acceptor
     :param conditions: dictionary with physical conditions
     :param supercell: the supercell of the system
+    :param cell_incr: integer vector indicating the difference between supercells of acceptor and donor
     :return: Forster coupling
     """
 
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
-    hash_string = str(hash((donor, function_name)) + hash((acceptor, function_name)))
-    # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
 
     if hash_string in foster_data:
         return foster_data[hash_string]
@@ -32,7 +41,7 @@ def forster_coupling(donor, acceptor, conditions, supercell):
     mu_d = donor.get_transition_moment(to_state=_ground_state_)            # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell) # position vector between donor and acceptor
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
 
     distance = np.linalg.norm(r_vector)
     # print('donor', donor.get_coordinates())
@@ -46,11 +55,11 @@ def forster_coupling(donor, acceptor, conditions, supercell):
 
     foster_data[hash_string] = forster_coupling                            # memory update for new couplings
 
-    # print('f:', forster_coupling, distance)
+    # print('f:', forster_coupling, distance, cell_incr)
     return forster_coupling
 
 
-def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=1, n_divisions=10):
+def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr, longitude=1, n_divisions=10):
     """
     Compute Forster coupling in eV
 
@@ -58,6 +67,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
     :param acceptor: neighbouring molecule. Possible acceptor
     :param conditions: dictionary with physical conditions
     :param supercell: the supercell of the system
+    :param cell_incr: integer vector indicating the difference between supercells of acceptor and donor
     :param longitude: extension length of the dipole
     :param n_divisions: number of subdivisions. To use with longitude. Increase until convergence.
     :return: Forster coupling
@@ -66,7 +76,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
-    hash_string = str(hash((donor, function_name)) + hash((acceptor, function_name)))
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
     if hash_string in foster_data:
@@ -80,7 +90,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
 
     n = conditions['refractive_index']                      # refractive index of the material
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell)  # position vector between donor and acceptor
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
 
     k_e = 1.0 / (4.0 * np.pi * VAC_PERMITTIVITY)
 
@@ -103,7 +113,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, longitude=
     return forster_coupling
 
 
-def intermolecular_vector(donor, acceptor, supercell):
+def intermolecular_vector(donor, acceptor, supercell, cell_incr):
     """
     :param donor: donor
     :param acceptor: acceptor
@@ -112,8 +122,7 @@ def intermolecular_vector(donor, acceptor, supercell):
     position_d = donor.get_coordinates()
     position_a = acceptor.get_coordinates()
     r_vector = position_a - position_d
-    r, _ = minimum_distance_vector(r_vector, supercell)
-
+    r = distance_vector_periodic(r_vector, supercell, cell_incr)
     return r
 
 
@@ -138,7 +147,7 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 
-def dexter_coupling(donor, acceptor, conditions, supercell):
+def dexter_coupling(donor, acceptor, conditions, supercell, cell_incr):
     """
     Compute Dexter coupling in eV
 
@@ -152,14 +161,14 @@ def dexter_coupling(donor, acceptor, conditions, supercell):
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
-    hash_string = str(hash((donor, function_name)) + hash((acceptor, function_name)))
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
+
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
     if hash_string in dexter_data:
         return dexter_data[hash_string]
 
-    r_vector = intermolecular_vector(donor, acceptor)       # position vector between donor and acceptor
-    r_vector, _ = minimum_distance_vector(r_vector, supercell)
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)       # position vector between donor and acceptor
 
     distance = np.linalg.norm(r_vector)
 

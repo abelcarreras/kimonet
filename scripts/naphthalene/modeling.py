@@ -5,9 +5,8 @@ from kimonet.utils.rotation import rotate_vector
 from kimonet.system.generators import crystal_system
 from kimonet.analysis import visualize_system
 from kimonet.system.molecule import Molecule
-
-DEBYE_TO_AU = 0.393430
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
+DEBYE_TO_AU = 0.393430
 
 
 def xyz_file(coordinates, symbols):
@@ -27,6 +26,7 @@ def rotation(r, x1, x2, x3, y1, y2, y3, z1, z2, z3):
     return np.dot(rotate_vector([1, 0, 0], [rx, ry, rz]), objective_x)**2 * \
            np.dot(rotate_vector([0, 1, 0], [rx, ry, rz]), objective_y)**2 * \
            np.dot(rotate_vector([0, 0, 1], [rx, ry, rz]), objective_z)**2 * -1.0
+
 
 def get_rotation_angles(orientation_matrix):
     x_orientation = np.array(orientation_matrix)[0]
@@ -83,6 +83,14 @@ lattice = Lattice.from_parameters(a=7.6778,
                                   alpha=90.0,
                                   beta=124.55,
                                   gamma=90.0)
+
+lattice = Lattice.from_parameters(a=8.69,
+                                  b=6.01,
+                                  c=8.29,
+                                  alpha=90.0,
+                                  beta=124.55,
+                                  gamma=90.0)
+
 
 #import csv
 #with open('molecules.csv', newline='') as csvfile:

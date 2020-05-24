@@ -42,15 +42,15 @@ system = crystal_system(conditions=conditions,
                         scaled_coordinates=[[0.0, 0.0]],
                         unitcell=[[5.0, 0.0],
                                   [0.0, 5.0]],
-                        dimensions=[4, 4],  # supercell size
+                        dimensions=[2, 2],  # supercell size
                         orientations=[[0.0, 0.0, np.pi/2]])  # if element is None then random, if list then Rx Ry Rz
 
 # set initial exciton
-system.add_excitation_center('s1')
+system.add_excitation_index('s1', 0)
 
 # set additional system parameters
 system.transfer_scheme = transfer_scheme
-system.cutoff_radius = 7.0  # interaction cutoff radius in Angstrom
+system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
 
 # some system analyze functions
 system_test_info(system)

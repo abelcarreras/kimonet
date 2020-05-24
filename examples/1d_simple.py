@@ -8,8 +8,8 @@ import numpy as np
 
 
 # custom transfer functions
-def transfer_rate(donor, acceptor, conditions, supercell):
-    distance = np.linalg.norm(intermolecular_vector(donor, acceptor, supercell)[0])
+def transfer_rate(donor, acceptor, conditions, supercell, cell_increment):
+    distance = np.linalg.norm(intermolecular_vector(donor, acceptor, supercell, cell_increment))
     constant = conditions['custom_constant']
 
     return constant/distance**2
@@ -49,11 +49,11 @@ system = System(molecules=[molecule1, molecule2, molecule3],
 
 # set initial exciton
 system.add_excitation_index('s1', 1)
-system.add_excitation_index('s1', 2)
+#system.add_excitation_index('s1', 2)
 
 # set additional system parameters
 system.transfer_scheme = {DirectRate(initial=('s1', 'gs'), final=('gs', 's1'), description='custom'): transfer_rate}
-system.cutoff_radius = 20.0  # interaction cutoff radius in Angstrom
+system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
 # some system analyze functions
 system_test_info(system)

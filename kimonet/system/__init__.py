@@ -3,6 +3,8 @@ from scipy.spatial import distance
 import itertools
 import warnings
 import copy
+from kimonet.utils import distance_vector_periodic
+
 _ground_state = 'gs'
 
 class System:
@@ -29,25 +31,30 @@ class System:
                 self.centers.append(i)
 
     def get_neighbours(self, center):
+
         radius = self.cutoff_radius
         center_position = self.molecules[center].get_coordinates()
 
-        from kimonet.utils import minimum_distance_vector
+        def get_supercell_increments(supercell, radius):
+            # TODO: This function can be optimized as a function of the particular molecule coordinates
+            v = np.array(radius/np.linalg.norm(supercell, axis=1), dtype=int) + 1  # here extensive approximation
+            return list(itertools.product(*[range(-i, i+1) for i in v]))
+
+        cell_increments = get_supercell_increments(self.supercell, radius)
 
         if not '{}_{}'.format(center, radius) in self.neighbors:
             neighbours = []
             jumps = []
             for i, molecule in enumerate(self.molecules):
                 coordinates = molecule.get_coordinates()
-                r_vec, cell_vec = minimum_distance_vector(coordinates - center_position, self.supercell)
+                for cell_increment in cell_increments:
+                    r_vec = distance_vector_periodic(coordinates - center_position, self.supercell, cell_increment)
+                    if 0 < np.linalg.norm(r_vec) < radius:
+                        neighbours.append(i)
+                        jumps.append(cell_increment)
 
-                if 0 < np.linalg.norm(r_vec) < radius:
-                    neighbours.append(i)
-                    jumps.append(cell_vec)
-
-            indexes = np.unique(neighbours, return_index=True)[1]
-            neighbours = np.array(neighbours)[indexes]
-            jumps = np.array(jumps)[indexes]
+            neighbours = np.array(neighbours)
+            jumps = np.array(jumps)
 
             self.neighbors['{}_{}'.format(center, radius)] = [neighbours, jumps]
 

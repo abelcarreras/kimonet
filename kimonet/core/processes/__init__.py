@@ -58,12 +58,12 @@ def get_transfer_rates(center, system):
         for process, coupling_function in allowed_processes.items():
 
             if type(process) == GoldenRule:
-                e_coupling = coupling_function(donor, acceptor, conditions, system.supercell)
+                e_coupling = coupling_function(donor, acceptor, conditions, system.supercell, cell_incr)
                 spectral_overlap = general_fcwd(donor, acceptor, process, conditions)
                 transfer_rates.append(2*np.pi/HBAR_PLANCK * e_coupling**2 * spectral_overlap )  # Fermi's Golden Rule
 
             elif type(process) == DirectRate:
-                rate = coupling_function(donor, acceptor, conditions, system.supercell)
+                rate = coupling_function(donor, acceptor, conditions, system.supercell, cell_incr)
                 transfer_rates.append(rate)  # Direct case: e_coupling == rate
 
             else:
