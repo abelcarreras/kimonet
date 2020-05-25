@@ -19,4 +19,4 @@ def minimum_distance_vector(r_vector, supercell):
 
 
 def distance_vector_periodic(r, supercell, cell_increment):
-    return r + np.dot(supercell, cell_increment)
+    return r + np.dot(cell_increment, supercell)

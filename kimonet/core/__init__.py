@@ -91,7 +91,7 @@ def update_step(chosen_process, system):
 def system_test_info(system):
     from kimonet.core.processes.fcwd import general_fcwd
     from kimonet.utils.units import HBAR_PLANCK
-    from kimonet.utils import minimum_distance_vector, distance_vector_periodic
+    from kimonet.utils import distance_vector_periodic
     import numpy as np
 
     molecules = system.molecules                # list of all instances of Molecule
