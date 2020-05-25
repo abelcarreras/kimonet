@@ -84,14 +84,6 @@ lattice = Lattice.from_parameters(a=7.6778,
                                   beta=124.55,
                                   gamma=90.0)
 
-lattice = Lattice.from_parameters(a=8.69,
-                                  b=6.01,
-                                  c=8.29,
-                                  alpha=90.0,
-                                  beta=124.55,
-                                  gamma=90.0)
-
-
 #import csv
 #with open('molecules.csv', newline='') as csvfile:
 #    spamreader = csv.DictReader(csvfile, delimiter=',')
