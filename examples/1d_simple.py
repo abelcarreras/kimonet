@@ -26,7 +26,9 @@ def decay_rate(molecule):
 # setup molecules
 molecule = Molecule(state_energies={'gs': 0, 's1': 1.0},  # eV
                     transition_moment={('s1', 'gs'): [1.0]},  # Debye
-                    decays={DecayRate(initial='s1', final='gs', description='custom decay rate'): decay_rate},
+                    decays=[DecayRate(initial='s1', final='gs',
+                                      decay_rate_function=decay_rate,
+                                      description='custom decay rate')],
                     )
 
 molecule1 = molecule.copy()
@@ -52,7 +54,9 @@ system.add_excitation_index('s1', 1)
 #system.add_excitation_index('s1', 2)
 
 # set additional system parameters
-system.transfer_scheme = {DirectRate(initial=('s1', 'gs'), final=('gs', 's1'), description='custom'): transfer_rate}
+system.transfer_scheme = [DirectRate(initial=('s1', 'gs'), final=('gs', 's1'),
+                                     rate_constant_function=transfer_rate,
+                                     description='custom')]
 system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
 # some system analyze functions

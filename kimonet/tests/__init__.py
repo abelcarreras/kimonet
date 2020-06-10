@@ -13,16 +13,15 @@ import numpy as np
 np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
 
-transfer_scheme = {GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
-                  # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
-                  # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
-                  # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
-                  }
+transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+                              electronic_coupling_function=forster_coupling,
+                              description='forster couplings'),
+                  ]
 
-decay_scheme = {DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
-                # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
-                }
+decay_scheme = [DecayRate(initial='s1', final='gs',
+                          decay_rate_function=einstein_singlet_decay,
+                          description='singlet_radiative_decay'),
+                ]
 
 
 def get_analytical_model(distance, dimension, transfer, decay):

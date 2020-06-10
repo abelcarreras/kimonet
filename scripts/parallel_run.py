@@ -11,16 +11,15 @@ import kimonet.core.processes as processes
 import concurrent.futures as futures
 
 
-processes.transfer_scheme = {GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='forster'): forster_coupling,
-                             # Transfer(initial=('s1', 'gs'), final=('gs', 's2'), description='test'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's1'), description='test2'): forster_coupling,
-                             # Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='test3'): forster_coupling
-                             }
+processes.transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+                                        electronic_coupling_function=forster_coupling,
+                                        description='forster'),
+                             ]
 
-decay_scheme = {DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                # Decay(initial='s1', final='s2', description='singlet_radiative_decay'): singlet_decay,
-                # Decay(initial='s2', final='gs', description='singlet_radiative_decay'): singlet_decay,
-                }
+decay_scheme = [DecayRate(initial='s1', final='gs',
+                          decay_rate_function=einstein_singlet_decay,
+                          description='singlet_radiative_decay')
+                ]
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,

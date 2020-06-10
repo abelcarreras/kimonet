@@ -13,14 +13,16 @@ from kimonet import calculate_kmc, calculate_kmc_parallel
 import numpy as np
 
 # list of transfer functions by state
-transfer_scheme = {
-    GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-}
+transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+                              electronic_coupling_function=forster_coupling,
+                              description='Forster')
+                   ]
 
 # list of decay functions by state
-decay_scheme = {
-    DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-}
+decay_scheme = [DecayRate(initial='s1', final='gs',
+                          decay_rate_function=einstein_singlet_decay,
+                          description='singlet_radiative_decay')
+                ]
 
 molecule = Molecule(state_energies={'gs': 0,
                                     's1': 4.0},  # eV
@@ -40,8 +42,8 @@ conditions = {'temperature': 300,          # temperature of the system (K)
 system = crystal_system(conditions=conditions,
                         molecule=molecule,  # molecule to use as reference
                         scaled_coordinates=[[0.0, 0.0]],
-                        unitcell=[[5.0, 0.0],
-                                  [0.0, 5.0]],
+                        unitcell=[[5.0, 1.0],
+                                  [1.0, 5.0]],
                         dimensions=[2, 2],  # supercell size
                         orientations=[[0.0, 0.0, np.pi/2]])  # if element is None then random, if list then Rx Ry Rz
 

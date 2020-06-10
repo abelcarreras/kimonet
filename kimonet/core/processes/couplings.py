@@ -5,8 +5,7 @@ from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet import _ground_state_
 
 
-foster_data = {}
-dexter_data = {}
+coupling_data = {}
 
 
 def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr):
@@ -35,8 +34,8 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
     # donor <-> acceptor interaction symmetry
     hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
 
-    if hash_string in foster_data:
-        return foster_data[hash_string]
+    if hash_string in coupling_data:
+        return coupling_data[hash_string]
 
     mu_d = donor.get_transition_moment(to_state=_ground_state_)            # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
@@ -53,7 +52,7 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
     k_e = 1.0/(4.0*np.pi*VAC_PERMITTIVITY)
     forster_coupling = k_e * k**2 * np.dot(mu_d, mu_a) / (n**2 * distance**3)
 
-    foster_data[hash_string] = forster_coupling                            # memory update for new couplings
+    coupling_data[hash_string] = forster_coupling                            # memory update for new couplings
 
     # print('f:', forster_coupling, distance, cell_incr)
     return forster_coupling
@@ -79,8 +78,8 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
-    if hash_string in foster_data:
-        return foster_data[hash_string]
+    if hash_string in coupling_data:
+        return coupling_data[hash_string]
 
     mu_d = donor.get_transition_moment(to_state=_ground_state_)              # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state)    # transition dipole moment (acceptor) e*angs
@@ -108,7 +107,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
 
             forster_coupling += k_e * k**2 * np.dot(mu_ai, mu_di) / (n**2 * distance**3)
 
-    foster_data[hash_string] = forster_coupling                            # memory update for new couplings
+    coupling_data[hash_string] = forster_coupling                            # memory update for new couplings
 
     return forster_coupling
 
@@ -165,8 +164,8 @@ def dexter_coupling(donor, acceptor, conditions, supercell, cell_incr):
 
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
-    if hash_string in dexter_data:
-        return dexter_data[hash_string]
+    if hash_string in coupling_data:
+        return coupling_data[hash_string]
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)       # position vector between donor and acceptor
 

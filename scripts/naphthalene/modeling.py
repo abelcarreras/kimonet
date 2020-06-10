@@ -317,9 +317,9 @@ symbols_monomer = ['C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H',
                    'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
 
 #transition dipole moment of state1
-# dipole = [0.0892, -0.0069, -0.000]
+dipole = [0.0892, -0.0069, -0.000]
 # dipole = [0.0749, 1.7657, 0.0134]
-dipole = [0.2673, -0.0230, 0.0001]
+#dipole = [0.2673, -0.0230, 0.0001]
 
 # reference dipole
 ev_dipole = [[ 9.99999137e-01, -1.30587822e-03, -1.43334210e-04],

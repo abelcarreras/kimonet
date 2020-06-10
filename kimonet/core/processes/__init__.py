@@ -1,11 +1,7 @@
 import numpy as np
 from kimonet.core.processes.fcwd import general_fcwd
-from collections import namedtuple
 from kimonet.utils.units import HBAR_PLANCK
-
-GoldenRule = namedtuple("GoldenRule", ["initial", "final", "description"])
-DirectRate = namedtuple("DirectRate", ["initial", "final", "description"])
-DecayRate = namedtuple("DecayRate", ["initial", "final", "description"])
+from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 
 
 def get_processes_and_rates(centre, system):
@@ -50,26 +46,11 @@ def get_transfer_rates(center, system):
     for neighbour, cell_incr in zip(neighbour_indexes, cell_increment):
         acceptor = system.molecules[neighbour]
 
-        # compute the spectral overlap using Marcus formula
-        # spectral_overlap = marcus_fcwd(donor, acceptor, conditions)
-
         allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme)
 
-        for process, coupling_function in allowed_processes.items():
+        for process in allowed_processes:
 
-            if type(process) == GoldenRule:
-                e_coupling = coupling_function(donor, acceptor, conditions, system.supercell, cell_incr)
-                spectral_overlap = general_fcwd(donor, acceptor, process, conditions)
-                transfer_rates.append(2*np.pi/HBAR_PLANCK * e_coupling**2 * spectral_overlap )  # Fermi's Golden Rule
-
-            elif type(process) == DirectRate:
-                rate = coupling_function(donor, acceptor, conditions, system.supercell, cell_incr)
-                transfer_rates.append(rate)  # Direct case: e_coupling == rate
-
-            else:
-                print('Transfer type not recognized')
-                exit()
-
+            transfer_rates.append(process.get_rate_constant(donor, acceptor, conditions, system.supercell, cell_incr))
             transfer_processes.append({'donor': int(center), 'process': process, 'acceptor': int(neighbour),
                                        'cell_increment': cell_incr})
 
@@ -107,9 +88,9 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
     :return: Dictionary with the allowed coupling functions
     """
 
-    allowed_couplings = {}
+    allowed_couplings = []
     for coupling in transfer_scheme:
         if coupling.initial == (donor.electronic_state(), acceptor.electronic_state()):
-            allowed_couplings[coupling] = transfer_scheme[coupling]
+            allowed_couplings.append(coupling)
 
     return allowed_couplings

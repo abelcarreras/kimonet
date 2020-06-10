@@ -13,20 +13,21 @@ import numpy as np
 #np.random.seed(1)  # for testing
 
 
-transfer_scheme = {
-                   GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='Forster'): forster_coupling,
-                   #Transfer(initial=('s2', 'gs'), final=('gs', 's2'), description='Dexter'): forster_coupling,
-                   #Transfer(initial=('s1', 'gs'), final=('s2t', 's2t'), description='transition'): lambda x, y, z, k: 1/100,
-                   #Direct(initial=('s2t', 's2t'), final=('s2', 's2'), description='split'): lambda x, y, z, k: 1 / 10,
-                   #Direct(initial=('s1', 's2'), final=('s2', 's1'), description='cross'): lambda x, y, z, k: 1 / 10,
-                   #Direct(initial=('s2', 's2'), final=('gs', 's1'), description='merge'): lambda x, y, z, k: 1/10
-                   }
+transfer_scheme = [
+                   GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+                              electronic_coupling_function=forster_coupling_extended,
+                              description='Forster',
+                              arguments={'longitude': 6, 'n_divisions': 100}),
 
-decay_scheme = {
-                DecayRate(initial='s1', final='gs', description='singlet_radiative_decay'): einstein_singlet_decay,
-                #Decay(initial='s1', final='gs', description='decay s1'): lambda x: 1/50,
-                #Decay(initial='s2', final='gs', description='decay s2'): lambda x: 1/30
-}
+                   #DirectRate(initial=('s1', 's1'), final=('s1', 's1'),
+                   #           rate_constant_function=forster_coupling,
+                   #           description='ForsterX'),
+                   ]
+
+decay_scheme = [DecayRate(initial='s1', final='gs',
+                          decay_rate_function=einstein_singlet_decay,
+                          description='singlet_radiative_decay')
+                ]
 
 # excitation energies of the electronic states (eV)
 state_energies = {'gs': 0,
@@ -58,7 +59,7 @@ molecule = Molecule(state_energies=state_energies,
                     vibrations=EmpiricalModel({('gs', 's1'): f_abs,
                                                ('s1', 'gs'): f_em}),
                     transition_moment={
-                        ('s1', 'gs'): [6.79485017e-01, -5.75726945e-02, 3.88708921e-04],
+                        ('s1', 'gs'): [0.9226746648, -1.72419493e-02, 4.36234688e-05],
                         #('s1', 'gs'): np.array([2.26746648e-01, -1.72419493e-02, 4.36234688e-05]),
                         ('s2', 'gs'): [2.0, 0.0, 0.0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
@@ -93,15 +94,16 @@ system_2 = crystal_system(conditions=conditions,
                           unitcell=[[6.32367864, 0.0000000, -4.35427391],
                                     [0.00000000, 5.7210000,  0.00000000],
                                     [0.00000000, 0.0000000,  8.39500000]],
-                          dimensions=[3, 3, 3],
+                          dimensions=[2, 2, 2],
                           orientations=[[-2.4212, -1.8061,  1.9804],  # if element is None then random, if list then oriented
                                         [ 2.4212, -1.8061, -1.9804],
                                         None])
 
 system = system_2  # choose 2
 system.transfer_scheme = transfer_scheme
-system.cutoff_radius = 7
-system.add_excitation_center('s1')
+system.cutoff_radius = 8
+system.add_excitation_index('s1', 0)
+#system.add_excitation_center('s1')
 
 # Donor: 558 / Acceptor: 447
 # Donor: 558 / Acceptor: 540
@@ -130,8 +132,8 @@ visualize_system(system, dipole='s1')
 trajectories = []
 for j in range(num_trajectories):
 
-    system.add_excitation_center('s1')
-    #system.add_excitation_index('s1', 1)
+    #system.add_excitation_center('s1')
+    system.add_excitation_index('s1', 0)
     #system.add_excitation_random('s2', 5)
 
     # visualize_system(system)
@@ -185,12 +187,19 @@ for state in analysis.get_states():
     plot_polar_plot(analysis.diffusion_coeff_tensor(state, unit_cell=system.supercell),
                     title='Diffusion', crystal_labels=True, plane=[0, 1])
 
-    plot_polar_plot(analysis.diffusion_length_square_tensor(state, unit_cell=system.supercell),
-                    title='Length square', crystal_labels=True, plane=[0, 1])
+    plot_polar_plot(analysis.diffusion_coeff_tensor(state, unit_cell=system.supercell),
+                    title='Diffusion', crystal_labels=True, plane=[0, 2])
 
     plot_polar_plot(analysis.diffusion_length_square_tensor(state, unit_cell=system.supercell),
                     title='Length square', crystal_labels=True, plane=[0, 1])
 
+    plot_polar_plot(analysis.diffusion_length_square_tensor(state, unit_cell=system.supercell),
+                    title='Length square', crystal_labels=True, plane=[0, 1])
+
+    plot_polar_plot(analysis.diffusion_length_square_tensor(state, unit_cell=system.supercell),
+                    title='Length square', crystal_labels=True, plane=[0, 2])
+
+exit()
 store_trajectory_list(trajectories, 'test.h5')
 
 trajectory_list = load_trajectory_list('test.h5')

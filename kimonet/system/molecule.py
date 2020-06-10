@@ -123,7 +123,7 @@ class Molecule:
             decay_rates = {}
             for coupling in self.decays:
                 if coupling.initial == self.state:
-                    decay_rates[coupling] = self.decays[coupling](self)
+                    decay_rates[coupling] = coupling.get_rate_constant(self)
 
             self.decay_dict[self.state] = decay_rates
 
