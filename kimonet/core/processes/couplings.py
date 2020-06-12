@@ -54,7 +54,7 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
 
     coupling_data[hash_string] = forster_coupling                            # memory update for new couplings
 
-    print('f:', forster_coupling, distance, cell_incr)
+    # print('f:', forster_coupling, distance, cell_incr)
     return forster_coupling
 
 
