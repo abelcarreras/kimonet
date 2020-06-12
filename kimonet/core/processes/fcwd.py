@@ -22,17 +22,21 @@ def general_fcwd(donor, acceptor, process, conditions):
 
     temperature = conditions['temperature']  # temperature (K)
 
-    info = str(hash((donor, acceptor, process, str(conditions), 'general_fcwd')))
-
-    if info in overlap_data:
-        # the memory is used if the overlap has been already computed
-        return overlap_data[info]
+    # info = str(hash((donor, acceptor, process, str(conditions), 'general_fcwd')))
+    # info = str(hash(donor) + hash(acceptor) + hash(str(conditions) + 'general_fcwd'))
 
     transition_donor = (process.initial[0], process.final[0])
     transition_acceptor = (process.initial[1], process.final[1])
 
     donor_vib_dos = donor.get_vib_dos(transition_donor, temperature)
     acceptor_vib_dos = acceptor.get_vib_dos(transition_acceptor, temperature)
+
+    # print(donor_vib_dos)
+    info = str(hash(donor_vib_dos) + hash(acceptor_vib_dos))
+
+    if info in overlap_data:
+        # the memory is used if the overlap has been already computed
+        return overlap_data[info]
 
     # test_donor = quad(donor_vib_dos, 0, np.inf,  epsabs=1e-20)[0]
     # test_acceptor = quad(acceptor_vib_dos, 0, np.inf,  epsabs=1e-20)[0]
@@ -46,7 +50,7 @@ def general_fcwd(donor, acceptor, process, conditions):
     def overlap(x):
         return donor_vib_dos(x) * acceptor_vib_dos(x)
 
-    overlap_data[info] = quad(overlap, 0, np.inf,  epsabs=1e-20)[0]
+    overlap_data[info] = quad(overlap, 0, np.inf,  epsabs=1e-5, limit=1000)[0]
 
     return overlap_data[info]
 

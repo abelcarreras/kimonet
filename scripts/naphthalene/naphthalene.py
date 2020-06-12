@@ -8,6 +8,7 @@ from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis.diffusion.diffusion_plots import plot_polar_plot
+from kimonet import calculate_kmc, calculate_kmc_parallel
 
 import numpy as np
 #np.random.seed(1)  # for testing
@@ -17,14 +18,15 @@ transfer_scheme = [
                    GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
                               electronic_coupling_function=forster_coupling_extended,
                               description='Forster',
-                              arguments={'longitude': 6, 'n_divisions': 100}),
+                              arguments={'longitude': 2, 'n_divisions': 100}),
 
                    #DirectRate(initial=('s1', 's1'), final=('s1', 's1'),
                    #           rate_constant_function=forster_coupling,
                    #           description='ForsterX'),
                    ]
 
-decay_scheme = [DecayRate(initial='s1', final='gs',
+decay_scheme = [
+                DecayRate(initial='s1', final='gs',
                           decay_rate_function=einstein_singlet_decay,
                           description='singlet_radiative_decay')
                 ]
@@ -99,6 +101,7 @@ system_2 = crystal_system(conditions=conditions,
                                         [ 2.4212, -1.8061, -1.9804],
                                         None])
 
+
 system = system_2  # choose 2
 system.transfer_scheme = transfer_scheme
 system.cutoff_radius = 8
@@ -119,55 +122,22 @@ from kimonet.core.processes.couplings import forster_coupling
 #print('n', ec)
 
 
-
-#from kimonet.utils.units import HBAR_PLANCK
-#print(HBAR_PLANCK)
-#print(2*np.pi/HBAR_PLANCK * ec**2 * 0.627905689626639)
-
 system_test_info(system)
 
-visualize_system(system, dipole='s1')
+#visualize_system(system, dipole='s1')
+system.add_excitation_index('s1', 0)
 
-
-trajectories = []
-for j in range(num_trajectories):
-
-    #system.add_excitation_center('s1')
-    system.add_excitation_index('s1', 0)
-    #system.add_excitation_random('s2', 5)
-
-    # visualize_system(system)
-
-    print('iteration: ', j)
-    trajectory = Trajectory(system)
-
-    for i in range(max_steps):
-
-        change_step, step_time = do_simulation_step(system)
-
-        if system.is_finished:
-            break
-
-        trajectory.add_step(change_step, step_time)
-
-        # visualize_system(system)
-
-        if i == max_steps-1:
-            print('Maximum number of steps reached!!')
-
-    system.reset()
-
-    trajectories.append(trajectory)
-
-    # trajectory.plot_graph()
-    # plt = trajectory.plot_2d()
-    # plt.show()
-
+# do the kinetic Monte Carlo simulation
+trajectories = calculate_kmc(system,
+                                      #processors=4,
+                                      num_trajectories=5,    # number of trajectories that will be simulated
+                                      max_steps=5,         # maximum number of steps for trajectory allowed
+                                      silent=False)
 
 # diffusion properties
 analysis = TrajectoryAnalysis(trajectories)
 
-
+exit()
 for state in analysis.get_states():
     print('\nState: {}\n--------------------------------'.format(state))
     print('diffusion coefficient: {} angs^2/ns'.format(analysis.diffusion_coefficient(state)))

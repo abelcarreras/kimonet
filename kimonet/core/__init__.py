@@ -123,9 +123,14 @@ def system_test_info(system):
 
                     spectral_overlap = general_fcwd(molecules[p['donor']],
                                                     molecules[p['acceptor']],
-                                                              p['process'],
-                                                              system.conditions)
-                    e_coupling = np.sqrt(r / (2 * np.pi) * HBAR_PLANCK / spectral_overlap)
+                                                    p['process'],
+                                                    system.conditions)
+
+                    e_coupling = p['process'].get_electronic_coupling(molecules[p['donor']],
+                                                                      molecules[p['acceptor']],
+                                                                      system.conditions,
+                                                                      system.supercell,
+                                                                      p['cell_increment'])
 
                     print('Electronic coupling: ', e_coupling, 'eV')
                     print('Spectral overlap:    ', spectral_overlap, 'eV-1')

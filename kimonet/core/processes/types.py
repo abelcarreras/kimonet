@@ -26,11 +26,14 @@ class GoldenRule(BaseProcess):
                  arguments=None
                  ):
 
-        self.coupling_function = electronic_coupling_function
+        self._coupling_function = electronic_coupling_function
         BaseProcess.__init__(self, initial, final, description, arguments)
 
+    def get_electronic_coupling(self, donor, acceptor, conditions, supercell, cell_incr):
+        return self._coupling_function(donor, acceptor, conditions, supercell, cell_incr, **self.arguments)
+
     def get_rate_constant(self, donor, acceptor, conditions, supercell, cell_incr):
-        e_coupling = self.coupling_function(donor, acceptor, conditions, supercell, cell_incr, **self.arguments)
+        e_coupling = self.get_electronic_coupling(donor, acceptor, conditions, supercell, cell_incr)
         spectral_overlap = general_fcwd(donor, acceptor, self, conditions)
         return 2 * np.pi / HBAR_PLANCK * e_coupling ** 2 * spectral_overlap  # Fermi's Golden Rule
 

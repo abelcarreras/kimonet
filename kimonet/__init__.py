@@ -1,3 +1,4 @@
+__version__ = '0.1'
 _ground_state_ = 'gs'
 from kimonet.core import do_simulation_step, system_test_info
 from kimonet.analysis import Trajectory
