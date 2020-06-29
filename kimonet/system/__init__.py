@@ -27,7 +27,7 @@ class System:
         # search centers
         self.centers = []
         for i, molecule in enumerate(self.molecules):
-            if molecule.state != _ground_state:
+            if molecule._state != _ground_state:
                 self.centers.append(i)
 
     def get_neighbours(self, center):
@@ -62,7 +62,7 @@ class System:
 
     def reset(self):
         for molecule in self.molecules:
-            molecule.state = _ground_state
+            molecule._state = _ground_state
             molecule.cell_state = np.zeros(molecule.get_dim())
         self.centers = []
         self.is_finished = False
@@ -77,7 +77,7 @@ class System:
         return len(self.centers)
 
     def add_excitation_index(self, type, index):
-        self.molecules[index].state = type
+        self.molecules[index]._state = type
         if type == _ground_state:
             try:
                 self.centers.remove(index)
@@ -91,7 +91,7 @@ class System:
         for i in range(n):
             while True:
                 num = np.random.randint(0, self.get_num_molecules())
-                if self.molecules[num].state == _ground_state:
+                if self.molecules[num]._state == _ground_state:
                     # self.molecules[num] = type
                     self.add_excitation_index(type, num)
                     break

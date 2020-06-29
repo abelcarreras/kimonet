@@ -3,19 +3,19 @@ from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step, system_test_info
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, forster_coupling_extended
-from kimonet.core.processes.decays import einstein_singlet_decay
+from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis.diffusion.diffusion_plots import plot_polar_plot
 from kimonet import calculate_kmc, calculate_kmc_parallel
+from kimonet.system.state import State
 
 import numpy as np
 #np.random.seed(1)  # for testing
 
 
-transfer_scheme = [
-                   GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
                               electronic_coupling_function=forster_coupling_extended,
                               description='Forster',
                               arguments={'longitude': 2, 'n_divisions': 100}),
@@ -25,24 +25,14 @@ transfer_scheme = [
                    #           description='ForsterX'),
                    ]
 
-decay_scheme = [
-                DecayRate(initial='s1', final='gs',
-                          decay_rate_function=einstein_singlet_decay,
+decay_scheme = [DecayRate(initial='s1', final='gs',
+                          decay_rate_function=einstein_radiative_decay,
                           description='singlet_radiative_decay')
                 ]
 
-# excitation energies of the electronic states (eV)
-state_energies = {'gs': 0,
-                  's1': 4.37,
-                  's2': 4.92,
-                  's2t': 1}
-
 # reorganization energies of the states (eV)
 reorganization_energies = {('s1', 'gs'): 0.08,
-                           ('gs', 's1'): 0.08,
-                           ('s2', 'gs'): 0.2,
-                           ('gs', 's2'): 0.2,
-                           }
+                           ('gs', 's1'): 0.08}
 
 from scipy.interpolate import interp1d
 from scipy.integrate import simps
@@ -56,14 +46,14 @@ n_em = simps(y=data_em[1], x=data_em[0])
 f_abs = interp1d(data_abs[0], data_abs[1]/n_abs, fill_value=0, bounds_error=False)
 f_em = interp1d(data_em[0], data_em[1]/n_em, fill_value=0, bounds_error=False)
 
-molecule = Molecule(state_energies=state_energies,
+molecule = Molecule(states=[State(label='gs', energy=0, multiplicity=1),  # energies in eV
+                            State(label='s1', energy=4.37, multiplicity=1)],  # energies in eV
                     # vibrations=MarcusModel(reorganization_energies),
                     vibrations=EmpiricalModel({('gs', 's1'): f_abs,
                                                ('s1', 'gs'): f_em}),
-                    transition_moment={
-                        ('s1', 'gs'): [0.9226746648, -1.72419493e-02, 4.36234688e-05],
-                        #('s1', 'gs'): np.array([2.26746648e-01, -1.72419493e-02, 4.36234688e-05]),
-                        ('s2', 'gs'): [2.0, 0.0, 0.0]},  # transition dipole moment of the molecule (Debye)
+                    transition_moment={('s1', 'gs'): [0.9226746648, -1.72419493e-02, 4.36234688e-05],
+                                      #('s1', 'gs'): np.array([2.26746648e-01, -1.72419493e-02, 4.36234688e-05]),
+                                       ('s2', 'gs'): [2.0, 0.0, 0.0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme,
                     vdw_radius=1.7
                     )
@@ -128,16 +118,16 @@ system_test_info(system)
 system.add_excitation_index('s1', 0)
 
 # do the kinetic Monte Carlo simulation
-trajectories = calculate_kmc(system,
-                                      #processors=4,
-                                      num_trajectories=5,    # number of trajectories that will be simulated
-                                      max_steps=5,         # maximum number of steps for trajectory allowed
+trajectories = calculate_kmc_parallel(system,
+                                      processors=2,
+                                      num_trajectories=50,    # number of trajectories that will be simulated
+                                      max_steps=10,         # maximum number of steps for trajectory allowed
                                       silent=False)
 
 # diffusion properties
 analysis = TrajectoryAnalysis(trajectories)
 
-exit()
+
 for state in analysis.get_states():
     print('\nState: {}\n--------------------------------'.format(state))
     print('diffusion coefficient: {} angs^2/ns'.format(analysis.diffusion_coefficient(state)))

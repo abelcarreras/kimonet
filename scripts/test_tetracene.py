@@ -3,7 +3,7 @@ from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, intermolecular_vector, unit_vector
-from kimonet.core.processes.decays import einstein_singlet_decay
+from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 import kimonet.core.processes as processes
@@ -49,7 +49,7 @@ processes.transfer_scheme = {
                              # Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet annihilation'): lambda x, y, z, k: 0.45,
                              }
 
-decay_scheme = {DecayRate(initial='s1', final='gs', description='decay s1'): einstein_singlet_decay}
+decay_scheme = {DecayRate(initial='s1', final='gs', description='decay s1'): einstein_radiative_decay}
 
 
 # excitation energies of the electronic states (eV)

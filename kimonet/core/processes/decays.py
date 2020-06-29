@@ -4,12 +4,21 @@ from kimonet import _ground_state_
 
 
 # Decay functions
-def einstein_singlet_decay(molecule):
-    desexcitation_energy = molecule.state_energies[molecule.state] - molecule.state_energies[_ground_state_]
+def einstein_radiative_decay(molecule, g1=1, g2=1):
+    """
+    Einstein radiative decay
+
+    :param molecule:
+    :param g1: degeneracy of target state
+    :param g2: degeneracy of origin state
+
+    :return: decay rate constant
+    """
+    deexcitation_energy = molecule.state_energies[molecule.electronic_state()] - molecule.state_energies[_ground_state_]
 
     mu2 = np.dot(molecule.get_transition_moment(), molecule.get_transition_moment())  # transition moment norm.
-    alpha = 1.0 / 137
-    return alpha * 4 * desexcitation_energy ** 3 * mu2 / (3 * SPEED_OF_LIGHT ** 2 * HBAR_PLANCK ** 3)
+    alpha = 1.0 / 137.036
+    return float(g1)/g2 * alpha * 4 * deexcitation_energy ** 3 * mu2 / (3 * SPEED_OF_LIGHT ** 2 * HBAR_PLANCK ** 3)
 
 
 def triplet_triplet_annihilation(molecule):

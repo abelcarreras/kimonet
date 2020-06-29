@@ -3,7 +3,7 @@ from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import system_test_info
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, forster_coupling_extended
-from kimonet.core.processes.decays import einstein_singlet_decay
+from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
@@ -20,7 +20,7 @@ transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
 
 # list of decay functions by state
 decay_scheme = [DecayRate(initial='s1', final='gs',
-                          decay_rate_function=einstein_singlet_decay,
+                          decay_rate_function=einstein_radiative_decay,
                           description='singlet_radiative_decay')
                 ]
 

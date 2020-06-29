@@ -69,7 +69,7 @@ class TrajectoryGraph:
         for i, center in enumerate(system.centers):
             self.graph.add_node(i,
                                 coordinates=[list(system.molecules[center].get_coordinates())],
-                                state=system.molecules[center].state,
+                                state=system.molecules[center]._state,
                                 cell_state=[list(system.molecules[center].cell_state)],
                                 time=[0],
                                 event_time=0,
@@ -88,7 +88,7 @@ class TrajectoryGraph:
         self.states = set()
         ce = {}
         for center in system.centers:
-            state = system.molecules[center].state
+            state = system.molecules[center]._state
             self.states.add(state)
             count_keys_dict(ce, state)
         self.current_excitons = [ce]
@@ -106,14 +106,14 @@ class TrajectoryGraph:
 
     def _add_node(self, from_node, new_on_molecule, process_label=None):
 
-        if self.system.molecules[new_on_molecule].state == _ground_state_:
-            print('Error in state: ', self.system.molecules[new_on_molecule].state)
+        if self.system.molecules[new_on_molecule]._state == _ground_state_:
+            print('Error in state: ', self.system.molecules[new_on_molecule]._state)
             exit()
 
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
                             coordinates=[list(self.system.molecules[new_on_molecule].get_coordinates())],
-                            state=self.system.molecules[new_on_molecule].state,
+                            state=self.system.molecules[new_on_molecule]._state,
                             cell_state=[list(self.system.molecules[new_on_molecule].cell_state)],
                             # cell_state=[[0, 0]],
                             time=[0],
@@ -162,7 +162,7 @@ class TrajectoryGraph:
             self._finish_node(node_link['donor'])
 
             # Check if not ground state
-            final_state = self.system.molecules[change_step['acceptor']].state
+            final_state = self.system.molecules[change_step['acceptor']]._state
             if final_state != _ground_state_:
                 self._add_node(from_node=node_link['donor'],
                                new_on_molecule=change_step['acceptor'],
@@ -286,7 +286,7 @@ class TrajectoryGraph:
 
         ce = {}
         for center in self.system.centers:
-            state = self.system.molecules[center].state
+            state = self.system.molecules[center]._state
             self.states.add(state)
             count_keys_dict(ce, state)
 
@@ -669,7 +669,7 @@ class TrajectoryGraph2(TrajectoryGraph):
 
             self.graph.add_node(i,
                                 coordinates=ArrayHandler(mem_array, 'coordinates'),
-                                state=system.molecules[center].state,
+                                state=system.molecules[center]._state,
                                 cell_state=ArrayHandler(mem_array, 'cell_state'),
                                 time=ArrayHandler(mem_array, 'time'),
                                 event_time=0,
@@ -697,15 +697,15 @@ class TrajectoryGraph2(TrajectoryGraph):
         self.states = set()
         ce = {}
         for center in system.centers:
-            state = system.molecules[center].state
+            state = system.molecules[center]._state
             self.states.add(state)
             count_keys_dict(ce, state)
         self.current_excitons = [ce]
 
     def _add_node(self, from_node, new_on_molecule, process_label=None):
 
-        if self.system.molecules[new_on_molecule].state == _ground_state_:
-            print('Error in state: ', self.system.molecules[new_on_molecule].state)
+        if self.system.molecules[new_on_molecule]._state == _ground_state_:
+            print('Error in state: ', self.system.molecules[new_on_molecule]._state)
             exit()
 
         mem_array = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), self.node_count),
@@ -724,7 +724,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
                             coordinates=ArrayHandler(mem_array, 'coordinates'),
-                            state=self.system.molecules[new_on_molecule].state,
+                            state=self.system.molecules[new_on_molecule]._state,
                             cell_state=ArrayHandler(mem_array, 'cell_state'),
                             time=ArrayHandler(mem_array, 'time'),
                             event_time=self.times[-1],

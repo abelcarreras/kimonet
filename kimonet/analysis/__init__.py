@@ -44,12 +44,12 @@ def visualize_system(system, dipole=None):
             continue
 
         if ndim == 1:
-            ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state])
+            ax.quiver(c[0], 0, o[0], 0, color=colors[molecule._state])
         if ndim == 2:
-            ax.quiver(c[0], c[1], o[0], o[1], color=colors[molecule.state])
+            ax.quiver(c[0], c[1], o[0], o[1], color=colors[molecule._state])
             ax.text(c[0], c[1], '{}'.format(i), fontsize=12)
         if ndim == 3:
-            ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=True, length=5, color=colors[molecule.state])
+            ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=True, length=5, color=colors[molecule._state])
             # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
             ax.text(c[0], c[1], c[2], '{}'.format(i), fontsize=12)
 

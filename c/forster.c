@@ -20,10 +20,9 @@ static PyObject* Dipole(PyObject* self, PyObject *arg, PyObject *keywords);
 
 //  Python Interface
 static char function_docstring_1[] =
-    "dipole_extended(mu_d, mu_a, r_vector, length, ndiv)\n\n Dipole-dipole interaction extended";
-
+    "dipole_extended(r_vector, mu_1, mu_2, n=1, longitude=1, n_divisions=10)\n\n Dipole-dipole interaction extended";
 static char function_docstring_2[] =
-    "dipole(mu_d, mu_a, r_vector)\n\n Dipole-dipole interaction";
+    "dipole(r_vector, mu_1, mu_2, n=1)\n\n Dipole-dipole interaction";
 
 
 static PyMethodDef extension_funcs[] = {

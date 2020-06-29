@@ -59,7 +59,7 @@ def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent
     # This function only works in Python3
     import concurrent.futures as futures
 
-    # executor = futures.ThreadPoolExecutor(max_workers=4)
+    # executor = futures.ThreadPoolExecutor(max_workers=processors)
     executor = futures.ProcessPoolExecutor(max_workers=processors)
 
     futures_list = []
