@@ -3,6 +3,7 @@ from kimonet.core.processes import DecayRate, DirectRate
 from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system import System
+from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
 import numpy as np
 
@@ -24,7 +25,8 @@ def decay_rate(molecule):
 
 
 # setup molecules
-molecule = Molecule(state_energies={'gs': 0, 's1': 1.0},  # eV
+molecule = Molecule(states=[State(label='gs', energy=0.0),  # eV
+                            State(label='s1', energy=1.0)],  # eV
                     transition_moment={('s1', 'gs'): [1.0]},  # Debye
                     decays=[DecayRate(initial='s1', final='gs',
                                       decay_rate_function=decay_rate,

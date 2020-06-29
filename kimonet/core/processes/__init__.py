@@ -90,7 +90,7 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
 
     allowed_couplings = []
     for coupling in transfer_scheme:
-        if coupling.initial == (donor.electronic_state(), acceptor.electronic_state()):
+        if coupling.initial == (donor.state.label, acceptor.state.label):
             allowed_couplings.append(coupling)
 
     return allowed_couplings

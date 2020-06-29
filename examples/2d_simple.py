@@ -9,7 +9,7 @@ from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, Empirical
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis.diffusion.diffusion_plots import plot_polar_plot
 from kimonet import calculate_kmc, calculate_kmc_parallel
-
+from kimonet.system.state import State
 import numpy as np
 
 # list of transfer functions by state
@@ -24,8 +24,8 @@ decay_scheme = [DecayRate(initial='s1', final='gs',
                           description='singlet_radiative_decay')
                 ]
 
-molecule = Molecule(state_energies={'gs': 0,
-                                    's1': 4.0},  # eV
+molecule = Molecule(states=[State(label='gs', energy=0.0),   # eV
+                            State(label='s1', energy=4.0)],  # eV
                     vibrations=MarcusModel(reorganization_energies={('s1', 'gs'): 0.08,  # eV
                                                                     ('gs', 's1'): 0.08}),
                     transition_moment={('s1', 'gs'): [0.1, 0.0]},  # Debye

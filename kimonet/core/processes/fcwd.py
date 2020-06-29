@@ -67,7 +67,7 @@ def marcus_fcwd_old(donor, acceptor, conditions):
     """
     T = conditions['temperature']       # temperature (K)
 
-    excited_state = donor.electronic_state()
+    excited_state = donor.state.label
     gibbs_energy = donor.state_energies[excited_state] - acceptor.state_energies[excited_state]
     # Gibbs energy: energy difference between the equilibrium points of the excited states
 

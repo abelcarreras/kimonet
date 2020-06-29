@@ -5,7 +5,7 @@ import warnings
 import copy
 from kimonet.utils import distance_vector_periodic
 
-_ground_state = 'gs'
+_ground_state_ = 'gs'
 
 class System:
     def __init__(self,
@@ -27,7 +27,7 @@ class System:
         # search centers
         self.centers = []
         for i, molecule in enumerate(self.molecules):
-            if molecule._state != _ground_state:
+            if molecule.state.label != _ground_state_:
                 self.centers.append(i)
 
     def get_neighbours(self, center):
@@ -62,7 +62,7 @@ class System:
 
     def reset(self):
         for molecule in self.molecules:
-            molecule._state = _ground_state
+            molecule.set_state(_ground_state_)
             molecule.cell_state = np.zeros(molecule.get_dim())
         self.centers = []
         self.is_finished = False
@@ -77,8 +77,8 @@ class System:
         return len(self.centers)
 
     def add_excitation_index(self, type, index):
-        self.molecules[index]._state = type
-        if type == _ground_state:
+        self.molecules[index].set_state(type)
+        if type == _ground_state_:
             try:
                 self.centers.remove(index)
             except ValueError:
@@ -91,7 +91,7 @@ class System:
         for i in range(n):
             while True:
                 num = np.random.randint(0, self.get_num_molecules())
-                if self.molecules[num]._state == _ground_state:
+                if self.molecules[num].set_state(_ground_state_):
                     # self.molecules[num] = type
                     self.add_excitation_index(type, num)
                     break

@@ -28,6 +28,12 @@ class Molecule:
         :param orientation: 3d unit vector containing the orientation angles of the molecule defined in radiants respect X, Y and Z axes.
         """
 
+        self._labels_to_state = {}
+        for s in states:
+            if s.label in self._labels_to_state:
+                raise Exception('States with same labels')
+            self._labels_to_state[s.label] = s
+
         state_energies = {}
         for s in states:
             state_energies[s.label] = s.energy
@@ -35,9 +41,8 @@ class Molecule:
         # set state energies to vibrations
         vibrations.set_state_energies(state_energies)
 
-        self._state = state
+        self._state = self._labels_to_state[state]
         self._states = states
-        self.state_energies = state_energies
         self._coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
@@ -54,7 +59,7 @@ class Molecule:
         self.decay_dict = {}
 
     def __hash__(self):
-        return hash((str(self.state_energies),
+        return hash((str(self._states),
                      self._state,
                      # str(self.reorganization_energies),
                      np.array2string(self._coordinates, precision=12),
@@ -97,28 +102,13 @@ class Molecule:
 
     def get_state_energy(self, state=None):
         if state is None:
-            return self.state_energies[self._state]
+            return self._state.energy
         else:
-            return self.state_energies[state]
+            return self._labels_to_state[state].energy
 
     def get_vib_dos(self, transition, temperature=300):
         return self.vibrations.get_vib_spectrum(transition, temperature)
 
-    def electronic_state(self):
-        """
-        :return: the electronic state of the molecule
-        """
-
-        return self._state
-
-    def set_electronic_state(self, new_state):
-        """
-        Changes the molecular state of the molecule.
-
-        :param new_state:
-        """
-
-        self._state = new_state
 
     def decay_rates(self):
         """
@@ -127,15 +117,15 @@ class Molecule:
 
         """
 
-        if self._state not in self.decay_dict:
+        if self._state.label not in self.decay_dict:
             decay_rates = {}
             for coupling in self.decays:
-                if coupling.initial == self._state:
+                if coupling.initial == self._state.label:
                     decay_rates[coupling] = coupling.get_rate_constant(self)
 
-            self.decay_dict[self._state] = decay_rates
+            self.decay_dict[self._state.label] = decay_rates
 
-        return self.decay_dict[self._state]
+        return self.decay_dict[self._state.label]
 
     def get_transition_moment(self, to_state=_ground_state_):
         """
@@ -143,10 +133,10 @@ class Molecule:
         :param to_state: the transition dipole moment is given between this state and the current state
         :return:
         """
-        if (self._state, to_state) in self.transition_moment:
-            return rotate_vector(self.transition_moment[(self._state, to_state)], self.orientation)
-        elif (to_state, self._state) in self.transition_moment:
-            return rotate_vector(self.transition_moment[(to_state, self._state)], self.orientation)
+        if (self._state.label, to_state) in self.transition_moment:
+            return rotate_vector(self.transition_moment[(self._state.label, to_state)], self.orientation)
+        elif (to_state, self._state.label) in self.transition_moment:
+            return rotate_vector(self.transition_moment[(to_state, self._state.label)], self.orientation)
         else:
             return np.zeros(self.get_dim())
 
@@ -165,3 +155,10 @@ class Molecule:
         :return:
         """
         return rotate_vector([1, 0, 0][:self.get_dim()], self.orientation)
+
+    def set_state(self, state_label):
+        self._state = self._labels_to_state[state_label]
+
+    @property
+    def state(self):
+        return self._state
