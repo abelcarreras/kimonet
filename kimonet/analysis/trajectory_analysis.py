@@ -116,7 +116,7 @@ class TrajectoryAnalysis:
         """
         Return the average diffusion coefficient defined as:
 
-        DiffLen = SQRT(2 * z * DiifCoeff * LifeTime)
+        DiffLen = SQRT(2 * z * DiffCoeff * LifeTime)
 
         :return:
         """

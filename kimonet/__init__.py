@@ -3,6 +3,7 @@ _ground_state_ = 'gs'
 from kimonet.core import do_simulation_step, system_test_info
 from kimonet.analysis import Trajectory
 from warnings import warn
+import numpy as np
 
 
 def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
@@ -34,9 +35,9 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
 
 
 def _run_trajectory(system, index, max_steps, silent):
+    np.random.seed(index)
 
     system = system.copy()
-
     trajectory = Trajectory(system)
     for i in range(max_steps):
 

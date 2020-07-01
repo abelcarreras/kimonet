@@ -739,4 +739,7 @@ class TrajectoryGraph2(TrajectoryGraph):
     def __del__(self):
         for mapped_array, filename in self.mapped_list:
             del mapped_array
-            os.remove(filename)
+            try:
+                os.remove(filename)
+            except FileNotFoundError:
+                pass
