@@ -38,7 +38,7 @@ def load_trajectory_list(filename):
         trajectory.node_count = node_count
         trajectory.states = states
         trajectory.current_excitons = current_excitons
-        trajectory.supercell = system.supercell
+        trajectory.supercell = np.array(system.supercell)
         trajectory.n_centers = len(system.centers)
 
         trajectory_list.append(trajectory)
