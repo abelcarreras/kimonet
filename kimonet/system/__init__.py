@@ -1,11 +1,10 @@
 import numpy as np
-from scipy.spatial import distance
 import itertools
-import warnings
 import copy
+from scipy.spatial import distance
 from kimonet.utils import distance_vector_periodic
+from kimonet import _ground_state_
 
-_ground_state_ = 'gs'
 
 class System:
     def __init__(self,
