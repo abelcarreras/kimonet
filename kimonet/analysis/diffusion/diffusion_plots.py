@@ -65,7 +65,7 @@ def diffusion_line(mean_squared_distances, mean_lifetimes, linear_regression):
     :param mean_squared_distances:
     :param mean_lifetimes:
     :param linear_regression:
-    :return: Plots the points <l²> vs <t> at every step and also the linear regression.
+    :return: Plots the points <l^2> vs <t> at every step and also the linear regression.
     """
 
     regression_l_values = linear_regression[0] * np.array(mean_lifetimes) + linear_regression[1]

@@ -21,7 +21,7 @@ def statistical_diffusion_study(trajectories, theoretical_values, system_informa
 
     linear_regression = linregress(mean_lifetimes, mean_square_distances)
 
-    # PLOT OF <l²> vs <t> at each step
+    # PLOT OF <l^2> vs <t> at each step
     diffusion_line(mean_square_distances, mean_lifetimes, linear_regression)
 
     # Diffusion length value (using theoretical lifetime):

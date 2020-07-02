@@ -25,7 +25,7 @@ def do_simulation_step(system):
     # the indexes of both lists coincide.
 
     for center in system.centers:
-        if type(center) == int:
+        if isinstance(center, int):
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
             process_list, rate_list = get_processes_and_rates(center, system)
@@ -57,7 +57,7 @@ def update_step(chosen_process, system):
     New if(s) entrances shall be defined for more processes.
     """
 
-    if type(chosen_process['process']) in (GoldenRule, DirectRate):
+    if isinstance(chosen_process['process'], (GoldenRule, DirectRate)):
 
         donor_state = chosen_process['process'].final[0]
         acceptor_state = chosen_process['process'].final[1]
@@ -79,13 +79,15 @@ def update_step(chosen_process, system):
         if chosen_process['process'].final[1] == _ground_state_:
             system.molecules[chosen_process['acceptor']].cell_state *= 0
 
-    if type(chosen_process['process']) == DecayRate:
+    elif isinstance(chosen_process['process'], DecayRate):
         final_state = chosen_process['process'].final
         # print('final_state', final_state)
         system.add_excitation_index(final_state, chosen_process['donor'])
 
         if final_state == _ground_state_:
             system.molecules[chosen_process['donor']].cell_state *= 0
+    else:
+        raise Exception('Process type not recognized')
 
 
 def system_test_info(system):
@@ -99,7 +101,7 @@ def system_test_info(system):
     for center in system.centers:
         total_r = 0
         # anal_data = []
-        if type(center) == int:
+        if isinstance(center, int):
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
             print('*'*80 + '\n CENTER {}\n'.format(center) + '*'*80)
@@ -112,13 +114,13 @@ def system_test_info(system):
                 position_d = molecules[p['donor']].get_coordinates()
                 position_a = molecules[p['acceptor']].get_coordinates()
 
-                if type(p['process']) == (GoldenRule or DirectRate):
+                if isinstance(p['process'], (GoldenRule or DirectRate)):
                     distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
                                                                        system.supercell,
                                                                        p['cell_increment']))
                     print('Distance: ', distance, 'angs')
 
-                if type(p['process']) == GoldenRule:
+                if isinstance(p['process'], GoldenRule):
                     print('Cell_increment: {} '.format(p['cell_increment']))
 
                     spectral_overlap = general_fcwd(molecules[p['donor']],

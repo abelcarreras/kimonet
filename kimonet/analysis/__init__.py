@@ -119,7 +119,7 @@ def get_l2_t_from_file(diffusion_file):
     """
     :param diffusion_file: json file with diffusion results
     :return: The function takes from the file the experimental values of D and lifetime, It returns a list
-    with values of time from 0 to lifetime. With D computes the respective values of l².
+    with values of time from 0 to lifetime. With D computes the respective values of l^2.
     The aim of this function is to get this sets of data to plot several of them and be able to compare the slopes.
     As well, the value of the lifetime and diffusion length will be seen in this plot (the last point of each line).
     """

@@ -4,7 +4,7 @@ A kinetic Monte Carlo code to simulate exciton dynamics
 
 Requirements
 ------------
-- Python 3.2+ 
+- Python 2.7.x/3.2+ 
 - numpy
 - scipy
 - matplotlib

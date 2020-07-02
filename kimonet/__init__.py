@@ -20,7 +20,6 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
         for i in range(max_steps):
 
             change_step, step_time = do_simulation_step(system_copy)
-
             if system_copy.is_finished:
                 break
 
