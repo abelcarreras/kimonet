@@ -183,3 +183,52 @@ class TrajectoryAnalysis:
         except AttributeError:
             plt.hist(distances, normed=normalized, bins=bins)
         return plt
+
+
+def _get_diffusion_helper(trajectory, state):
+    return trajectory.get_diffusion(state)
+
+
+class TrajectoryAnalysisParallel(TrajectoryAnalysis):
+    def __init__(self, trajectories, processors=2):
+        super().__init__(trajectories)
+        import concurrent.futures as futures
+        self._executor = futures.ProcessPoolExecutor(max_workers=processors)
+        # self._executor = futures.ThreadPoolExecutor(max_workers=processors)
+
+
+    def diffusion_coefficient(self, state=None):
+        """
+        Return the average diffusion coefficient defined as:
+        1/(2*z) * <DiffLen^2>/<time>
+        *Parallel version*
+
+        :param state: state label
+        :return:
+        """
+        import concurrent.futures as futures
+
+        if state is None:
+            sum_diff = 0
+            for s in self.get_states():
+                futures_list = []
+                for trajectory in self.trajectories:
+                    futures_list.append(self._executor.submit(_get_diffusion_helper, trajectory, s))
+
+                diffusion_list = []
+                for f in futures.as_completed(futures_list):
+                    diffusion_list.append(f.result())
+
+                if not np.isnan(diffusion_list).all():
+                    sum_diff += np.nanmean(diffusion_list) * self.get_lifetime_ratio(s)
+            return sum_diff
+
+        futures_list = []
+        for trajectory in self.trajectories:
+            futures_list.append(self._executor.submit(_get_diffusion_helper, trajectory, state))
+
+        diffusion_list = []
+        for f in futures.as_completed(futures_list):
+            diffusion_list.append(f.result())
+
+        return np.nanmean(diffusion_list)
