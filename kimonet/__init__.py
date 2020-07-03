@@ -4,7 +4,7 @@ from kimonet.core import do_simulation_step, system_test_info
 from kimonet.analysis import Trajectory
 from warnings import warn
 import numpy as np
-
+import time
 
 def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
 
@@ -33,8 +33,8 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
     return trajectories
 
 
-def _run_trajectory(system, index, max_steps, silent):
-    np.random.seed(index)
+def _run_trajectory(index, system, max_steps, silent):
+    np.random.seed(int(index * time.time() % 1 * 1e8))
 
     system = system.copy()
     trajectory = Trajectory(system)
@@ -64,10 +64,19 @@ def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent
 
     futures_list = []
     for i in range(num_trajectories):
-        futures_list.append(executor.submit(_run_trajectory, system, i, max_steps, silent))
+        futures_list.append(executor.submit(_run_trajectory, i, system, max_steps, silent))
 
     trajectories = []
     for f in futures.as_completed(futures_list):
         trajectories.append(f.result())
 
+    return trajectories
+
+
+def calculate_kmc_parallel_alternative(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
+
+    from multiprocessing import cpu_count, Pool
+    from functools import partial
+    pool = Pool(processes=processors)
+    trajectories = pool.map(partial(_run_trajectory, system=system, max_steps=max_steps, silent=silent), range(num_trajectories))
     return trajectories
