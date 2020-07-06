@@ -158,3 +158,49 @@ def get_diffusion_vs_mu(diffusion_file):
 
     return diffusion_constant, lifetime, diffusion_length, mu
 
+
+def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_labels=False):
+
+    tensor = np.array(tensor_full)[np.array(plane)].T[np.array(plane)].T
+
+    if max is None:
+        max = np.max(tensor) * 1.2
+
+    r = []
+    theta = []
+    for i in np.arange(0, np.pi*2, 0.01):
+        x = np.cos(i)
+        y = np.sin(i)
+
+        rmat = np.array([np.cos(i), np.sin(i)])
+
+        np.linalg.norm(np.dot(rmat, tensor))
+
+        # print(np.linalg.norm([a,b]), np.linalg.norm(tensor[0]*x + tensor[1]*y))
+        r.append(np.linalg.norm(np.dot(tensor, rmat)))
+
+        # r.append(np.linalg.norm(tensor[0]*x + tensor[1]*y))
+        theta.append(i)
+
+    labels = {'cartesian': ['x', 'y', 'z'],
+              'crystal': ['a', 'b', 'c']}
+
+    if crystal_labels:
+        labels_plot = [labels['crystal'][i] for i in plane]
+    else:
+        labels_plot = [labels['cartesian'][i] for i in plane]
+
+    ax = plt.subplot(111, projection='polar')
+    ax.arrow(0., 0., np.pi, max,  edgecolor='black', lw=1, zorder=5)
+    ax.arrow(0., 0., 3./2*np.pi, max,  edgecolor='black', lw=1, zorder=5)
+    ax.annotate("", xy=(0, max), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
+    ax.annotate("", xy=(np.pi/2, max), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
+    ax.plot(theta, r)
+    ax.set_rmax(max)
+    ax.set_rticks(list(np.linspace(0.0, max, 8)))  # Less radial ticks
+    ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+    ax.grid(True)
+    ax.set_xticklabels(['{}'.format(labels_plot[0]), '', '{}'.format(labels_plot[1]), '', '', '', '', ''])
+
+    ax.set_title(title, va='bottom')
+    plt.show()

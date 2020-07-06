@@ -1,11 +1,11 @@
 from kimonet.system.generators import regular_system
 from kimonet.analysis import Trajectory, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
+from kimonet.system.state import State
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate
-import kimonet.core.processes as processes
 from kimonet.system.vibrations import MarcusModel
 
 import unittest
@@ -45,7 +45,8 @@ class TestKimonet(unittest.TestCase):
         vib = MarcusModel(reorganization_energies={('s1', 'gs'): 0.5,
                                                    ('gs', 's1'): 0.5})
 
-        self.molecule = Molecule(state_energies={'gs': 0, 's1': 3},
+        self.molecule = Molecule(states=[State(label='gs', energy=0.0),
+                                         State(label='s1', energy=3.0)],
                                  transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
                                  vibrations=vib,
                                  decays=decay_scheme,
@@ -64,7 +65,7 @@ class TestKimonet(unittest.TestCase):
         self.system.transfer_scheme = transfer_scheme
 
     def test_kmc_algorithm(self):
-        num_trajectories = 100                           # number of trajectories that will be simulated
+        num_trajectories = 10                           # number of trajectories that will be simulated
         max_steps = 100000                              # maximum number of steps for trajectory allowed
 
         trajectories = []
@@ -92,21 +93,20 @@ class TestKimonet(unittest.TestCase):
 
         print('n_dim: ', analysis.n_dim)
 
-        test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient('s1'), decimals=6),
-                'lifetime': np.around(analysis.lifetime('s1'), decimals=6),
-                'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=6),
-                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=6).tolist(),
+        test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient('s1'), decimals=4),
+                'lifetime': np.around(analysis.lifetime('s1'), decimals=4),
+                'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=4),
+                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=4).tolist(),
                 'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1')), decimals=6).tolist()
                 }
 
-        print(test)
-        ref = {'diffusion coefficient': 20.164265,
-               'lifetime': 239.244162,
-               'diffusion length': 136.504615,
-               'diffusion tensor': [[38.002607, 2.282159],
-                                    [2.282159, 2.325924]],
-               'diffusion length tensor': [[133.376572, 35.03327],
-                                           [35.03327, 29.05512]]
+        ref = {'diffusion coefficient': 31.5846,
+               'lifetime': 259.8353,
+               'diffusion length': 203.5827,
+               'diffusion tensor': [[59.3142, 11.4197],
+                                    [11.4197, 3.8549]],
+               'diffusion length tensor': [[200.448497, 76.072334],
+                                           [76.072334, 35.585109]]
                }
 
         # This is just for visual comparison (not accounted in the test)

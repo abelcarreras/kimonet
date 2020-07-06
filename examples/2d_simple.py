@@ -7,7 +7,7 @@ from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
-from kimonet.analysis.diffusion.diffusion_plots import plot_polar_plot
+from kimonet.analysis import plot_polar_plot
 from kimonet import calculate_kmc, calculate_kmc_parallel
 from kimonet.system.state import State
 import numpy as np

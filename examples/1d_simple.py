@@ -66,10 +66,20 @@ system_test_info(system)
 visualize_system(system)
 
 # do the kinetic Monte Carlo simulation
-trajectories = calculate_kmc(system,
-                             num_trajectories=1000,    # number of trajectories that will be simulated
-                             max_steps=100000,         # maximum number of steps for trajectory allowed
-                             silent=False)
+parallel_run = False
+if parallel_run:
+    from kimonet import calculate_kmc_parallel
+    trajectories = calculate_kmc_parallel(system,
+                                          processors=10,
+                                          num_trajectories=1000,    # number of trajectories that will be simulated
+                                          max_steps=100000,         # maximum number of steps for trajectory allowed
+                                          silent=False)
+else:
+    trajectories = calculate_kmc(system,
+                                 num_trajectories=1000,    # number of trajectories that will be simulated
+                                 max_steps=100000,         # maximum number of steps for trajectory allowed
+                                 silent=False)
+
 
 # Results analysis
 analysis = TrajectoryAnalysis(trajectories)
