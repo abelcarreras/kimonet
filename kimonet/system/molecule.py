@@ -106,8 +106,8 @@ class Molecule:
         else:
             return self._labels_to_state[state].energy
 
-    def get_vib_dos(self, transition, temperature=300):
-        return self.vibrations.get_vib_spectrum(transition, temperature)
+    def get_vib_dos(self, transition):
+        return self.vibrations.get_vib_spectrum(transition)
 
 
     def decay_rates(self):

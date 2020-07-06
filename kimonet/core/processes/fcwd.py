@@ -20,16 +20,14 @@ def general_fcwd(donor, acceptor, process, conditions):
 
     # testing normalization
 
-    temperature = conditions['temperature']  # temperature (K)
-
     # info = str(hash((donor, acceptor, process, str(conditions), 'general_fcwd')))
     # info = str(hash(donor) + hash(acceptor) + hash(str(conditions) + 'general_fcwd'))
 
     transition_donor = (process.initial[0], process.final[0])
     transition_acceptor = (process.initial[1], process.final[1])
 
-    donor_vib_dos = donor.get_vib_dos(transition_donor, temperature)
-    acceptor_vib_dos = acceptor.get_vib_dos(transition_acceptor, temperature)
+    donor_vib_dos = donor.get_vib_dos(transition_donor)
+    acceptor_vib_dos = acceptor.get_vib_dos(transition_acceptor)
 
     # print(donor_vib_dos)
     info = str(hash(donor_vib_dos) + hash(acceptor_vib_dos))

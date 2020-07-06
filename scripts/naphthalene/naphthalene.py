@@ -63,8 +63,7 @@ molecule = Molecule(states=[State(label='gs', energy=0, multiplicity=1),  # ener
 #######################################################################################################################
 
 # physical conditions of the system (as a dictionary)
-conditions = {'temperature': 300.15,            # temperature of the system (K)
-              'refractive_index': 1,            # refractive index of the material (adimensional)
+conditions = {'refractive_index': 1,            # refractive index of the material (adimensional)
               'dexter_k': 1.0}                  # eV
 
 #######################################################################################################################

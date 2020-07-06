@@ -27,16 +27,15 @@ decay_scheme = [DecayRate(initial='s1', final='gs',
 molecule = Molecule(states=[State(label='gs', energy=0.0),   # eV
                             State(label='s1', energy=4.0)],  # eV
                     vibrations=MarcusModel(reorganization_energies={('s1', 'gs'): 0.08,  # eV
-                                                                    ('gs', 's1'): 0.08}),
+                                                                    ('gs', 's1'): 0.08},
+                                           temperature=300),  # Kelvin
                     transition_moment={('s1', 'gs'): [0.1, 0.0]},  # Debye
                     decays=decay_scheme,
                     )
 
 
 # physical conditions of the system
-conditions = {'temperature': 300,          # temperature of the system (K)
-              'refractive_index': 1
-              }
+conditions = {'refractive_index': 1}
 
 # define system as a crystal
 system = crystal_system(conditions=conditions,

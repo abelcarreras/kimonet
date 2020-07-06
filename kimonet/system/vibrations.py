@@ -9,11 +9,14 @@ class MarcusModel:
 
     def __init__(self,
                  reorganization_energies=None,  # eV
+                 temperature=300,  # Kelvin
                  drift_term=0  # aN -> eV / angs [to be implemented]
                  ):
 
         self.reorganization_energies = reorganization_energies
+        self.temperature = temperature
         self.state_energies = None
+
 
         # symmetrize external reorganization energies
         """
@@ -29,11 +32,11 @@ class MarcusModel:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition, temperature=300):
+    def get_vib_spectrum(self, transition):
 
         elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
 
-        temp = temperature  # temperature (K)
+        temp = self.temperature  # temperature (K)
         reorg_ene = np.sum(self.reorganization_energies[transition])
 
         sign = np.sign(elec_trans_ene)
@@ -53,6 +56,7 @@ class LevichJortnerModel:
                  frequencies=None,
                  reorganization_energies=None,  # eV
                  external_reorganization_energies=None,  # eV
+                 temperature=300,
                  # state_energies=None,
                  ):
 
@@ -60,6 +64,7 @@ class LevichJortnerModel:
         self.reorganization_energies = reorganization_energies
         self.external_reorganization_energies = external_reorganization_energies
         self.state_energies = None
+        self.temperature = temperature
 
         # symmetrize external reorganization energies
         """
@@ -77,11 +82,11 @@ class LevichJortnerModel:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition, temperature=300):
+    def get_vib_spectrum(self, transition):
 
         elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
 
-        temp = temperature  # temperature (K)
+        temp = self.temperature  # temperature (K)
         ext_reorg_ene = self.external_reorganization_energies[transition]
         reorg_ene = np.array(self.reorganization_energies[transition])
 
@@ -137,7 +142,7 @@ class EmpiricalModel:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition, temperature=None):
+    def get_vib_spectrum(self, transition):
         # Temperature is not actually used. This is to keep common interface
         return self.empirical_function[transition]
 
@@ -166,7 +171,7 @@ class GaussianModel:
                      str(self.deviations),
                      str(self.reorganization_energies)))
 
-    def get_vib_spectrum(self, transition, temperature=300):
+    def get_vib_spectrum(self, transition):
 
         """
         :param donor: energy diference between states
@@ -199,7 +204,7 @@ class NoVibration:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition, temperature=None):
+    def get_vib_spectrum(self, transition):
         elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
 
         def vib_spectrum(e):
