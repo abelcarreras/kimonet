@@ -59,12 +59,10 @@ molecule = Molecule(states=[State(label='gs', energy=0, multiplicity=1),  # ener
                     )
 
 
-
 #######################################################################################################################
 
 # physical conditions of the system (as a dictionary)
-conditions = {'refractive_index': 1,            # refractive index of the material (adimensional)
-              'dexter_k': 1.0}                  # eV
+conditions = {'refractive_index': 1}            # refractive index of the material (adimensional)
 
 #######################################################################################################################
 
@@ -78,10 +76,10 @@ system_1 = regular_system(conditions=conditions,
 
 
 system_2 = crystal_system(conditions=conditions,
-                          molecule=molecule,
-                          scaled_coordinates=[[0, 0, 0],
-                                              [0.5, 0.5, 0.0]
-                                              ],
+                          molecules=[molecule, molecule],
+                          scaled_site_coordinates=[[0, 0, 0],
+                                                   [0.5, 0.5, 0.0]
+                                                   ],
                           unitcell=[[6.32367864, 0.0000000, -4.35427391],
                                     [0.00000000, 5.7210000,  0.00000000],
                                     [0.00000000, 0.0000000,  8.39500000]],

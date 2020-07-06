@@ -367,7 +367,7 @@ for i, struct in enumerate([struct1, struct2]):
 
     system = crystal_system(conditions={},
                             molecule=molecule,
-                            scaled_coordinates=[position],
+                            scaled_site_coordinates=[position],
                             unitcell=lattice.matrix,
                             dimensions=[1, 1, 1],
                             orientations=[params])

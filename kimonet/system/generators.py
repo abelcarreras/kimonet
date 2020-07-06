@@ -53,16 +53,16 @@ def regular_system(conditions,
 
 
 def crystal_system(conditions,
-                   molecule,
-                   scaled_coordinates,
+                   molecules,
+                   scaled_site_coordinates,
                    dimensions=None,
                    unitcell=None,
                    orientations=None,
                    ):
 
     unitcell = np.array(unitcell)
-    scaled_coordinates = np.array(scaled_coordinates)
-    n_mol, n_dim = scaled_coordinates.shape
+    scaled_site_coordinates = np.array(scaled_site_coordinates)
+    n_mol, n_dim = scaled_site_coordinates.shape
 
     if dimensions is None:
         dimensions = [1] * n_dim
@@ -70,9 +70,9 @@ def crystal_system(conditions,
     if orientations is None:
         orientations = [None for _ in range(n_mol)]
 
-    molecules = []                              # list of instances of class molecule
+    molecules_list = []                              # list of instances of class molecule
 
-    for i, (coordinate, orientation) in enumerate(zip(scaled_coordinates, orientations)):
+    for i, (coordinate, molecule) in enumerate(zip(scaled_site_coordinates, molecules)):
         for subset in itertools.product(*[list(range(n)) for n in dimensions]):
 
             r_cell = np.sum([s * lattice_vector for s, lattice_vector in zip(subset, unitcell)], axis=0)
@@ -82,14 +82,14 @@ def crystal_system(conditions,
             molecule.set_coordinates(coor)
             molecule.name = 'a{}'.format(i+1)
 
-            if orientation is None:
+            if orientations[i] is None:
                 final_orientation = np.random.random_sample(3) * 2 * np.pi
             else:
-                final_orientation = orientation
+                final_orientation = orientations[i]
 
             molecule.set_orientation(final_orientation)
-            molecules.append(molecule)
+            molecules_list.append(molecule)
 
     supercell = np.dot(unitcell.T, np.diag(dimensions)).T
 
-    return System(molecules, conditions, supercell)
+    return System(molecules_list, conditions, supercell)

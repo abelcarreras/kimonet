@@ -83,9 +83,9 @@ max_steps = 100000                              # maximum number of steps for tr
 
 system = crystal_system(conditions=conditions,
                         molecule=molecule,
-                        scaled_coordinates=[[0.0, 0.0],
-                                            [0.5, 0.5]
-                                            ],
+                        scaled_site_coordinates=[[0.0, 0.0],
+                                                 [0.5, 0.5]
+                                                 ],
                         unitcell=[[ 7.3347, 0.0000],
                                   [-0.2242, 6.0167]],
                         dimensions=[3, 3],
