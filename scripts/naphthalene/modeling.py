@@ -5,6 +5,7 @@ from kimonet.utils.rotation import rotate_vector
 from kimonet.system.generators import crystal_system
 from kimonet.analysis import visualize_system
 from kimonet.system.molecule import Molecule
+from kimonet.system.state import State
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 DEBYE_TO_AU = 0.393430
 
@@ -360,13 +361,14 @@ for i, struct in enumerate([struct1, struct2]):
     struct_c.to(filename='POSCAR')
 
     scale_factor = 50
-    molecule = Molecule(state_energies={'gs': 0, 's1': 1},
+    molecule = Molecule(states=[State(label='gs', energy=0.0),
+                                State(label='s1', energy=1.0)],
                         transition_moment={('s1', 'gs'): dipole*scale_factor,
                                            ('s2', 'gs'): dipole2*scale_factor},  # transition dipole moment of the molecule (Debye)
                         )
 
     system = crystal_system(conditions={},
-                            molecule=molecule,
+                            molecules=[molecule],
                             scaled_site_coordinates=[position],
                             unitcell=lattice.matrix,
                             dimensions=[1, 1, 1],

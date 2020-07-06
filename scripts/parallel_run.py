@@ -1,17 +1,18 @@
 # This works only in python 3
 from kimonet.system.generators import regular_system
 from kimonet.analysis import Trajectory, visualize_system, TrajectoryAnalysis
+from kimonet import system_test_info
 from kimonet.system.molecule import Molecule
+from kimonet.system.state import State
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
-import kimonet.core.processes as processes
 import concurrent.futures as futures
 
 
-processes.transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
                                         electronic_coupling_function=forster_coupling,
                                         description='forster'),
                              ]
@@ -21,16 +22,11 @@ decay_scheme = [DecayRate(initial='s1', final='gs',
                           description='singlet_radiative_decay')
                 ]
 
-# excitation energies of the electronic states (eV)
-state_energies = {'gs': 0,
-                  's1': 1}
 
-# reorganization energies of the states (eV)
-reorganization_energies = {('s1', 'gs'): 0.5,
-                           ('gs', 's1'): 0.5}
-
-molecule = Molecule(state_energies=state_energies,
-                    vibrations=MarcusModel(reorganization_energies),
+molecule = Molecule(states=[State(label='gs', energy=0.0),  # eV
+                            State(label='s1', energy=1.0)], # eV
+                    vibrations=MarcusModel(reorganization_energies={('s1', 'gs'): 0.5,    # eV
+                                                                    ('gs', 's1'): 0.5}),  #eV
                     transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme
                     )
@@ -38,21 +34,26 @@ molecule = Molecule(state_energies=state_energies,
 #######################################################################################################################
 
 # physical conditions of the system (as a dictionary)
-conditions = {'temperature': 273.15,            # temperature of the system (K)
-              'refractive_index': 1,            # refractive index of the material (adimensional)
-              'cutoff_radius': 3.1}             # maximum interaction distance (Angstroms)
+conditions = {'refractive_index': 1}             # maximum interaction distance (Angstroms)
 
 #######################################################################################################################
 
 num_trajectories = 500                          # number of trajectories that will be simulated
-max_steps = 100000                              # maximum number of steps for trajectory allowed
+max_steps = 100                              # maximum number of steps for trajectory allowed
 
 system = regular_system(conditions=conditions,
                         molecule=molecule,
-                        lattice={'size': [3, 3], 'parameters': [3.0, 3.0]},  # Angstroms
+                        lattice={'size': [3, 3],
+                                 'parameters': [3.0, 3.0]},  # Angstroms
                         orientation=[0, 0, 0])
 
-# visualize_system(system)
+visualize_system(system)
+system.cutoff_radius = 4.0  # Angstroms
+
+system.transfer_scheme = transfer_scheme
+
+system.add_excitation_center('s1')
+system_test_info(system)
 
 
 def run_trajectory(system, index):
@@ -73,9 +74,8 @@ def run_trajectory(system, index):
     print('trajectory {} done!'.format(index))
     return trajectory
 
-
 # executor = futures.ThreadPoolExecutor(max_workers=4)
-executor = futures.ProcessPoolExecutor()
+executor = futures.ProcessPoolExecutor(max_workers=10)
 
 futures_list = []
 for i in range(num_trajectories):
