@@ -13,9 +13,9 @@ import concurrent.futures as futures
 
 
 transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
-                                        electronic_coupling_function=forster_coupling,
-                                        description='forster'),
-                             ]
+                              electronic_coupling_function=forster_coupling,
+                              description='forster')
+                   ]
 
 decay_scheme = [DecayRate(initial='s1', final='gs',
                           decay_rate_function=einstein_radiative_decay,
@@ -26,7 +26,7 @@ decay_scheme = [DecayRate(initial='s1', final='gs',
 molecule = Molecule(states=[State(label='gs', energy=0.0),  # eV
                             State(label='s1', energy=1.0)], # eV
                     vibrations=MarcusModel(reorganization_energies={('s1', 'gs'): 0.5,    # eV
-                                                                    ('gs', 's1'): 0.5}),  #eV
+                                                                    ('gs', 's1'): 0.5}),  # eV
                     transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
                     decays=decay_scheme
                     )
