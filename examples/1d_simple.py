@@ -76,7 +76,7 @@ if parallel_run:
                                           silent=False)
 else:
     trajectories = calculate_kmc(system,
-                                 num_trajectories=1000,    # number of trajectories that will be simulated
+                                 num_trajectories=100,    # number of trajectories that will be simulated
                                  max_steps=100000,         # maximum number of steps for trajectory allowed
                                  silent=False)
 

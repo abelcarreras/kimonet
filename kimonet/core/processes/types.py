@@ -15,6 +15,28 @@ class BaseProcess:
         self.final = final
         self.description = description
         self.arguments = arguments if arguments is not None else {}
+        self._donor = None
+        self._acceptor = None
+
+    @property
+    def donor(self):
+        if self._donor is None:
+            raise Exception('No donor set')
+        return self._donor
+
+    @donor.setter
+    def donor(self, molecule):
+        self._donor = molecule
+
+    @property
+    def acceptor(self):
+        if self._acceptor is None:
+            raise Exception('No acceptor set')
+        return self._acceptor
+
+    @acceptor.setter
+    def acceptor(self, molecule):
+        self._acceptor = molecule
 
 
 class GoldenRule(BaseProcess):
@@ -29,12 +51,12 @@ class GoldenRule(BaseProcess):
         self._coupling_function = electronic_coupling_function
         BaseProcess.__init__(self, initial, final, description, arguments)
 
-    def get_electronic_coupling(self, donor, acceptor, conditions, supercell, cell_incr):
-        return self._coupling_function(donor, acceptor, conditions, supercell, cell_incr, **self.arguments)
+    def get_electronic_coupling(self, conditions, supercell, cell_incr):
+        return self._coupling_function(self.donor, self.acceptor, conditions, supercell, cell_incr, **self.arguments)
 
-    def get_rate_constant(self, donor, acceptor, conditions, supercell, cell_incr):
-        e_coupling = self.get_electronic_coupling(donor, acceptor, conditions, supercell, cell_incr)
-        spectral_overlap = general_fcwd(donor, acceptor, self, conditions)
+    def get_rate_constant(self, conditions, supercell, cell_incr):
+        e_coupling = self.get_electronic_coupling(conditions, supercell, cell_incr)
+        spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
         return 2 * np.pi / HBAR_PLANCK * e_coupling ** 2 * spectral_overlap  # Fermi's Golden Rule
 
 
@@ -50,8 +72,8 @@ class DirectRate(BaseProcess):
         self.rate_function = rate_constant_function
         BaseProcess.__init__(self, initial, final, description, arguments)
 
-    def get_rate_constant(self, donor, acceptor, conditions, supercell, cell_incr):
-        return self.rate_function(donor, acceptor, conditions, supercell, cell_incr)
+    def get_rate_constant(self, conditions, supercell, cell_incr):
+        return self.rate_function(self.donor, self.acceptor, conditions, supercell, cell_incr)
 
 
 class DecayRate(BaseProcess):

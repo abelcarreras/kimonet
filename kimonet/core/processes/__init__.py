@@ -1,6 +1,4 @@
-import numpy as np
 from kimonet.core.processes.fcwd import general_fcwd
-from kimonet.utils.units import HBAR_PLANCK
 from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 
 
@@ -50,7 +48,7 @@ def get_transfer_rates(center, system):
 
         for process in allowed_processes:
 
-            transfer_rates.append(process.get_rate_constant(donor, acceptor, conditions, system.supercell, cell_incr))
+            transfer_rates.append(process.get_rate_constant(conditions, system.supercell, cell_incr))
             transfer_processes.append({'donor': int(center), 'process': process, 'acceptor': int(neighbour),
                                        'cell_increment': cell_incr})
 
@@ -87,10 +85,14 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
     :param acceptor: Molecule class instance
     :return: Dictionary with the allowed coupling functions
     """
+    from copy import deepcopy
 
     allowed_couplings = []
     for coupling in transfer_scheme:
         if coupling.initial == (donor.state.label, acceptor.state.label):
-            allowed_couplings.append(coupling)
+            new_coupling = deepcopy(coupling)
+            new_coupling.donor = donor
+            new_coupling.acceptor = acceptor
+            allowed_couplings.append(new_coupling)
 
     return allowed_couplings

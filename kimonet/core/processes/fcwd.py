@@ -63,6 +63,11 @@ def marcus_fcwd_old(donor, acceptor, conditions):
     :param conditions:
     :return: The spectral overlap between the donor and the acceptor according to Marcus formula.
     """
+    import warnings
+
+    warnings.warn("This method will be deprecated, use vibrations classes instead",
+                  DeprecationWarning)
+
     T = conditions['temperature']       # temperature (K)
 
     excited_state = donor.state.label

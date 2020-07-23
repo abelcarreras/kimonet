@@ -128,9 +128,7 @@ def system_test_info(system):
                                                     p['process'],
                                                     system.conditions)
 
-                    e_coupling = p['process'].get_electronic_coupling(molecules[p['donor']],
-                                                                      molecules[p['acceptor']],
-                                                                      system.conditions,
+                    e_coupling = p['process'].get_electronic_coupling(system.conditions,
                                                                       system.supercell,
                                                                       p['cell_increment'])
 

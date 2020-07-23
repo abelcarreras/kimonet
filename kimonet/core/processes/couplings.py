@@ -16,7 +16,7 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
                ) + np.array2string(np.array(supercell), precision=12) + np.array2string(np.array(cell_incr, dtype=int))
 
 
-def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
+def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_index=1):
     """
     Compute Forster coupling in eV
 
@@ -40,8 +40,6 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
     mu_a = acceptor.get_transition_moment(to_state=donor.state.label)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
-
-    ref_index = conditions['refractive_index']                      # refractive index of the material
 
     coupling_data[hash_string] = forster.dipole(mu_d, mu_a, r_vector, n=ref_index)
     distance = np.linalg.norm(r_vector)
@@ -58,7 +56,7 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr):
     return forster_coupling
 
 
-def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr):
+def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_index=1):
     """
     Compute Forster coupling in eV
 
@@ -83,10 +81,7 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr):
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
 
-
     distance = np.linalg.norm(r_vector)
-
-    ref_index = conditions['refractive_index']                      # refractive index of the material
 
     k = orientation_factor(mu_d, mu_a, r_vector)              # orientation factor between molecules
 
@@ -97,7 +92,8 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr):
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr, longitude=3, n_divisions=300):
+def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
+                              ref_index=1, longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
 
@@ -123,8 +119,6 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     mu_d = donor.get_transition_moment(to_state=_ground_state_)              # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state.label)    # transition dipole moment (acceptor) e*angs
 
-    ref_index = conditions['refractive_index']                      # refractive index of the material
-
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
 
     coupling_data[hash_string] = forster.dipole_extended(r_vector, mu_a, mu_d,
@@ -135,7 +129,8 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_incr, longitude=3, n_divisions=300):
+def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_incr,
+                                 ref_index=1,longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV (pure python version)
 
@@ -160,7 +155,7 @@ def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_in
     mu_d = donor.get_transition_moment(to_state=_ground_state_)              # transition dipole moment (donor) e*angs
     mu_a = acceptor.get_transition_moment(to_state=donor.state.label)    # transition dipole moment (acceptor) e*angs
 
-    ref_index = conditions['refractive_index']                      # refractive index of the material
+    # ref_index = conditions['refractive_index']                      # refractive index of the material
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
 
