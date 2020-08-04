@@ -4,6 +4,7 @@ import copy
 from scipy.spatial import distance
 from kimonet.utils import distance_vector_periodic
 from kimonet import _ground_state_
+from kimonet.system.state import ground_state as _GS_
 
 
 class System:
@@ -61,7 +62,7 @@ class System:
 
     def reset(self):
         for molecule in self.molecules:
-            molecule.set_state(_ground_state_)
+            molecule.set_state(_GS_)
             molecule.cell_state = np.zeros(molecule.get_dim())
         self.centers = []
         self.is_finished = False
@@ -90,7 +91,7 @@ class System:
         for i in range(n):
             while True:
                 num = np.random.randint(0, self.get_num_molecules())
-                if self.molecules[num].set_state(_ground_state_):
+                if self.molecules[num].set_state(_GS_):
                     # self.molecules[num] = type
                     self.add_excitation_index(type, num)
                     break

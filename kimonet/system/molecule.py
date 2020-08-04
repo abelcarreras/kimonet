@@ -3,18 +3,20 @@ from kimonet.utils import rotate_vector
 import copy
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 from kimonet.system.vibrations import NoVibration
+from kimonet.system.state import ground_state as _gs_
+from kimonet.core.processes.types import Transition
 from kimonet import _ground_state_
 
 
 class Molecule:
 
     def __init__(self,
-                 states,  # eV
+                 # states,  # eV
                  transition_moment,  # Debye
                  vibrations=NoVibration(),
                  name=None,
-                 decays=None,
-                 state=_ground_state_,
+                 decays=(),
+                 state=_gs_,
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
@@ -28,21 +30,11 @@ class Molecule:
         :param orientation: 3d unit vector containing the orientation angles of the molecule defined in radiants respect X, Y and Z axes.
         """
 
-        self._labels_to_state = {}
-        for s in states:
-            if s.label in self._labels_to_state:
-                raise Exception('States with same labels')
-            self._labels_to_state[s.label] = s
-
-        state_energies = {}
-        for s in states:
-            state_energies[s.label] = s.energy
-
         # set state energies to vibrations
-        vibrations.set_state_energies(state_energies)
+        #vibrations.set_state_energies(state_energies)
 
-        self._state = self._labels_to_state[state]
-        self._states = states
+        # self._state = self._labels_to_state[state]
+        self._state = state
         self._coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
@@ -50,17 +42,19 @@ class Molecule:
         self.vibrations = vibrations
         self.name = name
 
+        state.add_molecule(self)
+
         self.transition_moment = {}
         for k, v in transition_moment.items():
-            self.transition_moment[k] = np.array(v) * DEBYE_TO_ANGS_EL
+            self.transition_moment[Transition(*k)] = np.array(v) * DEBYE_TO_ANGS_EL
+
         # self.transition_moment = np.array(transition_moment) * DEBYE_TO_ANGS_EL  # Debye -> Angs * e
 
-        self.decays = {} if decays is None else decays
-        self.decay_dict = {}
+        self.decays = decays
+        self._decay_dict = {}
 
     def __hash__(self):
-        return hash((str(self._states),
-                     self._state,
+        return hash((self._state,
                      # str(self.reorganization_energies),
                      np.array2string(self._coordinates, precision=12),
                      np.array2string(self.orientation, precision=12))) + \
@@ -100,15 +94,11 @@ class Molecule:
         """
         return self.orientation
 
-    def get_state_energy(self, state=None):
-        if state is None:
-            return self._state.energy
-        else:
-            return self._labels_to_state[state].energy
+    def get_state_energy(self):
+        return self._state.energy
 
     def get_vib_dos(self, transition):
         return self.vibrations.get_vib_spectrum(transition)
-
 
     def decay_rates(self):
         """
@@ -117,26 +107,25 @@ class Molecule:
 
         """
 
-        if self._state.label not in self.decay_dict:
-            decay_rates = {}
-            for coupling in self.decays:
-                if coupling.initial == self._state.label:
-                    decay_rates[coupling] = coupling.get_rate_constant(self)
+        if not self._state.label in self._decay_dict:
+            decay_rates = []
+            for d in self.decays:
+                if d.initial[0].label == self._state.label:
+                    decay_rates.append(d)
+            self._decay_dict[self._state.label] = decay_rates
 
-            self.decay_dict[self._state.label] = decay_rates
+        return self._decay_dict[self._state.label]
 
-        return self.decay_dict[self._state.label]
-
-    def get_transition_moment(self, to_state=_ground_state_):
+    def get_transition_moment(self, to_state=_gs_):
         """
         returns the transition dipole moment between the current state and the requested state (by default ground state)
         :param to_state: the transition dipole moment is given between this state and the current state
         :return:
         """
-        if (self._state.label, to_state) in self.transition_moment:
-            return rotate_vector(self.transition_moment[(self._state.label, to_state)], self.orientation)
-        elif (to_state, self._state.label) in self.transition_moment:
-            return rotate_vector(self.transition_moment[(to_state, self._state.label)], self.orientation)
+        if Transition(self.state, to_state) in self.transition_moment:
+            return rotate_vector(self.transition_moment[Transition(self.state, to_state)], self.orientation)
+        elif (to_state, self.state.label) in self.transition_moment:
+            return rotate_vector(self.transition_moment[Transition(to_state, self.state)], self.orientation)
         else:
             return np.zeros(self.get_dim())
 
@@ -156,8 +145,9 @@ class Molecule:
         """
         return rotate_vector([1, 0, 0][:self.get_dim()], self.orientation)
 
-    def set_state(self, state_label):
-        self._state = self._labels_to_state[state_label]
+    def set_state(self, state):
+        state.add_molecule(self)
+        self._state = state
 
     @property
     def state(self):

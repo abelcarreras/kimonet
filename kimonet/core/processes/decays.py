@@ -4,7 +4,7 @@ from kimonet import _ground_state_
 
 
 # Decay functions
-def einstein_radiative_decay(molecule, g1=1, g2=1):
+def einstein_radiative_decay(initial, final, molecule, g1=1, g2=1):
     """
     Einstein radiative decay
 
@@ -14,7 +14,7 @@ def einstein_radiative_decay(molecule, g1=1, g2=1):
 
     :return: decay rate constant
     """
-    deexcitation_energy = molecule.state.energy - molecule.get_state_energy(_ground_state_)
+    deexcitation_energy = initial[0].energy - final[0].energy
 
     mu2 = np.dot(molecule.get_transition_moment(), molecule.get_transition_moment())  # transition moment norm.
     alpha = 1.0 / 137.036

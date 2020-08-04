@@ -8,26 +8,29 @@ from kimonet.core.processes import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
 from kimonet.system.generators import regular_system, crystal_system
 
-
 import unittest
 import numpy as np
+
+
+# states list
+gs = State(label='gs', energy=0.0, multiplicity=1)
+s1 = State(label='s1', energy=1.0, multiplicity=1)
+
 
 
 class Test1DFast(unittest.TestCase):
 
     def setUp(self):
         # list of decay functions by state
-        decay_scheme = [DecayRate(initial='s1', final='gs',
+        decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
                                   decay_rate_function=einstein_radiative_decay,
                                   description='singlet_radiative_decay')
                         ]
 
-        molecule = Molecule(states=[State(label='gs', energy=0.0),  # eV
-                                    State(label='s1', energy=4.0)],  # eV
-                            vibrations=MarcusModel(reorganization_energies={('s1', 'gs'): 0.08,  # eV
-                                                                            ('gs', 's1'): 0.08},
+        molecule = Molecule(vibrations=MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
+                                                                            (gs, s1): 0.08},
                                                    temperature=300),  # Kelvin
-                            transition_moment={('s1', 'gs'): [0.3, 0.1]},  # Debye
+                            transition_moment={(s1, gs): [0.3, 0.1]},  # Debye
                             decays=decay_scheme,
                             )
 
@@ -41,7 +44,7 @@ class Test1DFast(unittest.TestCase):
                                      orientations=[[0.0, 0.0, np.pi / 2]])  # if element is None then random, if list then Rx Ry Rz
 
         # set initial exciton
-        self.system.add_excitation_center('s1')
+        self.system.add_excitation_center(s1)
 
         # set additional system parameters
         self.system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
@@ -50,7 +53,7 @@ class Test1DFast(unittest.TestCase):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
         # list of transfer functions by state
-        self.system.transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+        self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                   electronic_coupling_function=forster_coupling_extended,
                                                   description='Forster',
                                                   arguments={'ref_index': 2, 'longitude': 2, 'n_divisions':30})]

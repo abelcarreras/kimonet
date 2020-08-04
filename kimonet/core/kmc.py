@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def kmc_algorithm(rate_list, process_list):
+def kmc_algorithm(process_list, system):
     """
     :param rate_list: List with all the computed rates for all the neighbours for all the centers
     :param process_list: List of elements dict(center, process, new molecule).
@@ -13,6 +13,8 @@ def kmc_algorithm(rate_list, process_list):
     :return:    plan: The chosen proces and the new molecule affected
                 time: the duration of the process
     """
+
+    rate_list = [proc['process'].get_rate_constant(system.conditions, system.supercell) for proc in process_list]
 
     process_index = select_process(rate_list)
     chosen_process = process_list[process_index]

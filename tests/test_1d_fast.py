@@ -14,27 +14,33 @@ from kimonet.system.vibrations import MarcusModel
 import unittest
 import numpy as np
 
+# states list
+gs = State(label='gs', energy=0.0, multiplicity=1)
+s1 = State(label='s1', energy=1.0, multiplicity=1)
+
 
 class Test1DFast(unittest.TestCase):
 
     def setUp(self):
 
+
         # custom decay functions
-        def decay_rate(molecule):
+        def decay_rate(initial, final, molecule):
             rates = {'TypeA': 1 / 100,
                      'TypeB': 1 / 50,
                      'TypeC': 1 / 25}
             return rates[molecule.name]
 
         # setup molecules
-        molecule = Molecule(states=[State(label='gs', energy=0.0),  # eV
-                                    State(label='s1', energy=1.0)],  # eV
-                            transition_moment={('s1', 'gs'): [0.01]},  # Debye
-                            decays=[DecayRate(initial='s1', final='gs',
+        molecule = Molecule(
+                            #states=[State(label='gs', energy=0.0),  # eV   -> Independent
+                            #        State(label='s1', energy=1.0)],  # eV
+                            transition_moment={(s1, gs): [0.01]},  # Debye -> to Forster optional arguments / system?
+                            decays=[DecayRate(initial_states=s1, final_states=gs,
                                               decay_rate_function=decay_rate,
                                               description='custom decay rate')],
-                            vibrations=MarcusModel(reorganization_energies={('gs', 's1'): 0.07,
-                                                                            ('s1', 'gs'): 0.07})
+                            vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
+                                                                            (s1, gs): 0.07})
                             )
 
         molecule1 = molecule.copy()
@@ -55,7 +61,7 @@ class Test1DFast(unittest.TestCase):
                              supercell=[[3]])
 
         # set initial exciton
-        self.system.add_excitation_index('s1', 1)
+        self.system.add_excitation_index(s1, 1)
 
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
@@ -68,7 +74,7 @@ class Test1DFast(unittest.TestCase):
             return constant / distance ** 2
 
         # set additional system parameters
-        self.system.transfer_scheme = [DirectRate(initial=('s1', 'gs'), final=('gs', 's1'),
+        self.system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
                                                   rate_constant_function=transfer_rate,
                                                   description='custom')]
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
@@ -114,7 +120,7 @@ class Test1DFast(unittest.TestCase):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
         # set additional system parameters
-        self.system.transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+        self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                   electronic_coupling_function=forster_coupling,
                                                   description='Forster coupling',
                                                   arguments={'ref_index': 1})]

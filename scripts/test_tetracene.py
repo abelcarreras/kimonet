@@ -41,7 +41,7 @@ def singlet_coupling(donor, acceptor, conditions, supercell):
 
 
 processes.transfer_scheme = {
-                             GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'), description='singlet transport'): forster_coupling,  # lambda x, y, z, k: 0.04048,
+                             GoldenRule(initial_states=('s1', 'gs'), final_states=('gs', 's1'), description='singlet transport'): forster_coupling,  # lambda x, y, z, k: 0.04048,
                              # Transfer(initial=('t1', 'gs'), final=('gs', 't1'), description='triplet transport'): dexter_coupling  # lambda x, y, z, k: 0.00586,
                              # Direct(initial=('s1', 'gs'), final=('tp', 'tp'), description='singlet fission'): lambda x, y, z, k: 8.3,
                              # Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet fusion'): lambda x, y, z, k: 1.0,
@@ -49,7 +49,7 @@ processes.transfer_scheme = {
                              # Direct(initial=('tp', 'tp'), final=('s1', 'gs'), description='triplet annihilation'): lambda x, y, z, k: 0.45,
                              }
 
-decay_scheme = {DecayRate(initial='s1', final='gs', description='decay s1'): einstein_radiative_decay}
+decay_scheme = {DecayRate(initial_states='s1', final_states='gs', description='decay s1'): einstein_radiative_decay}
 
 
 # excitation energies of the electronic states (eV)

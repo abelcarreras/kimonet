@@ -17,30 +17,20 @@ def do_simulation_step(system):
     :return: the chosen process and the advanced time
     """
 
-    molecules = system.molecules                # list of all instances of Molecule
-    centre_indexes = system.centers              # tricky list with the indexes of all excited molecules
+    # molecules = system.molecules                # list of all instances of Molecule
+    # centre_indexes = system.centers              # tricky list with the indexes of all excited molecules
 
-    rate_collector = []                             # list with all the rates (for all centers)
     process_collector = []                          # list with the respective processes (for all centers)
-    # the indexes of both lists coincide.
-
     for center in system.centers:
         if isinstance(center, int):
-            # looks for the all molecules in a circle of radius centered at the position of the excited molecule
-
-            process_list, rate_list = get_processes_and_rates(center, system)
-            # for each center computes all the decay rates and all the transfer rates for all neighbours
-            # return them as a list
-
-            rate_collector += rate_list
+            process_list = get_processes_and_rates(center, system)
             process_collector += process_list
-            # merging of the new list with the rates and processes previously computed
 
     # If no process available system cannot evolve and simulation is finished
     if len(process_collector) == 0:
         system.is_finished = True
         return None, 0
-    chosen_process, time = kmc_algorithm(rate_collector, process_collector)
+    chosen_process, time = kmc_algorithm(process_collector, system)
     # chooses one of the processes and gives it a duration using the Kinetic Monte-Carlo algorithm
     update_step(chosen_process, system)        # updates both lists according to the chosen process
 
@@ -48,44 +38,45 @@ def do_simulation_step(system):
     return chosen_process, time
 
 
-def update_step(chosen_process, system):
+def update_step(change_step, system):
     """
-    :param chosen_process: dictionary like dict(center, process, neighbour)
+    :param change_step: dictionary like dict(center, process, neighbour)
     Modifies the state of the donor and the acceptor. Removes the donor from the centre_indexes list
     and includes the acceptor. If its a decay only changes and removes the donor
 
     New if(s) entrances shall be defined for more processes.
     """
 
-    if isinstance(chosen_process['process'], (GoldenRule, DirectRate)):
+    process = change_step['process']
+    if isinstance(process, (GoldenRule, DirectRate)):
 
-        donor_state = chosen_process['process'].final[0]
-        acceptor_state = chosen_process['process'].final[1]
+        donor_state = process.final[0]
+        acceptor_state = process.final[1]
 
-        system.add_excitation_index(donor_state, chosen_process['donor'])  # des excitation of the donor
-        system.add_excitation_index(acceptor_state, chosen_process['acceptor'])  # excitation of the acceptor
+        system.add_excitation_index(donor_state, change_step['donor'])  # des excitation of the donor
+        system.add_excitation_index(acceptor_state, change_step['acceptor'])  # excitation of the acceptor
 
         # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
-        acceptor_cell_state = system.molecules[chosen_process['acceptor']].cell_state
-        donor_cell_state = system.molecules[chosen_process['donor']].cell_state
-        system.molecules[chosen_process['acceptor']].cell_state = donor_cell_state - chosen_process['cell_increment']
-        system.molecules[chosen_process['donor']].cell_state = acceptor_cell_state + chosen_process['cell_increment']
+        acceptor_cell_state = process.acceptor.cell_state
+        donor_cell_state = process.donor.cell_state
+        process.acceptor.cell_state = donor_cell_state - process.cell_increment
+        process.donor.cell_state = acceptor_cell_state + process.cell_increment
 
         # system.molecules[chosen_process['donor']].cell_state *= 0
 
-        if chosen_process['process'].final[0] == _ground_state_:
-            system.molecules[chosen_process['donor']].cell_state *= 0
+        if process.final[0] == _ground_state_:
+            process.donor.cell_state *= 0
 
-        if chosen_process['process'].final[1] == _ground_state_:
-            system.molecules[chosen_process['acceptor']].cell_state *= 0
+        if process.final[1] == _ground_state_:
+            process.acceptor.cell_state *= 0
 
-    elif isinstance(chosen_process['process'], DecayRate):
-        final_state = chosen_process['process'].final
+    elif isinstance(process, DecayRate):
+        final_state = process.final[0]
         # print('final_state', final_state)
-        system.add_excitation_index(final_state, chosen_process['donor'])
+        system.add_excitation_index(final_state, change_step['donor'])
 
         if final_state == _ground_state_:
-            system.molecules[chosen_process['donor']].cell_state *= 0
+            process.donor.cell_state *= 0
     else:
         raise Exception('Process type not recognized')
 
@@ -96,7 +87,7 @@ def system_test_info(system):
     from kimonet.utils import distance_vector_periodic
     import numpy as np
 
-    molecules = system.molecules                # list of all instances of Molecule
+    # molecules = system.molecules                # list of all instances of Molecule
 
     for center in system.centers:
         total_r = 0
@@ -105,32 +96,35 @@ def system_test_info(system):
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
             print('*'*80 + '\n CENTER {}\n'.format(center) + '*'*80)
-            process_list, rate_list = get_processes_and_rates(center, system)
-            for p, r in zip(process_list, rate_list):
+            process_list = get_processes_and_rates(center, system)
+            print('plist', process_list)
+            for p in process_list:
+                proc = p['process']
                 # print('{}'.format(p))
-                print('Process: {}'.format(p['process']))
+                print('Process: {}'.format(proc))
                 print('Donor: {} / Acceptor: {}'.format(p['donor'], p['acceptor']))
 
-                position_d = molecules[p['donor']].get_coordinates()
-                position_a = molecules[p['acceptor']].get_coordinates()
+                position_d = proc.donor.get_coordinates()
+                r = proc.get_rate_constant(system.conditions, system.supercell)
 
-                if isinstance(p['process'], (GoldenRule or DirectRate)):
+                if isinstance(proc, (GoldenRule, DirectRate)):
+                    position_a = proc.acceptor.get_coordinates()
+
                     distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
                                                                        system.supercell,
-                                                                       p['cell_increment']))
+                                                                       proc.cell_increment))
                     print('Distance: ', distance, 'angs')
 
-                if isinstance(p['process'], GoldenRule):
-                    print('Cell_increment: {} '.format(p['cell_increment']))
+                if isinstance(proc, GoldenRule):
+                    print('Cell_increment: {} '.format(proc.cell_increment))
 
-                    spectral_overlap = general_fcwd(molecules[p['donor']],
-                                                    molecules[p['acceptor']],
-                                                    p['process'],
-                                                    system.conditions)
+                    spectral_overlap = proc.get_fcwd()
+                    #spectral_overlap = general_fcwd(proc.donor,
+                    #                                proc.acceptor,
+                    #                                proc,
+                    #                                system.conditions)
 
-                    e_coupling = p['process'].get_electronic_coupling(system.conditions,
-                                                                      system.supercell,
-                                                                      p['cell_increment'])
+                    e_coupling = proc.get_electronic_coupling(system.conditions)
 
                     print('Electronic coupling: ', e_coupling, 'eV')
                     print('Spectral overlap:    ', spectral_overlap, 'eV-1')
@@ -145,3 +139,4 @@ def system_test_info(system):
         # import matplotlib.pyplot as plt
         # plt.scatter(np.array(anal_data).T[0], np.array(anal_data).T[1])
         # plt.show()
+

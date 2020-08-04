@@ -15,7 +15,7 @@ import numpy as np
 #np.random.seed(1)  # for testing
 
 
-transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
+transfer_scheme = [GoldenRule(initial_states=('s1', 'gs'), final_states=('gs', 's1'),
                               electronic_coupling_function=forster_coupling_extended,
                               description='Forster',
                               arguments={'longitude': 2, 'n_divisions': 100}),
@@ -25,7 +25,7 @@ transfer_scheme = [GoldenRule(initial=('s1', 'gs'), final=('gs', 's1'),
                    #           description='ForsterX'),
                    ]
 
-decay_scheme = [DecayRate(initial='s1', final='gs',
+decay_scheme = [DecayRate(initial_states='s1', final_states='gs',
                           decay_rate_function=einstein_radiative_decay,
                           description='singlet_radiative_decay')
                 ]

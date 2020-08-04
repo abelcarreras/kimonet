@@ -4,6 +4,7 @@ import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet import _ground_state_
 import kimonet.core.processes.forster as forster
+from kimonet.system.state import ground_state as _GS_
 
 coupling_data = {}
 
@@ -36,8 +37,8 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_ground_state_)            # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state.label)  # transition dipole moment (acceptor) e*angs
+    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
 
@@ -76,8 +77,8 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_i
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_ground_state_)            # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state.label)  # transition dipole moment (acceptor) e*angs
+    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
 
@@ -116,8 +117,8 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_ground_state_)              # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state.label)    # transition dipole moment (acceptor) e*angs
+    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
 
@@ -152,8 +153,8 @@ def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_in
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_ground_state_)              # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state.label)    # transition dipole moment (acceptor) e*angs
+    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     # ref_index = conditions['refractive_index']                      # refractive index of the material
 

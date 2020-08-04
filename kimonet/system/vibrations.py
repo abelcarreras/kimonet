@@ -3,6 +3,7 @@ import warnings
 from kimonet.utils.units import BOLTZMANN_CONSTANT, HBAR_PLANCK
 import scipy.integrate as integrate
 import scipy.interpolate as interpolate
+from kimonet.core.processes.types import Transition
 
 
 class MarcusModel:
@@ -12,32 +13,34 @@ class MarcusModel:
                  temperature=300,  # Kelvin
                  drift_term=0  # aN -> eV / angs [to be implemented]
                  ):
-
-        self.reorganization_energies = reorganization_energies
-        self.temperature = temperature
-        self.state_energies = None
-
-
-        # symmetrize external reorganization energies
         """
         if self.external_reorganization_energies is not None:
             for key in list(external_reorganization_energies):
                 external_reorganization_energies[key[::-1]] = external_reorganization_energies[key]
         """
+        self.reorganization_energies = reorganization_energies
+        self.temperature = temperature
+        # self.state_energies = None
+
+        # symmetrize external reorganization energies
+        # print(item[0] for item in reorganization_energies.items())
+        self.reorganization_energies = {Transition(*key, symmetric=False): item
+                                        for key, item in reorganization_energies.items()}
+
 
     def __hash__(self):
-        return hash((str(self.state_energies),
-                     str(self.reorganization_energies)))
+        return hash((str(self.reorganization_energies)))
 
-    def set_state_energies(self, state_energies):
-        self.state_energies = state_energies
+    #def set_state_energies(self, state_energies):
+    #    self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition):
+    def get_vib_spectrum(self, target_state, origin_state):
 
-        elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+        #elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+        elec_trans_ene = target_state.energy - origin_state.energy
 
         temp = self.temperature  # temperature (K)
-        reorg_ene = np.sum(self.reorganization_energies[transition])
+        reorg_ene = np.sum(self.reorganization_energies[(target_state, origin_state)])
 
         sign = np.sign(elec_trans_ene)
 

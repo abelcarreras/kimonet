@@ -14,15 +14,10 @@ def get_processes_and_rates(centre, system):
                 rate_list: List with the respective rates
     """
 
-    transfer_processes, transfer_rates = get_transfer_rates(centre, system)
+    transfer_processes = get_transfer_rates(centre, system)
+    decay_processes = get_decay_rates(centre, system)
 
-    decay_processes, decay_rates = get_decay_rates(centre, system)
-
-    # merges all processes & rates
-    process_list = decay_processes + transfer_processes
-    rate_list = decay_rates + transfer_rates
-
-    return process_list, rate_list
+    return decay_processes + transfer_processes
 
 
 def get_transfer_rates(center, system):
@@ -34,25 +29,22 @@ def get_transfer_rates(center, system):
 
     neighbour_indexes, cell_increment = system.get_neighbours(center)
 
-    conditions = system.conditions           # physical conditions of the system
+    donor = system.molecules[center]
 
-    donor = system.molecules[center]         # excited molecule
-
-    transfer_rates = []                         # list that collects the transfer rates (only the numerical values)
-    transfer_processes = []                     # list that collects the transfer processes dict(donor,process,acceptor)
-
+    transfer_steps = []
     for neighbour, cell_incr in zip(neighbour_indexes, cell_increment):
         acceptor = system.molecules[neighbour]
-
         allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme)
 
         for process in allowed_processes:
+            # I don't like this very much
+            process.cell_increment = cell_incr
+            process.supercell = system.supercell
 
-            transfer_rates.append(process.get_rate_constant(conditions, system.supercell, cell_incr))
-            transfer_processes.append({'donor': int(center), 'process': process, 'acceptor': int(neighbour),
-                                       'cell_increment': cell_incr})
+            transfer_steps.append({'donor': int(center), 'process': process, 'acceptor': int(neighbour),
+                                   'cell_increment': cell_incr})
 
-    return transfer_processes, transfer_rates
+    return transfer_steps
 
 
 def get_decay_rates(center, system):
@@ -62,19 +54,21 @@ def get_decay_rates(center, system):
     :return: A dictionary with the possible decay rates
     For computing them the method get_decay_rates of class molecule is call.
     """
-    donor = system.molecules[center]
+    from copy import deepcopy
 
-    decay_processes = []            # list of decays processes: dicts(donor, process, acceptor)
-    decay_rates = []                # list of the decay rates (numerical values)
+    donor = system.molecules[center]
 
     decay_complete = donor.decay_rates()        # returns a dict {decay_process, decay_rate}
 
-    # splits the dictionary in two lists
-    for key in decay_complete:
-        decay_processes.append({'donor': center, 'process': key, 'acceptor': center})
-        decay_rates.append(decay_complete[key])
+    decay_steps = []
+    for process in decay_complete:
+        new_process = deepcopy(process)
+        new_process.donor = donor
+        #new_process.acceptor = donor
 
-    return decay_processes, decay_rates
+        decay_steps.append({'donor': center, 'process': new_process, 'acceptor': center})
+
+    return decay_steps
 
 
 def get_allowed_processes(donor, acceptor, transfer_scheme):
@@ -89,7 +83,7 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
 
     allowed_couplings = []
     for coupling in transfer_scheme:
-        if coupling.initial == (donor.state.label, acceptor.state.label):
+        if (coupling.initial[0].label, coupling.initial[1].label) == (donor.state.label, acceptor.state.label):
             new_coupling = deepcopy(coupling)
             new_coupling.donor = donor
             new_coupling.acceptor = acceptor
