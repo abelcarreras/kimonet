@@ -55,6 +55,7 @@ system = crystal_system(conditions=conditions,
 
 # set initial exciton
 system.add_excitation_index(s1, 0)
+system.add_excitation_index(s1, 1)
 
 # set additional system parameters
 system.transfer_scheme = transfer_scheme

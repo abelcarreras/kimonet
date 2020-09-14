@@ -22,7 +22,7 @@ class System:
         self.is_finished = False
 
         self.transfer_scheme = transfers if transfers is not None else {}
-        self.cutoff_radius = cutoff_radius
+        self._cutoff_radius = cutoff_radius
 
         # search centers
         self.centers = []
@@ -30,7 +30,25 @@ class System:
             if molecule.state.label != _ground_state_:
                 self.centers.append(i)
 
-    def get_neighbours(self, center):
+        # search for states
+        self._states = []
+        for molecule in self.molecules:
+            if molecule.state.label != _GS_.label:
+                self._states.append(molecule.state)
+
+    def get_states(self):
+        return self._states
+
+    @property
+    def cutoff_radius(self):
+        return self._cutoff_radius
+
+    @cutoff_radius.setter
+    def cutoff_radius(self, cutoff):
+        self._cutoff_radius = cutoff
+
+
+    def get_neighbours_num(self, center):
 
         radius = self.cutoff_radius
         center_position = self.molecules[center].get_coordinates()
@@ -60,6 +78,38 @@ class System:
 
         return self.neighbors['{}_{}'.format(center, radius)]
 
+    def get_neighbours(self, ref_mol):
+
+        radius = self.cutoff_radius
+        center_position = ref_mol.get_coordinates()
+
+        def get_supercell_increments(supercell, radius):
+            # TODO: This function can be optimized as a function of the particular molecule coordinates
+            v = np.array(radius/np.linalg.norm(supercell, axis=1), dtype=int) + 1  # here extensive approximation
+            return list(itertools.product(*[range(-i, i+1) for i in v]))
+
+        cell_increments = get_supercell_increments(self.supercell, radius)
+
+        if not '{}_{}'.format(ref_mol, radius) in self.neighbors:
+            neighbours = []
+            jumps = []
+            for molecule in self.molecules:
+                coordinates = molecule.get_coordinates()
+                for cell_increment in cell_increments:
+                    r_vec = distance_vector_periodic(coordinates - center_position, self.supercell, cell_increment)
+                    if 0 < np.linalg.norm(r_vec) < radius:
+                        neighbours.append(molecule)
+                        jumps.append(cell_increment)
+
+            jumps = np.array(jumps)
+
+            self.neighbors['{}_{}'.format(ref_mol, radius)] = [neighbours, jumps]
+
+        return self.neighbors['{}_{}'.format(ref_mol, radius)]
+
+    def get_molecule_index(self, molecule):
+        return self.molecules.index(molecule)
+
     def reset(self):
         for molecule in self.molecules:
             molecule.set_state(_GS_)
@@ -74,24 +124,29 @@ class System:
         return len(self.molecules)
 
     def get_number_of_excitations(self):
-        return len(self.centers)
+        return len(self._states)
 
-    def add_excitation_index(self, type, index):
-        self.molecules[index].set_state(type)
-        if type == _ground_state_:
-            try:
-                self.centers.remove(index)
-            except ValueError:
-                pass
+    def add_excitation_index(self, type, index, do_copy=True):
+        if do_copy:
+            type = type.copy()
+
+        # print('check', type, type.label)
+        if type.label == _GS_.label:
+            self.centers.remove(index)
+            self._states.remove(self.molecules[index].state)
         else:
+            self._states.append(type)
             if not index in self.centers:
                 self.centers.append(index)
+
+        self.molecules[index].set_state(type)
+
 
     def add_excitation_random(self, type, n):
         for i in range(n):
             while True:
                 num = np.random.randint(0, self.get_num_molecules())
-                if self.molecules[num].set_state(_GS_):
+                if self.molecules[num].state == _GS_:
                     # self.molecules[num] = type
                     self.add_excitation_index(type, num)
                     break

@@ -4,6 +4,8 @@ import numpy as np
 # from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
 
+overlap_data = {}
+
 
 class Transition:
     def __init__(self, state1, state2, symmetric=True):
@@ -93,28 +95,27 @@ class GoldenRule(BaseProcess):
 
         self._coupling_function = electronic_coupling_function
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
-        self._overlap_data = {}
 
     def get_fcwd(self):
         transition_donor = (self.initial[0], self.final[0])
         transition_acceptor = (self.initial[1], self.final[1])
 
-        donor_vib_dos = self.donor.vibrations.get_vib_spectrum(*transition_donor) #(transition_donor)
-        acceptor_vib_dos = self.acceptor.vibrations.get_vib_spectrum(*transition_acceptor) #(transition_acceptor)
+        donor_vib_dos = self.donor.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
+        acceptor_vib_dos = self.acceptor.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
 
         # print(donor_vib_dos)
         info = str(hash(donor_vib_dos) + hash(acceptor_vib_dos))
 
-        if info in self._overlap_data:
-            # the memory is used if the overlap has been already computed
-            return self._overlap_data[info]
+        # the memory is used if the overlap has been already computed
+        if info in overlap_data:
+            return overlap_data[info]
 
         def overlap(x):
             return donor_vib_dos(x) * acceptor_vib_dos(x)
 
-        self._overlap_data[info] = quad(overlap, 0, np.inf, epsabs=1e-5, limit=1000)[0]
+        overlap_data[info] = quad(overlap, 0, np.inf, epsabs=1e-5, limit=1000)[0]
 
-        return self._overlap_data[info]
+        return overlap_data[info]
 
     def get_electronic_coupling(self, conditions):
         # conditions will be deprecated

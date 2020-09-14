@@ -1,8 +1,9 @@
 from kimonet.core.processes.fcwd import general_fcwd
 from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
+from copy import deepcopy
 
 
-def get_processes_and_rates(centre, system):
+def get_processes_and_rates(state, system):
     """
     :param centre: Index of the studied excited molecule (Donor)
     :param system: Instance of System class
@@ -14,49 +15,49 @@ def get_processes_and_rates(centre, system):
                 rate_list: List with the respective rates
     """
 
-    transfer_processes = get_transfer_rates(centre, system)
-    decay_processes = get_decay_rates(centre, system)
+    transfer_processes = get_transfer_rates(state, system)
+    decay_processes = get_decay_rates(state, system)
 
     return decay_processes + transfer_processes
 
 
-def get_transfer_rates(center, system):
+def get_transfer_rates(state, system):
     """
     :param center: Index of the studies excited molecule
     :param system: Dictionary with the list of molecules and additional physical information
     :return: Two lists, one with the transfer rates and the other with the transfer processes.
     """
 
-    neighbour_indexes, cell_increment = system.get_neighbours(center)
-
-    donor = system.molecules[center]
+    donor = state.get_center()
+    neighbour_indexes, cell_increment = system.get_neighbours(donor)
+    origin = system.get_molecule_index(donor)
 
     transfer_steps = []
     for neighbour, cell_incr in zip(neighbour_indexes, cell_increment):
-        acceptor = system.molecules[neighbour]
+        acceptor = neighbour
         allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme)
 
         for process in allowed_processes:
             # I don't like this very much
             process.cell_increment = cell_incr
             process.supercell = system.supercell
-
-            transfer_steps.append({'donor': int(center), 'process': process, 'acceptor': int(neighbour),
+            target = system.get_molecule_index(neighbour)
+            transfer_steps.append({'donor': int(origin), 'process': process, 'acceptor': int(target),
                                    'cell_increment': cell_incr})
 
     return transfer_steps
 
 
-def get_decay_rates(center, system):
+def get_decay_rates(state, system):
     """
     :param center: index of the excited molecule
     :param system: Dictionary with all the information of the system
     :return: A dictionary with the possible decay rates
     For computing them the method get_decay_rates of class molecule is call.
     """
-    from copy import deepcopy
 
-    donor = system.molecules[center]
+    donor = state.get_center()
+    origin = system.get_molecule_index(donor)
 
     decay_complete = donor.decay_rates()        # returns a dict {decay_process, decay_rate}
 
@@ -66,7 +67,7 @@ def get_decay_rates(center, system):
         new_process.donor = donor
         #new_process.acceptor = donor
 
-        decay_steps.append({'donor': center, 'process': new_process, 'acceptor': center})
+        decay_steps.append({'donor': origin, 'process': new_process, 'acceptor': origin})
 
     return decay_steps
 
@@ -79,7 +80,6 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
     :param acceptor: Molecule class instance
     :return: Dictionary with the allowed coupling functions
     """
-    from copy import deepcopy
 
     allowed_couplings = []
     for coupling in transfer_scheme:

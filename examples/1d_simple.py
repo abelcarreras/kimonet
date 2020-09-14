@@ -17,7 +17,7 @@ def transfer_rate(donor, acceptor, conditions, supercell, cell_increment):
 
 
 # custom decay functions
-def decay_rate(molecule):
+def decay_rate(initial_state, final_state, molecule):
     rates = {'TypeA': 1/100,
              'TypeB': 1/50,
              'TypeC': 1/25}

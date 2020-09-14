@@ -8,29 +8,21 @@ import warnings
 
 def do_simulation_step(system):
     """
-    :param system: Dictionary with all the information of the system
-    Dictionary system already has the indexes of the excited molecules
-    1. Looks for the neighbourhood of every center.
-    2. Chooses a process for every exciton (KMC). This path variables include: dict(center, process, new molecule)
-    3. Considering all the calculated rates computes the time interval for each process.
-    4. Updates the system according to the chosen path and the time passed.
-    :return: the chosen process and the advanced time
+    :param system: system object
+    :return: the chosen process
     """
 
-    # molecules = system.molecules                # list of all instances of Molecule
-    # centre_indexes = system.centers              # tricky list with the indexes of all excited molecules
-
     process_collector = []                          # list with the respective processes (for all centers)
-    for center in system.centers:
-        if isinstance(center, int):
-            process_list = get_processes_and_rates(center, system)
-            process_collector += process_list
+    for state in system.get_states():
+        process_list = get_processes_and_rates(state, system)
+        process_collector += process_list
 
     # If no process available system cannot evolve and simulation is finished
     if len(process_collector) == 0:
         system.is_finished = True
         return None, 0
     chosen_process, time = kmc_algorithm(process_collector, system)
+
     # chooses one of the processes and gives it a duration using the Kinetic Monte-Carlo algorithm
     update_step(chosen_process, system)        # updates both lists according to the chosen process
 
@@ -96,7 +88,7 @@ def system_test_info(system):
             # looks for the all molecules in a circle of radius centered at the position of the excited molecule
 
             print('*'*80 + '\n CENTER {}\n'.format(center) + '*'*80)
-            process_list = get_processes_and_rates(center, system)
+            process_list = get_processes_and_rates(system.molecules[center].state, system)
             print('plist', process_list)
             for p in process_list:
                 proc = p['process']
@@ -119,10 +111,6 @@ def system_test_info(system):
                     print('Cell_increment: {} '.format(proc.cell_increment))
 
                     spectral_overlap = proc.get_fcwd()
-                    #spectral_overlap = general_fcwd(proc.donor,
-                    #                                proc.acceptor,
-                    #                                proc,
-                    #                                system.conditions)
 
                     e_coupling = proc.get_electronic_coupling(system.conditions)
 
