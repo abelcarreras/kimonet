@@ -39,11 +39,13 @@ def get_transfer_rates(state, system):
 
         for process in allowed_processes:
             # I don't like this very much
-            process.cell_increment = cell_incr
+            process.cell_increment = cell_incr  # TODO: cell_incr should be independent by molecule (dict?)
             process.supercell = system.supercell
-            target = system.get_molecule_index(neighbour)
-            transfer_steps.append({'donor': int(origin), 'process': process, 'acceptor': int(target),
-                                   'cell_increment': cell_incr})
+            target = system.get_molecule_index(acceptor)
+
+            #transfer_steps.append({'donor': int(origin), 'process': process, 'acceptor': int(target),
+            #                       'cell_increment': cell_incr})
+            transfer_steps.append(process)
 
     return transfer_steps
 
@@ -67,7 +69,8 @@ def get_decay_rates(state, system):
         new_process.donor = donor
         #new_process.acceptor = donor
 
-        decay_steps.append({'donor': origin, 'process': new_process, 'acceptor': origin})
+        #decay_steps.append({'donor': origin, 'process': new_process, 'acceptor': origin})
+        decay_steps.append(new_process)
 
     return decay_steps
 

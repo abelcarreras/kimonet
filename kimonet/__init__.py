@@ -6,6 +6,7 @@ from warnings import warn
 import numpy as np
 import time
 
+
 def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
 
     trajectories = []
@@ -23,7 +24,7 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
             if system_copy.is_finished:
                 break
 
-            trajectory.add_step(change_step, step_time)
+            trajectory.add_step(change_step, step_time, system_copy)
 
             if i == max_steps-1:
                 warn('Maximum number of steps reached!!')
@@ -36,16 +37,16 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
 def _run_trajectory(index, system, max_steps, silent):
     np.random.seed(int(index * time.time() % 1 * 1e8))
 
-    system = system.copy()
-    trajectory = Trajectory(system)
+    system_copy = system.copy()
+    trajectory = Trajectory(system_copy)
     for i in range(max_steps):
 
-        change_step, step_time = do_simulation_step(system)
+        change_step, step_time = do_simulation_step(system_copy)
 
-        if system.is_finished:
+        if system_copy.is_finished:
             break
 
-        trajectory.add_step(change_step, step_time)
+        trajectory.add_step(change_step, step_time, system_copy)
 
         if i == max_steps-1:
             warn('Maximum number of steps reached!!')

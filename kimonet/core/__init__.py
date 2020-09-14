@@ -39,14 +39,19 @@ def update_step(change_step, system):
     New if(s) entrances shall be defined for more processes.
     """
 
-    process = change_step['process']
+    process = change_step #['process']
     if isinstance(process, (GoldenRule, DirectRate)):
 
         donor_state = process.final[0]
         acceptor_state = process.final[1]
 
-        system.add_excitation_index(donor_state, change_step['donor'])  # de-excitation of the donor
-        system.add_excitation_index(acceptor_state, change_step['acceptor'])  # excitation of the acceptor
+        donor_index = system.get_molecule_index(process.donor)
+        acceptor_index = system.get_molecule_index(process.acceptor)
+
+        # print('states', donor_state, acceptor_state)
+
+        system.add_excitation_index(donor_state, donor_index)  # de-excitation of the donor
+        system.add_excitation_index(acceptor_state, acceptor_index)  # excitation of the acceptor
 
         # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
         acceptor_cell_state = process.acceptor.cell_state
@@ -65,7 +70,8 @@ def update_step(change_step, system):
     elif isinstance(process, DecayRate):
         final_state = process.final[0]
         # print('final_state', final_state)
-        system.add_excitation_index(final_state, change_step['donor'])
+        donor_index = system.get_molecule_index(process.donor)
+        system.add_excitation_index(final_state, donor_index)
 
         if final_state == _ground_state_:
             process.donor.cell_state *= 0
@@ -88,9 +94,13 @@ def system_test_info(system):
         process_list = get_processes_and_rates(state, system)
         total_r = 0
         for p in process_list:
-            proc = p['process']
+            proc = p#['process']
+            print('proc: ', proc)
+            #exit()
             # print('{}'.format(p))
-            print('Process: {}'.format(proc))
+            #print('Process: {}'.format(proc))
+            #print('donor: ', proc.acceptor)
+
             i_donor = system.get_molecule_index(proc.donor)
             try:
                 i_acceptor = system.get_molecule_index(proc.acceptor)

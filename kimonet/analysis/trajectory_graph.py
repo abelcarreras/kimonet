@@ -132,7 +132,7 @@ class TrajectoryGraph:
         node['cell_state'].append(list(self.system.molecules[add_molecule].cell_state))
         node['time'].append(self.times[-1] - node['event_time'])
 
-    def add_step(self, change_step, time_step):
+    def add_step(self, change_step, time_step, system):
         """
         Adds trajectory step
 
@@ -147,6 +147,18 @@ class TrajectoryGraph:
 
         end_points = [node for node in self.graph.nodes
                       if len(list(self.graph.successors(node))) == 0 and not self.graph.nodes[node]['finished']]
+
+        process = change_step
+        # print('proc: ', process)
+        #print(process.donor, process.acceptor)
+
+        donor_index = system.get_molecule_index(process.donor)
+        try:
+            acceptor_index = system.get_molecule_index(process.acceptor)
+        except Exception:
+            acceptor_index = donor_index
+
+        change_step = {'donor': donor_index, 'acceptor': acceptor_index, 'process': change_step}
 
         node_link = {'donor': None, 'acceptor': None}
         for inode in end_points:

@@ -14,7 +14,7 @@ def kmc_algorithm(process_list, system):
                 time: the duration of the process
     """
 
-    rate_list = [proc['process'].get_rate_constant(system.conditions, system.supercell) for proc in process_list]
+    rate_list = [proc.get_rate_constant(system.conditions, system.supercell) for proc in process_list]
 
     process_index = select_process(rate_list)
     chosen_process = process_list[process_index]
