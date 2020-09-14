@@ -62,18 +62,18 @@ class TrajectoryGraph:
         system: system
         """
 
-        self.node_count = len(system._centers)
+        self.node_count = len(system.get_states())
 
         self.graph = nx.DiGraph()
 
-        for i, center in enumerate(system._centers):
+        for i, state in enumerate(system.get_states()):
             self.graph.add_node(i,
-                                coordinates=[list(system.molecules[center].get_coordinates())],
-                                state=system.molecules[center].state.label,
-                                cell_state=[list(system.molecules[center].cell_state)],
+                                coordinates=[list(state.get_center().get_coordinates())],
+                                state=state.label,
+                                cell_state=[list(state.get_center().cell_state)],
                                 time=[0],
                                 event_time=0,
-                                index=[center],
+                                index=[system.get_molecule_index(state.get_center())],
                                 finished=False,
                                 )
 
@@ -81,16 +81,16 @@ class TrajectoryGraph:
         self.system = system
 
         self.n_dim = len(system.molecules[0].get_coordinates())
-        self.n_centers = len(system._centers)
+        self.n_excitons = len(system.get_states())
         self.labels = {}
         self.times = [0]
 
         self.states = set()
         ce = {}
-        for center in system._centers:
-            state = system.molecules[center].state.label
+        for state in self.system.get_states():
             self.states.add(state)
-            count_keys_dict(ce, state)
+            count_keys_dict(ce, state.label)
+
         self.current_excitons = [ce]
 
     def _finish_node(self, inode):
@@ -297,10 +297,9 @@ class TrajectoryGraph:
                 raise Exception('Error: No process type found')
 
         ce = {}
-        for center in self.system._centers:
-            state = self.system.molecules[center].state.label
+        for state in self.system.get_states():
             self.states.add(state)
-            count_keys_dict(ce, state)
+            count_keys_dict(ce, state.label)
 
         self.current_excitons.append(ce)
         # print('add_step_out:', self.graph.nodes[node_link['donor']]['cell_state'][-5:], len(self.graph.nodes[node_link['donor']]['cell_state']))
@@ -656,7 +655,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         system: system
         """
 
-        self.node_count = len(system._centers)
+        self.node_count = len(system.get_states())
 
         self.graph = nx.DiGraph()
 
@@ -664,7 +663,7 @@ class TrajectoryGraph2(TrajectoryGraph):
             os.mkdir('test_map')
 
         self.mapped_list = []
-        for i, center in enumerate(system._centers):
+        for i, state in enumerate(system.get_states()):
 
             mem_array = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), i),
                                              dtype=[('coordinates', object),
@@ -674,14 +673,14 @@ class TrajectoryGraph2(TrajectoryGraph):
                                              mode='w+', shape=(1,)),
                                    requirements=['O'])
 
-            mem_array[:] = (system.molecules[center].get_coordinates(),
-                            system.molecules[center].cell_state,
+            mem_array[:] = (state.get_center().get_coordinates(),
+                            state.get_center().cell_state,
                             0.0,
-                            center)
+                            system.get_molecule_index(state.get_center()))
 
             self.graph.add_node(i,
                                 coordinates=ArrayHandler(mem_array, 'coordinates'),
-                                state=system.molecules[center].state.label,
+                                state=state.label,
                                 cell_state=ArrayHandler(mem_array, 'cell_state'),
                                 time=ArrayHandler(mem_array, 'time'),
                                 event_time=0,
@@ -694,7 +693,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         self.system = system
 
         self.n_dim = len(system.molecules[0].get_coordinates())
-        self.n_centers = len(system._centers)
+        self.n_excitons = len(system.get_states())
         self.labels = {}
 
         mem_array_t = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), 't'),
@@ -708,10 +707,9 @@ class TrajectoryGraph2(TrajectoryGraph):
 
         self.states = set()
         ce = {}
-        for center in system._centers:
-            state = system.molecules[center].state.label
+        for state in self.system.get_states():
             self.states.add(state)
-            count_keys_dict(ce, state)
+            count_keys_dict(ce, state.label)
         self.current_excitons = [ce]
 
     def _add_node(self, from_node, new_on_molecule, process_label=None):

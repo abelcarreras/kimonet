@@ -23,12 +23,6 @@ class System:
         self.transfer_scheme = transfers if transfers is not None else {}
         self._cutoff_radius = cutoff_radius
 
-        # search centers
-        self._centers = []
-        for i, molecule in enumerate(self.molecules):
-            if molecule.state.label != _GS_.label:
-                self._centers.append(i)
-
         # search for states
         self._states = []
         for molecule in self.molecules:
@@ -45,10 +39,6 @@ class System:
     @cutoff_radius.setter
     def cutoff_radius(self, cutoff):
         self._cutoff_radius = cutoff
-
-    @property
-    def center(self):
-        return self._centers
 
     def get_neighbours_num(self, center):
 
@@ -116,7 +106,7 @@ class System:
         for molecule in self.molecules:
             molecule.set_state(_GS_)
             molecule.cell_state = np.zeros(molecule.get_dim())
-        self._centers = []
+        # self._centers = []
         self.is_finished = False
 
     def copy(self):
@@ -132,14 +122,10 @@ class System:
         if do_copy:
             type = type.copy()
 
-        # print('check', type, type.label)
         if type.label == _GS_.label:
-            self._centers.remove(index)
             self._states.remove(self.molecules[index].state)
         else:
             self._states.append(type)
-            if not index in self._centers:
-                self._centers.append(index)
 
         self.molecules[index].set_state(type)
 

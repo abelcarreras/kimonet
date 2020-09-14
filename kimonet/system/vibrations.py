@@ -27,12 +27,8 @@ class MarcusModel:
         self.reorganization_energies = {Transition(*key, symmetric=False): item
                                         for key, item in reorganization_energies.items()}
 
-
     def __hash__(self):
         return hash((str(self.reorganization_energies)))
-
-    #def set_state_energies(self, state_energies):
-    #    self.state_energies = state_energies
 
     def get_vib_spectrum(self, target_state, origin_state):
 
