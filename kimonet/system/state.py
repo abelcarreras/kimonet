@@ -1,5 +1,4 @@
 import copy
-from kimonet import _ground_state_
 
 
 class State:
@@ -50,7 +49,7 @@ class State:
         return self._size
 
 
-ground_state = State(label=_ground_state_, energy=0.0, multiplicity=1)
+ground_state = State(label='gs', energy=0.0, multiplicity=1)
 
 
 if __name__ == '__main__':

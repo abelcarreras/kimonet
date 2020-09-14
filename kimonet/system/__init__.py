@@ -3,7 +3,6 @@ import itertools
 import copy
 from scipy.spatial import distance
 from kimonet.utils import distance_vector_periodic
-from kimonet import _ground_state_
 from kimonet.system.state import ground_state as _GS_
 
 
@@ -27,7 +26,7 @@ class System:
         # search centers
         self._centers = []
         for i, molecule in enumerate(self.molecules):
-            if molecule.state.label != _ground_state_:
+            if molecule.state.label != _GS_.label:
                 self._centers.append(i)
 
         # search for states

@@ -7,7 +7,6 @@ from scipy import stats
 import warnings
 import os
 from copy import deepcopy
-from kimonet import _ground_state_
 from kimonet.system.state import ground_state as _GS_
 
 
@@ -176,7 +175,7 @@ class TrajectoryGraph:
 
             # Check if not ground state
             final_state = self.system.molecules[change_step['acceptor']].state.label
-            if final_state != _ground_state_:
+            if final_state != _GS_.label:
                 self._add_node(from_node=node_link['donor'],
                                new_on_molecule=change_step['acceptor'],
                                process_label=process.description)
@@ -184,8 +183,8 @@ class TrajectoryGraph:
         else:
             # Intermolecular process
             if (process.initial[0].label == process.final[1].label
-                    and process.final[1].label != _ground_state_
-                    and process.final[0].label == _ground_state_):
+                    and process.final[1].label != _GS_.label
+                    and process.final[0].label == _GS_.label):
                 # s1, X  -> X, s1
                 # Simple transfer
                 # print('C1')
@@ -193,8 +192,8 @@ class TrajectoryGraph:
                                      add_molecule=change_step['acceptor'])
 
             elif (process.initial[0].label != process.final[1].label
-                    and process.initial[0].label != _ground_state_ and process.final[1].label != _ground_state_
-                    and process.final[0].label == _ground_state_ and process.initial[1].label == _ground_state_):
+                    and process.initial[0].label != _GS_.label and process.final[1].label != _GS_.label
+                    and process.final[0].label == _GS_.label and process.initial[1].label == _GS_.label):
                 # s1, X  -> X, s2
                 # Transfer with change
                 # print('C2')
@@ -205,10 +204,10 @@ class TrajectoryGraph:
                                process_label=process.description)
 
             elif (process.initial[0].label != process.final[0].label and process.initial[0].label != process.final[1].label
-                    and process.initial[0].label != _ground_state_
-                    and process.final[0].label != _ground_state_
-                    and process.final[1].label != _ground_state_
-                    and process.initial[1].label == _ground_state_):
+                    and process.initial[0].label != _GS_.label
+                    and process.final[0].label != _GS_.label
+                    and process.final[1].label != _GS_.label
+                    and process.initial[1].label == _GS_.label):
                 # s1, X  -> s2, s3
                 # Exciton splitting
                 # print('C3')
@@ -223,10 +222,10 @@ class TrajectoryGraph:
                                process_label=process.description)
 
             elif (process.initial[0].label != process.final[1].label and process.initial[1].label != process.final[1].label
-                    and process.initial[0].label != _ground_state_
-                    and process.initial[1].label != _ground_state_
-                    and process.final[0].label == _ground_state_
-                    and process.final[1].label != _ground_state_):
+                    and process.initial[0].label != _GS_.label
+                    and process.initial[1].label != _GS_.label
+                    and process.final[0].label == _GS_.label
+                    and process.final[1].label != _GS_.label):
                 # s1, s2  ->  X, s3
                 # Exciton merge type 1
                 # print('C4')
@@ -240,10 +239,10 @@ class TrajectoryGraph:
                 self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
 
             elif (process.initial[0].label != process.final[0].label and process.initial[1].label != process.final[0].label
-                    and process.initial[0].label != _ground_state_
-                    and process.initial[1].label != _ground_state_
-                    and process.final[0].label != _ground_state_
-                    and process.final[1].label == _ground_state_):
+                    and process.initial[0].label != _GS_.label
+                    and process.initial[1].label != _GS_.label
+                    and process.final[0].label != _GS_.label
+                    and process.final[1].label == _GS_.label):
                 # s1, s2  ->  s3, X
                 # Exciton merge type 2
                 # print('C5')
@@ -258,10 +257,10 @@ class TrajectoryGraph:
 
             elif (process.initial[0].label != process.final[0].label and process.initial[1].label != process.final[1].label
                   and process.initial[0].label == process.final[1].label and process.initial[0].label == process.final[1].label
-                  and process.initial[0].label != _ground_state_
-                  and process.initial[1].label != _ground_state_
-                  and process.final[0].label != _ground_state_
-                  and process.final[1].label != _ground_state_):
+                  and process.initial[0].label != _GS_.label
+                  and process.initial[1].label != _GS_.label
+                  and process.final[0].label != _GS_.label
+                  and process.final[1].label != _GS_.label):
                 # s1, s2  ->  s2, s1
                 # Exciton cross interaction (treated as double transport)
                 # print('C6')
@@ -274,10 +273,10 @@ class TrajectoryGraph:
 
             elif (process.initial[0].label != process.final[0].label and process.initial[1].label != process.final[1].label
                   and process.initial[0].label != process.final[1].label and process.initial[0].label != process.final[1].label
-                  and process.initial[0].label != _ground_state_
-                  and process.initial[1].label != _ground_state_
-                  and process.final[0].label != _ground_state_
-                  and process.final[1].label != _ground_state_):
+                  and process.initial[0].label != _GS_.label
+                  and process.initial[1].label != _GS_.label
+                  and process.final[0].label != _GS_.label
+                  and process.final[1].label != _GS_.label):
                 # s1, s2  ->  s3, s4
                 # Exciton double evolution
                 print('C7')

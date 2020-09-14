@@ -3,9 +3,8 @@ from kimonet.utils import rotate_vector
 import copy
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 from kimonet.system.vibrations import NoVibration
-from kimonet.system.state import ground_state as _gs_
+from kimonet.system.state import ground_state as _GS_
 from kimonet.core.processes.types import Transition
-from kimonet import _ground_state_
 
 
 class Molecule:
@@ -16,7 +15,7 @@ class Molecule:
                  vibrations=NoVibration(),
                  name=None,
                  decays=(),
-                 state=_gs_,
+                 state=_GS_,
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
@@ -116,7 +115,7 @@ class Molecule:
 
         return self._decay_dict[self._state.label]
 
-    def get_transition_moment(self, to_state=_gs_):
+    def get_transition_moment(self, to_state=_GS_):
         """
         returns the transition dipole moment between the current state and the requested state (by default ground state)
         :param to_state: the transition dipole moment is given between this state and the current state

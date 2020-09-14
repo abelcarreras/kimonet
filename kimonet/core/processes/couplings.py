@@ -2,9 +2,8 @@ import numpy as np
 from kimonet.utils import distance_vector_periodic
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
-from kimonet import _ground_state_
-import kimonet.core.processes.forster as forster
 from kimonet.system.state import ground_state as _GS_
+import kimonet.core.processes.forster as forster
 
 coupling_data = {}
 

@@ -1,6 +1,5 @@
 import numpy as np
 from kimonet.utils.units import SPEED_OF_LIGHT, HBAR_PLANCK
-from kimonet import _ground_state_
 
 
 # Decay functions

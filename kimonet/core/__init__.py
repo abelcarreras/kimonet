@@ -1,7 +1,7 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes_and_rates
 from kimonet.core.processes import GoldenRule, DirectRate, DecayRate
-from kimonet import _ground_state_
+from kimonet.system.state import ground_state as _GS_
 
 import warnings
 
@@ -61,10 +61,10 @@ def update_step(change_step, system):
 
         # system.molecules[chosen_process['donor']].cell_state *= 0
 
-        if process.final[0] == _ground_state_:
+        if process.final[0] == _GS_.label:
             process.donor.cell_state *= 0
 
-        if process.final[1] == _ground_state_:
+        if process.final[1] == _GS_.label:
             process.acceptor.cell_state *= 0
 
     elif isinstance(process, DecayRate):
@@ -73,7 +73,7 @@ def update_step(change_step, system):
         donor_index = system.get_molecule_index(process.donor)
         system.add_excitation_index(final_state, donor_index)
 
-        if final_state == _ground_state_:
+        if final_state == _GS_.label:
             process.donor.cell_state *= 0
     else:
         raise Exception('Process type not recognized')
