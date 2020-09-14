@@ -25,10 +25,10 @@ class System:
         self._cutoff_radius = cutoff_radius
 
         # search centers
-        self.centers = []
+        self._centers = []
         for i, molecule in enumerate(self.molecules):
             if molecule.state.label != _ground_state_:
-                self.centers.append(i)
+                self._centers.append(i)
 
         # search for states
         self._states = []
@@ -47,6 +47,9 @@ class System:
     def cutoff_radius(self, cutoff):
         self._cutoff_radius = cutoff
 
+    @property
+    def center(self):
+        return self._centers
 
     def get_neighbours_num(self, center):
 
@@ -114,7 +117,7 @@ class System:
         for molecule in self.molecules:
             molecule.set_state(_GS_)
             molecule.cell_state = np.zeros(molecule.get_dim())
-        self.centers = []
+        self._centers = []
         self.is_finished = False
 
     def copy(self):
@@ -132,15 +135,14 @@ class System:
 
         # print('check', type, type.label)
         if type.label == _GS_.label:
-            self.centers.remove(index)
+            self._centers.remove(index)
             self._states.remove(self.molecules[index].state)
         else:
             self._states.append(type)
-            if not index in self.centers:
-                self.centers.append(index)
+            if not index in self._centers:
+                self._centers.append(index)
 
         self.molecules[index].set_state(type)
-
 
     def add_excitation_random(self, type, n):
         for i in range(n):

@@ -45,7 +45,7 @@ def update_step(change_step, system):
         donor_state = process.final[0]
         acceptor_state = process.final[1]
 
-        system.add_excitation_index(donor_state, change_step['donor'])  # des excitation of the donor
+        system.add_excitation_index(donor_state, change_step['donor'])  # de-excitation of the donor
         system.add_excitation_index(acceptor_state, change_step['acceptor'])  # excitation of the acceptor
 
         # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
@@ -81,49 +81,53 @@ def system_test_info(system):
 
     # molecules = system.molecules                # list of all instances of Molecule
 
-    for center in system.centers:
+    for state in system.get_states():
+        center = system.get_molecule_index(state.get_center())
+        print('*' * 80 + '\n CENTER {}\n'.format(center) + '*' * 80)
+
+        process_list = get_processes_and_rates(state, system)
         total_r = 0
-        # anal_data = []
-        if isinstance(center, int):
-            # looks for the all molecules in a circle of radius centered at the position of the excited molecule
+        for p in process_list:
+            proc = p['process']
+            # print('{}'.format(p))
+            print('Process: {}'.format(proc))
+            i_donor = system.get_molecule_index(proc.donor)
+            try:
+                i_acceptor = system.get_molecule_index(proc.acceptor)
+            except Exception:
+                i_acceptor = i_donor
 
-            print('*'*80 + '\n CENTER {}\n'.format(center) + '*'*80)
-            process_list = get_processes_and_rates(system.molecules[center].state, system)
-            print('plist', process_list)
-            for p in process_list:
-                proc = p['process']
-                # print('{}'.format(p))
-                print('Process: {}'.format(proc))
-                print('Donor: {} / Acceptor: {}'.format(p['donor'], p['acceptor']))
+            print('Donor: {} / Acceptor: {}'.format(i_donor, i_acceptor))
 
-                position_d = proc.donor.get_coordinates()
-                r = proc.get_rate_constant(system.conditions, system.supercell)
+            position_d = proc.donor.get_coordinates()
+            r = proc.get_rate_constant(system.conditions, system.supercell)
 
-                if isinstance(proc, (GoldenRule, DirectRate)):
-                    position_a = proc.acceptor.get_coordinates()
+            if isinstance(proc, (GoldenRule, DirectRate)):
+                position_a = proc.acceptor.get_coordinates()
 
-                    distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
-                                                                       system.supercell,
-                                                                       proc.cell_increment))
-                    print('Distance: ', distance, 'angs')
+                distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
+                                                                   system.supercell,
+                                                                   proc.cell_increment))
+                print('Distance: ', distance, 'angs')
 
-                if isinstance(proc, GoldenRule):
-                    print('Cell_increment: {} '.format(proc.cell_increment))
+            if isinstance(proc, GoldenRule):
+                print('Cell_increment: {} '.format(proc.cell_increment))
 
-                    spectral_overlap = proc.get_fcwd()
+                spectral_overlap = proc.get_fcwd()
 
-                    e_coupling = proc.get_electronic_coupling(system.conditions)
+                e_coupling = proc.get_electronic_coupling(system.conditions)
 
-                    print('Electronic coupling: ', e_coupling, 'eV')
-                    print('Spectral overlap:    ', spectral_overlap, 'eV-1')
-                    # anal_data.append([distance, r])
+                print('Electronic coupling: ', e_coupling, 'eV')
+                print('Spectral overlap:    ', spectral_overlap, 'eV-1')
+                # anal_data.append([distance, r])
 
-                print('Rate constant :      ', r, 'ns-1')
+            print('Rate constant :      ', r, 'ns-1')
 
-                print('-' * 80)
-                total_r += r
+            print('-' * 80)
+            total_r += r
 
         print('Total rate sum: {}'.format(total_r))
+
         # import matplotlib.pyplot as plt
         # plt.scatter(np.array(anal_data).T[0], np.array(anal_data).T[1])
         # plt.show()

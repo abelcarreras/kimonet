@@ -63,11 +63,11 @@ class TrajectoryGraph:
         system: system
         """
 
-        self.node_count = len(system.centers)
+        self.node_count = len(system._centers)
 
         self.graph = nx.DiGraph()
 
-        for i, center in enumerate(system.centers):
+        for i, center in enumerate(system._centers):
             self.graph.add_node(i,
                                 coordinates=[list(system.molecules[center].get_coordinates())],
                                 state=system.molecules[center].state.label,
@@ -82,13 +82,13 @@ class TrajectoryGraph:
         self.system = system
 
         self.n_dim = len(system.molecules[0].get_coordinates())
-        self.n_centers = len(system.centers)
+        self.n_centers = len(system._centers)
         self.labels = {}
         self.times = [0]
 
         self.states = set()
         ce = {}
-        for center in system.centers:
+        for center in system._centers:
             state = system.molecules[center].state.label
             self.states.add(state)
             count_keys_dict(ce, state)
@@ -286,7 +286,7 @@ class TrajectoryGraph:
                 raise Exception('Error: No process type found')
 
         ce = {}
-        for center in self.system.centers:
+        for center in self.system._centers:
             state = self.system.molecules[center].state.label
             self.states.add(state)
             count_keys_dict(ce, state)
@@ -645,7 +645,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         system: system
         """
 
-        self.node_count = len(system.centers)
+        self.node_count = len(system._centers)
 
         self.graph = nx.DiGraph()
 
@@ -653,7 +653,7 @@ class TrajectoryGraph2(TrajectoryGraph):
             os.mkdir('test_map')
 
         self.mapped_list = []
-        for i, center in enumerate(system.centers):
+        for i, center in enumerate(system._centers):
 
             mem_array = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), i),
                                              dtype=[('coordinates', object),
@@ -683,7 +683,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         self.system = system
 
         self.n_dim = len(system.molecules[0].get_coordinates())
-        self.n_centers = len(system.centers)
+        self.n_centers = len(system._centers)
         self.labels = {}
 
         mem_array_t = np.require(np.memmap('test_map/array_{}_{}_{}'.format(id(self), os.getpid(), 't'),
@@ -697,7 +697,7 @@ class TrajectoryGraph2(TrajectoryGraph):
 
         self.states = set()
         ce = {}
-        for center in system.centers:
+        for center in system._centers:
             state = system.molecules[center].state.label
             self.states.add(state)
             count_keys_dict(ce, state)

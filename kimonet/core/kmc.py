@@ -32,13 +32,9 @@ def select_process(constant_list):
     r = np.sum(constant_list) * np.random.rand()
     # random number picked from the uniform distribution U(0, rates sum)
 
-    list_ = np.where(r > np.cumsum(constant_list))
-    # the first element of list returned by np.where is a list with the positions of the list of accumulative sums of
-    # the rates where the desired condition is satisfied.
+    sub_list = np.where(r > np.cumsum(constant_list))
 
-    # The length of these first list is the position of the chosen process (the last position
-    # where the condition is satisfied)
-    return len(list_[0])
+    return len(sub_list[0])
 
 
 def time_advance(rate_list):

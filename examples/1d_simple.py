@@ -27,15 +27,20 @@ def decay_rate(initial_state, final_state, molecule):
 # states list
 gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
+s2 = State(label='s2', energy=1.5, multiplicity=1)
 
 # setup molecules
 molecule = Molecule(
                     #states=[State(label='gs', energy=0.0),  # eV
                     #        State(label='s1', energy=1.0)],  # eV
-                    transition_moment={('s1', 'gs'): [1.0]},  # Debye
-                    decays=[DecayRate(initial_states=s1, final_states=gs,
+                    transition_moment={('s1', 'gs'): [1.0]},  # Debye   TO STATE
+                    decays=[DecayRate(initial_states=s1, final_states=gs,  # TO SYSTEM
                                       decay_rate_function=decay_rate,
-                                      description='custom decay rate')],
+                                      description='custom decay rate'),
+                            DecayRate(initial_states=s2, final_states=gs,  # TO SYSTEM
+                                      decay_rate_function=decay_rate,
+                                      description='custom decay rate')
+                            ],
                     )
 
 molecule1 = molecule.copy()
@@ -58,12 +63,16 @@ system = System(molecules=[molecule1, molecule2, molecule3],
 
 # set initial exciton
 system.add_excitation_index(s1, 1)
-#system.add_excitation_index(s1, 2)
+system.add_excitation_index(s2, 2)
 
 # set additional system parameters
 system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
                                      rate_constant_function=transfer_rate,
-                                     description='custom')]
+                                     description='custom'),
+                          DirectRate(initial_states=(s2, gs), final_states=(gs, s2),
+                                     rate_constant_function=transfer_rate,
+                                     description='custom'),
+                          ]
 system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
 # some system analyze functions
