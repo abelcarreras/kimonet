@@ -3,7 +3,11 @@ from kimonet.utils import distance_vector_periodic
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet.system.state import ground_state as _GS_
+from kimonet.core.processes.types import Transition
+from kimonet.utils.units import DEBYE_TO_ANGS_EL
 import kimonet.core.processes.forster as forster
+from kimonet.utils import rotate_vector
+
 
 coupling_data = {}
 
@@ -16,7 +20,7 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
                ) + np.array2string(np.array(supercell), precision=12) + np.array2string(np.array(cell_incr, dtype=int))
 
 
-def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_index=1):
+def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
 
@@ -36,8 +40,15 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
+
+    mu_d = transition_moment[Transition(donor.state, _GS_)]
+    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+
+    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+
+    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
 
@@ -56,7 +67,7 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     return forster_coupling
 
 
-def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_index=1):
+def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
 
@@ -76,8 +87,15 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_i
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
+
+    mu_d = transition_moment[Transition(donor.state, _GS_)]
+    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+
+    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+
+    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
 
@@ -92,8 +110,8 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_i
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
-                              ref_index=1, longitude=3, n_divisions=300):
+def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
+                              longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
 
@@ -116,8 +134,14 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
+    mu_d = transition_moment[Transition(donor.state, _GS_)]
+    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+
+    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+
+    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
 
@@ -129,8 +153,8 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_incr,
-                                 ref_index=1,longitude=3, n_divisions=300):
+def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
+                                 longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV (pure python version)
 
@@ -152,8 +176,15 @@ def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_in
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
-    mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
+
+    mu_d = transition_moment[Transition(donor.state, _GS_)]
+    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+
+    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+
+    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
     # ref_index = conditions['refractive_index']                      # refractive index of the material
 

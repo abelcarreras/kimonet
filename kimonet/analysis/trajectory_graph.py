@@ -88,7 +88,7 @@ class TrajectoryGraph:
         self.states = set()
         ce = {}
         for state in self.system.get_states():
-            self.states.add(state)
+            self.states.add(state.label)
             count_keys_dict(ce, state.label)
 
         self.current_excitons = [ce]
@@ -298,7 +298,7 @@ class TrajectoryGraph:
 
         ce = {}
         for state in self.system.get_states():
-            self.states.add(state)
+            self.states.add(state.label)
             count_keys_dict(ce, state.label)
 
         self.current_excitons.append(ce)
@@ -320,7 +320,7 @@ class TrajectoryGraph:
             state = self.graph.nodes[node]['state']
             node_map[state].append(node)
 
-        #pos = nx.spring_layout(self.graph)
+        # pos = nx.spring_layout(self.graph)
         pos = nx.drawing.nx_agraph.graphviz_layout(self.graph, prog='dot')
         for state in self.get_states():
             nx.draw_networkx_nodes(self.graph,
@@ -708,7 +708,7 @@ class TrajectoryGraph2(TrajectoryGraph):
         self.states = set()
         ce = {}
         for state in self.system.get_states():
-            self.states.add(state)
+            self.states.add(state.label)
             count_keys_dict(ce, state.label)
         self.current_excitons = [ce]
 

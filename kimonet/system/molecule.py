@@ -11,7 +11,7 @@ class Molecule:
 
     def __init__(self,
                  # states,  # eV
-                 transition_moment,  # Debye
+                 transition_moment={},  # Debye
                  vibrations=NoVibration(),
                  name=None,
                  decays=(),

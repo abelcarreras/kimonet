@@ -6,6 +6,8 @@ from kimonet.system import System
 from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
 import numpy as np
+from kimonet.core.processes.types import Transition
+from kimonet.system.state import ground_state as gs
 
 
 # custom transfer functions
@@ -25,16 +27,12 @@ def decay_rate(initial_state, final_state, molecule):
 
 
 # states list
-gs = State(label='gs', energy=0.0, multiplicity=1)
+# gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 s2 = State(label='s2', energy=1.5, multiplicity=1)
 
 # setup molecules
-molecule = Molecule(
-                    #states=[State(label='gs', energy=0.0),  # eV
-                    #        State(label='s1', energy=1.0)],  # eV
-                    transition_moment={('s1', 'gs'): [1.0]},  # Debye   TO STATE
-                    decays=[DecayRate(initial_states=s1, final_states=gs,  # TO SYSTEM
+molecule = Molecule(decays=[DecayRate(initial_states=s1, final_states=gs,  # TO SYSTEM
                                       decay_rate_function=decay_rate,
                                       description='custom decay rate'),
                             DecayRate(initial_states=s2, final_states=gs,  # TO SYSTEM
@@ -64,6 +62,8 @@ system = System(molecules=[molecule1, molecule2, molecule3],
 # set initial exciton
 system.add_excitation_index(s1, 1)
 system.add_excitation_index(s2, 2)
+
+print('**NO_list_ini: ', [mol for mol in system.molecules])
 
 # set additional system parameters
 system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),

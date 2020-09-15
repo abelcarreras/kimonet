@@ -7,15 +7,18 @@ from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
 from kimonet.system.generators import regular_system, crystal_system
+from kimonet.system.state import ground_state
+from kimonet.core.processes.types import Transition
 
 import unittest
 import numpy as np
+from copy import deepcopy
 
 
 # states list
-gs = State(label='gs', energy=0.0, multiplicity=1)
+gs = deepcopy(ground_state)
+# gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
-
 
 
 class Test1DFast(unittest.TestCase):
@@ -24,13 +27,13 @@ class Test1DFast(unittest.TestCase):
         # list of decay functions by state
         decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
                                   decay_rate_function=einstein_radiative_decay,
+                                  arguments={'transition_moment': {(s1, gs): [0.3, 0.1]}},  # Debye
                                   description='singlet_radiative_decay')
                         ]
 
-        molecule = Molecule(vibrations=MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
-                                                                            (gs, s1): 0.08},
+        molecule = Molecule(vibrations=MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
+                                                                            Transition(gs, s1, symmetric=False): 0.08},
                                                    temperature=300),  # Kelvin
-                            transition_moment={(s1, gs): [0.3, 0.1]},  # Debye
                             decays=decay_scheme,
                             )
 
@@ -56,7 +59,9 @@ class Test1DFast(unittest.TestCase):
         self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                   electronic_coupling_function=forster_coupling_extended,
                                                   description='Forster',
-                                                  arguments={'ref_index': 2, 'longitude': 2, 'n_divisions':30})]
+                                                  arguments={'ref_index': 2, 'longitude': 2, 'n_divisions': 30,
+                                                             'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}  # Debye
+                                                  )]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 

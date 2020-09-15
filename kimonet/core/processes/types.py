@@ -3,14 +3,15 @@ from kimonet.utils.units import HBAR_PLANCK
 import numpy as np
 # from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
+from copy import deepcopy
 
 overlap_data = {}
 
 
 class Transition:
     def __init__(self, state1, state2, symmetric=True):
-        self._state1 = state1
-        self._state2 = state2
+        self._state1 = deepcopy(state1)
+        self._state2 = deepcopy(state2)
         self._symmetric = symmetric
 
     def __hash__(self):

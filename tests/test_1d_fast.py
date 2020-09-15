@@ -9,13 +9,14 @@ from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
-
+from kimonet.system.state import ground_state as gs
+from kimonet.core.processes.types import Transition
 
 import unittest
 import numpy as np
 
 # states list
-gs = State(label='gs', energy=0.0, multiplicity=1)
+# gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
@@ -32,15 +33,11 @@ class Test1DFast(unittest.TestCase):
             return rates[molecule.name]
 
         # setup molecules
-        molecule = Molecule(
-                            #states=[State(label='gs', energy=0.0),  # eV   -> Independent
-                            #        State(label='s1', energy=1.0)],  # eV
-                            transition_moment={(s1, gs): [0.01]},  # Debye -> to Forster optional arguments / system?
-                            decays=[DecayRate(initial_states=s1, final_states=gs,
+        molecule = Molecule(decays=[DecayRate(initial_states=s1, final_states=gs,
                                               decay_rate_function=decay_rate,
                                               description='custom decay rate')],
-                            vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
-                                                                            (s1, gs): 0.07})
+                            vibrations=MarcusModel(reorganization_energies={Transition(gs, s1, symmetric=False): 0.07,
+                                                                            Transition(s1, gs, symmetric=False): 0.07})
                             )
 
         molecule1 = molecule.copy()
@@ -115,7 +112,6 @@ class Test1DFast(unittest.TestCase):
 
         self.assertDictEqual(ref, test)
 
-
     def test_kmc_algorithm_2(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
@@ -123,7 +119,10 @@ class Test1DFast(unittest.TestCase):
         self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                   electronic_coupling_function=forster_coupling,
                                                   description='Forster coupling',
-                                                  arguments={'ref_index': 1})]
+                                                  arguments={'ref_index': 1,
+                                                             'transition_moment': {Transition(s1, gs): [0.01]}}
+                                                  )
+                                       ]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 

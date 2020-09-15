@@ -24,8 +24,8 @@ class MarcusModel:
 
         # symmetrize external reorganization energies
         # print(item[0] for item in reorganization_energies.items())
-        self.reorganization_energies = {Transition(*key, symmetric=False): item
-                                        for key, item in reorganization_energies.items()}
+        #self.reorganization_energies = {Transition(*key, symmetric=False): item
+        #                                for key, item in reorganization_energies.items()}
 
     def __hash__(self):
         return hash((str(self.reorganization_energies)))
