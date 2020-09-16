@@ -27,7 +27,7 @@ class Test1DFast(unittest.TestCase):
         # list of decay functions by state
         decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
                                   decay_rate_function=einstein_radiative_decay,
-                                  arguments={'transition_moment': {(s1, gs): [0.3, 0.1]}},  # Debye
+                                  arguments={'transition_moment': {Transition(s1, gs): [0.3, 0.1]}},  # Debye
                                   description='singlet_radiative_decay')
                         ]
 

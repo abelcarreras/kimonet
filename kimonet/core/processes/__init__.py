@@ -3,9 +3,9 @@ from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from copy import deepcopy
 
 
-def get_processes_and_rates(state, system):
+def get_processes(state, system):
     """
-    :param centre: Index of the studied excited molecule (Donor)
+    :param state: excited state for which find possible processes
     :param system: Instance of System class
     Computes the transfer and decay rates and builds two dictionaries:
             One with the decay process as key and its rate as argument
@@ -30,18 +30,17 @@ def get_transfer_rates(state, system):
 
     donor = state.get_center()
     neighbour_indexes, cell_increment = system.get_neighbours(donor)
-    origin = system.get_molecule_index(donor)
+    # origin = system.get_molecule_index(donor)
 
     transfer_steps = []
-    for neighbour, cell_incr in zip(neighbour_indexes, cell_increment):
-        acceptor = neighbour
+    for acceptor, cell_incr in zip(neighbour_indexes, cell_increment):
         allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme)
 
         for process in allowed_processes:
             # I don't like this very much
             process.cell_increment = cell_incr  # TODO: cell_incr should be independent by molecule (dict?)
             process.supercell = system.supercell
-            target = system.get_molecule_index(acceptor)
+            # target = system.get_molecule_index(acceptor)
 
             #transfer_steps.append({'donor': int(origin), 'process': process, 'acceptor': int(target),
             #                       'cell_increment': cell_incr})
@@ -59,7 +58,7 @@ def get_decay_rates(state, system):
     """
 
     donor = state.get_center()
-    origin = system.get_molecule_index(donor)
+    # origin = system.get_molecule_index(donor)
 
     decay_complete = donor.decay_rates()        # returns a dict {decay_process, decay_rate}
 

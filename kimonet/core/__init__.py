@@ -1,5 +1,5 @@
 from kimonet.core.kmc import kmc_algorithm
-from kimonet.core.processes import get_processes_and_rates
+from kimonet.core.processes import get_processes
 from kimonet.core.processes import GoldenRule, DirectRate, DecayRate
 from kimonet.system.state import ground_state as _GS_
 
@@ -14,8 +14,7 @@ def do_simulation_step(system):
 
     process_collector = []                          # list with the respective processes (for all centers)
     for state in system.get_states():
-        process_list = get_processes_and_rates(state, system)
-        process_collector += process_list
+        process_collector += get_processes(state, system)
 
     # If no process available system cannot evolve and simulation is finished
     if len(process_collector) == 0:
@@ -91,7 +90,7 @@ def system_test_info(system):
         center = system.get_molecule_index(state.get_center())
         print('*' * 80 + '\n CENTER {}\n'.format(center) + '*' * 80)
 
-        process_list = get_processes_and_rates(state, system)
+        process_list = get_processes(state, system)
         total_r = 0
         for p in process_list:
             proc = p#['process']

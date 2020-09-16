@@ -23,6 +23,7 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
 def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
+    Only works for 1 molecule states
 
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
@@ -40,8 +41,7 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-
-    mu_d = transition_moment[Transition(donor.state, _GS_)]
+    mu_d = transition_moment[Transition(donor.state, acceptor.state)]
     mu_a = transition_moment[Transition(acceptor.state, donor.state)]
 
     mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
@@ -134,7 +134,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[Transition(donor.state, _GS_)]
+    mu_d = transition_moment[Transition(donor.state, acceptor.state)]
     mu_a = transition_moment[Transition(acceptor.state, donor.state)]
 
     mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
