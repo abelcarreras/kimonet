@@ -46,6 +46,9 @@ def get_transfer_rates(state, system):
             #                       'cell_increment': cell_incr})
             transfer_steps.append(process)
 
+    #for tr in transfer_steps:
+    #    print(system.get_molecule_index(tr.donor), system.get_molecule_index(tr.acceptor), tr.cell_increment, tr.supercell)
+
     return transfer_steps
 
 
@@ -82,6 +85,7 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
     :param acceptor: Molecule class instance
     :return: Dictionary with the allowed coupling functions
     """
+    # print('allowedTrans', donor.state, acceptor.state)
 
     allowed_couplings = []
     for coupling in transfer_scheme:
@@ -89,6 +93,25 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
             new_coupling = deepcopy(coupling)
             new_coupling.donor = donor
             new_coupling.acceptor = acceptor
+
+            #print('initial: ', new_coupling.initial[0].get_molecules(), new_coupling.initial[1].get_molecules(),
+            #      new_coupling.final[0].get_molecules(), new_coupling.final[1].get_molecules())
+
+            if True:
+                new_coupling.initial = (donor.state, acceptor.state)
+
+                new_coupling.initial[0].remove_molecules()
+                new_coupling.initial[1].remove_molecules()
+
+                new_coupling.final[0].remove_molecules()
+                new_coupling.final[1].remove_molecules()
+
+                new_coupling.initial[0].add_molecule(donor)
+                new_coupling.initial[1].add_molecule(acceptor)
+
+                new_coupling.final[0].add_molecule(donor)
+                new_coupling.final[1].add_molecule(acceptor)
+
             allowed_couplings.append(new_coupling)
 
     return allowed_couplings

@@ -129,6 +129,19 @@ class System:
 
         self.molecules[index].set_state(type)
 
+    def remove_exciton(self, exciton):
+        if exciton.label != _GS_.label:
+            for mol in exciton.get_molecules():
+                mol.set_state(_GS_)
+            self._states.remove(exciton)
+
+    def add_exciton(self, exciton):
+        if exciton.label != _GS_.label:
+            for mol in exciton.get_molecules():
+                mol.set_state(exciton)
+
+            self._states.append(exciton)
+
     def add_excitation_random(self, type, n):
         for i in range(n):
             while True:

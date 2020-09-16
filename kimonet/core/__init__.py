@@ -41,16 +41,38 @@ def update_step(change_step, system):
     process = change_step #['process']
     if isinstance(process, (GoldenRule, DirectRate)):
 
-        donor_state = process.final[0]
-        acceptor_state = process.final[1]
+        #donor_state = process.final[0]
+        #acceptor_state = process.final[1]
 
-        donor_index = system.get_molecule_index(process.donor)
-        acceptor_index = system.get_molecule_index(process.acceptor)
+        #donor_index = system.get_molecule_index(process.donor)
+        #acceptor_index = system.get_molecule_index(process.acceptor)
+
+        #print('initial: ', process.initial)
+        #print('initial 0', process.initial[0], system.molecules[donor_index].state)
+        #print('initial 1', process.initial[1], system.molecules[acceptor_index].state)
 
         # print('states', donor_state, acceptor_state)
+        #print('states: ', system.get_states())
+        #print('->', process.initial[0], process.initial[1])
 
-        system.add_excitation_index(donor_state, donor_index)  # de-excitation of the donor
-        system.add_excitation_index(acceptor_state, acceptor_index)  # excitation of the acceptor
+        # print(donor_state.label, donor_index, acceptor_state.label, acceptor_index, process.get_rate_constant({'custom_constant': 1}, [1]))
+
+        system.remove_exciton(process.initial[0])
+        system.remove_exciton(process.initial[1])
+
+        system.add_exciton(process.final[0])
+        system.add_exciton(process.final[1])
+
+        # system.add_excitation_index(donor_state, donor_index)  # de-excitation of the donor
+        # system.add_excitation_index(acceptor_state, acceptor_index)  # excitation of the acceptor
+
+
+        # print(process.donor.get_center())
+
+        print('**** SYSTEM ****')
+        for i, mol in enumerate(system.molecules):
+            print(i, mol.state.label, mol.state)
+        print('****************')
 
         # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
         acceptor_cell_state = process.acceptor.cell_state
@@ -65,6 +87,9 @@ def update_step(change_step, system):
 
         if process.final[1] == _GS_.label:
             process.acceptor.cell_state *= 0
+
+        print('cell:', process.acceptor.cell_state, process.acceptor.cell_state)
+
 
     elif isinstance(process, DecayRate):
         final_state = process.final[0]

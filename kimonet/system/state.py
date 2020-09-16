@@ -32,6 +32,10 @@ class State:
         if not molecule in self._molecules_set:
             self._molecules_set.append(molecule)
 
+    def remove_molecules(self):
+        self._molecules_set = []
+
+
     @property
     def label(self):
         return self._label
