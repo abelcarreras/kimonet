@@ -10,8 +10,8 @@ overlap_data = {}
 
 class Transition:
     def __init__(self, state1, state2, symmetric=True):
-        self._state1 = deepcopy(state1)
-        self._state2 = deepcopy(state2)
+        self._state1 = state1
+        self._state2 = state2
         self._symmetric = symmetric
 
     def __hash__(self):
@@ -38,8 +38,13 @@ class BaseProcess:
         self.arguments = arguments if arguments is not None else {}
         self._donor = None
         self._acceptor = None
-        self._cell_increment = None
+        self._cell_increment = []
         self._supercell = None
+
+#    def __str__(self):
+#        return 'donor/acceptor : {} {}\n'.format(self.donor.state, self.acceptor.state) \
+#               + 'initial : {} {}\n'.format(self.initial[0], self.initial[1]) \
+#               + 'final : {} {}\n'.format(self.final[0], self.final[1])
 
     @property
     def donor(self):
@@ -69,10 +74,11 @@ class BaseProcess:
             raise Exception('No cell_increment set')
         return self._cell_increment
 
-    @cell_increment.setter
-    def cell_increment(self, cell_incr):
-        self._cell_increment = cell_incr
-
+#    @cell_increment.setter
+#    def cell_increment(self, cell_incr):
+#        self._cell_increment = cell_incr
+    def add_cell_increment(self, cell_incr):
+        self._cell_increment.append(cell_incr)
 
     @property
     def supercell(self):

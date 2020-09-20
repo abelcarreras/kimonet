@@ -224,7 +224,7 @@ def intermolecular_vector(donor, acceptor, supercell, cell_incr):
     position_d = donor.get_coordinates()
     position_a = acceptor.get_coordinates()
     r_vector = position_a - position_d
-    r = distance_vector_periodic(r_vector, supercell, cell_incr)
+    r = distance_vector_periodic(r_vector, supercell, cell_incr[0])
     return r
 
 

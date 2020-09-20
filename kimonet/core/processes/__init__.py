@@ -1,6 +1,7 @@
 from kimonet.core.processes.fcwd import general_fcwd
 from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from copy import deepcopy
+from kimonet.system.state import ground_state as _GS_
 
 
 def get_processes(state, system):
@@ -34,11 +35,11 @@ def get_transfer_rates(state, system):
 
     transfer_steps = []
     for acceptor, cell_incr in zip(neighbour_indexes, cell_increment):
-        allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme)
+        allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme, cell_incr)
 
         for process in allowed_processes:
             # I don't like this very much
-            process.cell_increment = cell_incr  # TODO: cell_incr should be independent by molecule (dict?)
+            process.add_cell_increment(cell_incr)  # TODO: cell_incr should be independent by molecule (dict?)
             process.supercell = system.supercell
             # target = system.get_molecule_index(acceptor)
 
@@ -77,7 +78,7 @@ def get_decay_rates(state, system):
     return decay_steps
 
 
-def get_allowed_processes(donor, acceptor, transfer_scheme):
+def get_allowed_processes(donor, acceptor, transfer_scheme, cell_incr):
     """
     Get the allowed processes for a given donor and acceptor
 
@@ -97,7 +98,7 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
             #print('initial: ', new_coupling.initial[0].get_molecules(), new_coupling.initial[1].get_molecules(),
             #      new_coupling.final[0].get_molecules(), new_coupling.final[1].get_molecules())
 
-            if True:
+            if False:
                 new_coupling.initial = (donor.state, acceptor.state)
 
                 new_coupling.initial[0].remove_molecules()
@@ -111,6 +112,33 @@ def get_allowed_processes(donor, acceptor, transfer_scheme):
 
                 new_coupling.final[0].add_molecule(donor)
                 new_coupling.final[1].add_molecule(acceptor)
+
+            else:
+                new_coupling.initial = (donor.state, acceptor.state)
+
+                new_coupling.initial[0].remove_molecules()
+                new_coupling.initial[1].remove_molecules()
+                new_coupling.initial[0].add_molecule(donor)
+                new_coupling.initial[1].add_molecule(acceptor)
+
+                for i in range(2):
+                    new_coupling.final[i].remove_molecules()
+                    for mol in new_coupling.initial[i].get_molecules():
+                        mol2 = deepcopy(mol)
+                        mol2.set_state(new_coupling.final[i])
+                        new_coupling.final[i].add_molecule(mol2)
+
+                acceptor_cell_state = new_coupling.final[1].get_center().cell_state
+                donor_cell_state = new_coupling.final[0].get_center().cell_state
+
+                new_coupling.final[1].get_center().cell_state = donor_cell_state - cell_incr
+                new_coupling.final[0].get_center().cell_state = acceptor_cell_state + cell_incr
+
+                if new_coupling.final[0] == _GS_.label:
+                    new_coupling.final[0].get_center().cell_state *= 0
+
+                if new_coupling.final[1] == _GS_.label:
+                    new_coupling.final[1].get_center().cell_state *= 0
 
             allowed_couplings.append(new_coupling)
 

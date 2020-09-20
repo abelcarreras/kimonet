@@ -41,55 +41,78 @@ def update_step(change_step, system):
     process = change_step #['process']
     if isinstance(process, (GoldenRule, DirectRate)):
 
-        #donor_state = process.final[0]
-        #acceptor_state = process.final[1]
+        if False:
+            #donor_state = process.final[0]
+            #acceptor_state = process.final[1]
 
-        #donor_index = system.get_molecule_index(process.donor)
-        #acceptor_index = system.get_molecule_index(process.acceptor)
+            #donor_index = system.get_molecule_index(process.donor)
+            #acceptor_index = system.get_molecule_index(process.acceptor)
 
-        #print('initial: ', process.initial)
-        #print('initial 0', process.initial[0], system.molecules[donor_index].state)
-        #print('initial 1', process.initial[1], system.molecules[acceptor_index].state)
+            #print('initial: ', process.initial)
+            #print('initial 0', process.initial[0], system.molecules[donor_index].state)
+            #print('initial 1', process.initial[1], system.molecules[acceptor_index].state)
 
-        # print('states', donor_state, acceptor_state)
-        #print('states: ', system.get_states())
-        #print('->', process.initial[0], process.initial[1])
+            # print('states', donor_state, acceptor_state)
+            #print('states: ', system.get_states())
+            #print('->', process.initial[0], process.initial[1])
 
-        # print(donor_state.label, donor_index, acceptor_state.label, acceptor_index, process.get_rate_constant({'custom_constant': 1}, [1]))
+            # print(donor_state.label, donor_index, acceptor_state.label, acceptor_index, process.get_rate_constant({'custom_constant': 1}, [1]))
 
-        system.remove_exciton(process.initial[0])
-        system.remove_exciton(process.initial[1])
+            system.remove_exciton(process.initial[0])
+            system.remove_exciton(process.initial[1])
 
-        system.add_exciton(process.final[0])
-        system.add_exciton(process.final[1])
+            system.add_exciton(process.final[0])
+            system.add_exciton(process.final[1])
 
-        # system.add_excitation_index(donor_state, donor_index)  # de-excitation of the donor
-        # system.add_excitation_index(acceptor_state, acceptor_index)  # excitation of the acceptor
+            # system.add_excitation_index(donor_state, donor_index)  # de-excitation of the donor
+            # system.add_excitation_index(acceptor_state, acceptor_index)  # excitation of the acceptor
 
 
-        # print(process.donor.get_center())
+            # print(process.donor.get_center())
 
-        print('**** SYSTEM ****')
-        for i, mol in enumerate(system.molecules):
-            print(i, mol.state.label, mol.state)
-        print('****************')
 
-        # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
-        acceptor_cell_state = process.acceptor.cell_state
-        donor_cell_state = process.donor.cell_state
-        process.acceptor.cell_state = donor_cell_state - process.cell_increment
-        process.donor.cell_state = acceptor_cell_state + process.cell_increment
+            # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
+            #acceptor_cell_state = process.acceptor.cell_state
+            #donor_cell_state = process.donor.cell_state
 
-        # system.molecules[chosen_process['donor']].cell_state *= 0
+            # process.acceptor.cell_state = donor_cell_state - process.cell_increment[0]
+            # process.donor.cell_state = acceptor_cell_state + process.cell_increment[0]
 
-        if process.final[0] == _GS_.label:
-            process.donor.cell_state *= 0
+            acceptor_cell_state = process.final[1].get_center().cell_state
+            donor_cell_state = process.final[0].get_center().cell_state
 
-        if process.final[1] == _GS_.label:
-            process.acceptor.cell_state *= 0
+            process.final[1].get_center().cell_state = donor_cell_state - process.cell_increment[0]
+            process.final[0].get_center().cell_state = acceptor_cell_state + process.cell_increment[0]
 
-        print('cell:', process.acceptor.cell_state, process.acceptor.cell_state)
+            #process.final[0].get_center().cell_state = process.initial[0].get_center().cell_state - process.cell_increment[0]
+            #process.final[1].get_center().cell_state = process.initial[1].get_center().cell_state + process.cell_increment[0]
 
+            # system.molecules[chosen_process['donor']].cell_state *= 0
+
+            if process.final[0] == _GS_.label:
+                process.final[0].get_center().cell_state *= 0
+
+            if process.final[1] == _GS_.label:
+                process.final[1].get_center().cell_state *= 0
+
+            print('cell:', process.acceptor.cell_state, process.acceptor.cell_state)
+        else:
+
+            for i in range(2):
+                system.remove_exciton(process.initial[i])
+
+                for molecule_t, molecule_o in zip(process.initial[i].get_molecules(), process.final[i].get_molecules()):
+                    molecule_t.set_state(molecule_o.state)
+                    molecule_t.cell_state = molecule_o.cell_state
+
+                process.final[i]._molecules_set = process.initial[i].get_molecules()
+                system.add_exciton(process.final[i])
+
+        if False:
+            print('**** SYSTEM ****')
+            for i, mol in enumerate(system.molecules):
+                print(i, mol.state.label, mol.state, mol.cell_state)
+            print('****************')
 
     elif isinstance(process, DecayRate):
         final_state = process.final[0]
@@ -141,7 +164,7 @@ def system_test_info(system):
 
                 distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
                                                                    system.supercell,
-                                                                   proc.cell_increment))
+                                                                   proc.cell_increment[0]))
                 print('Distance: ', distance, 'angs')
 
             if isinstance(proc, GoldenRule):
