@@ -7,7 +7,6 @@ from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
 import numpy as np
 from kimonet.core.processes.types import Transition
-from kimonet.system.state import ground_state as gs
 
 
 # custom transfer functions
@@ -27,8 +26,9 @@ def decay_rate(initial_state, final_state, molecule):
 
 
 # states list
+from kimonet.system.state import ground_state as gs
 # gs = State(label='gs', energy=0.0, multiplicity=1)
-s1 = State(label='s1', energy=1.0, multiplicity=1)
+s1 = State(label='s1', energy=1.0, multiplicity=1, size=2)
 s2 = State(label='s2', energy=1.5, multiplicity=1)
 
 # setup molecules

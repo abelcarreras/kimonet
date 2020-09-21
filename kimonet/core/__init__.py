@@ -29,84 +29,25 @@ def do_simulation_step(system):
     return chosen_process, time
 
 
-def update_step(change_step, system):
+def update_step(process, system):
     """
-    :param change_step: dictionary like dict(center, process, neighbour)
-    Modifies the state of the donor and the acceptor. Removes the donor from the centre_indexes list
-    and includes the acceptor. If its a decay only changes and removes the donor
+    Gets the data in process object and updates the system accordingly
 
-    New if(s) entrances shall be defined for more processes.
+    :param process: instance of Process object containing all the information of the chosen process
     """
 
-    process = change_step #['process']
-    if isinstance(process, (GoldenRule, DirectRate)):
+    if isinstance(process, (GoldenRule, DirectRate, DecayRate)):
 
-        if False:
-            #donor_state = process.final[0]
-            #acceptor_state = process.final[1]
+        n_dim = len(process.initial)
+        for i in range(n_dim):
+            system.remove_exciton(process.initial[i])
 
-            #donor_index = system.get_molecule_index(process.donor)
-            #acceptor_index = system.get_molecule_index(process.acceptor)
+            for molecule_t, molecule_o in zip(process.initial[i].get_molecules(), process.final[i].get_molecules()):
+                molecule_t.set_state(molecule_o.state)
+                molecule_t.cell_state = molecule_o.cell_state
 
-            #print('initial: ', process.initial)
-            #print('initial 0', process.initial[0], system.molecules[donor_index].state)
-            #print('initial 1', process.initial[1], system.molecules[acceptor_index].state)
-
-            # print('states', donor_state, acceptor_state)
-            #print('states: ', system.get_states())
-            #print('->', process.initial[0], process.initial[1])
-
-            # print(donor_state.label, donor_index, acceptor_state.label, acceptor_index, process.get_rate_constant({'custom_constant': 1}, [1]))
-
-            system.remove_exciton(process.initial[0])
-            system.remove_exciton(process.initial[1])
-
-            system.add_exciton(process.final[0])
-            system.add_exciton(process.final[1])
-
-            # system.add_excitation_index(donor_state, donor_index)  # de-excitation of the donor
-            # system.add_excitation_index(acceptor_state, acceptor_index)  # excitation of the acceptor
-
-
-            # print(process.donor.get_center())
-
-
-            # cell state assumes symmetric states cross: acceptor -> donor & donor -> acceptor
-            #acceptor_cell_state = process.acceptor.cell_state
-            #donor_cell_state = process.donor.cell_state
-
-            # process.acceptor.cell_state = donor_cell_state - process.cell_increment[0]
-            # process.donor.cell_state = acceptor_cell_state + process.cell_increment[0]
-
-            acceptor_cell_state = process.final[1].get_center().cell_state
-            donor_cell_state = process.final[0].get_center().cell_state
-
-            process.final[1].get_center().cell_state = donor_cell_state - process.cell_increment[0]
-            process.final[0].get_center().cell_state = acceptor_cell_state + process.cell_increment[0]
-
-            #process.final[0].get_center().cell_state = process.initial[0].get_center().cell_state - process.cell_increment[0]
-            #process.final[1].get_center().cell_state = process.initial[1].get_center().cell_state + process.cell_increment[0]
-
-            # system.molecules[chosen_process['donor']].cell_state *= 0
-
-            if process.final[0] == _GS_.label:
-                process.final[0].get_center().cell_state *= 0
-
-            if process.final[1] == _GS_.label:
-                process.final[1].get_center().cell_state *= 0
-
-            print('cell:', process.acceptor.cell_state, process.acceptor.cell_state)
-        else:
-
-            for i in range(2):
-                system.remove_exciton(process.initial[i])
-
-                for molecule_t, molecule_o in zip(process.initial[i].get_molecules(), process.final[i].get_molecules()):
-                    molecule_t.set_state(molecule_o.state)
-                    molecule_t.cell_state = molecule_o.cell_state
-
-                process.final[i]._molecules_set = process.initial[i].get_molecules()
-                system.add_exciton(process.final[i])
+            process.final[i]._molecules_set = process.initial[i].get_molecules()
+            system.add_exciton(process.final[i])
 
         if False:
             print('**** SYSTEM ****')
@@ -114,14 +55,6 @@ def update_step(change_step, system):
                 print(i, mol.state.label, mol.state, mol.cell_state)
             print('****************')
 
-    elif isinstance(process, DecayRate):
-        final_state = process.final[0]
-        # print('final_state', final_state)
-        donor_index = system.get_molecule_index(process.donor)
-        system.add_excitation_index(final_state, donor_index)
-
-        if final_state == _GS_.label:
-            process.donor.cell_state *= 0
     else:
         raise Exception('Process type not recognized')
 
@@ -147,8 +80,9 @@ def system_test_info(system):
             # print('{}'.format(p))
             #print('Process: {}'.format(proc))
             #print('donor: ', proc.acceptor)
+            print()
 
-            i_donor = system.get_molecule_index(proc.donor)
+            i_donor = system.get_molecule_index(proc.initial[0].get_center())
             try:
                 i_acceptor = system.get_molecule_index(proc.acceptor)
             except Exception:
@@ -156,11 +90,11 @@ def system_test_info(system):
 
             print('Donor: {} / Acceptor: {}'.format(i_donor, i_acceptor))
 
-            position_d = proc.donor.get_coordinates()
+            position_d = proc.initial[0].get_center().get_coordinates()
             r = proc.get_rate_constant(system.conditions, system.supercell)
 
             if isinstance(proc, (GoldenRule, DirectRate)):
-                position_a = proc.acceptor.get_coordinates()
+                position_a = proc.initial[1].get_center().get_coordinates()
 
                 distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
                                                                    system.supercell,

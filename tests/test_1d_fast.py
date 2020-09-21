@@ -16,7 +16,7 @@ import unittest
 import numpy as np
 
 # states list
-# gs = State(label='gs', energy=0.0, multiplicity=1)
+gs = State(label=gs.label, energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
@@ -26,11 +26,11 @@ class Test1DFast(unittest.TestCase):
 
 
         # custom decay functions
-        def decay_rate(initial, final, molecule):
+        def decay_rate(initial, final):
             rates = {'TypeA': 1 / 100,
                      'TypeB': 1 / 50,
                      'TypeC': 1 / 25}
-            return rates[molecule.name]
+            return rates[initial[0].get_center().name]
 
         # setup molecules
         molecule = Molecule(decays=[DecayRate(initial_states=s1, final_states=gs,
@@ -64,8 +64,12 @@ class Test1DFast(unittest.TestCase):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
         # custom transfer functions
-        def transfer_rate(donor, acceptor, conditions, supercell, cell_increment):
-            distance = np.linalg.norm(intermolecular_vector(donor, acceptor, supercell, cell_increment))
+        def transfer_rate(initial, final, conditions, supercell, cell_increment):
+            distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
+                                                            final[1].get_center(),
+                                                            supercell,
+                                                            cell_increment))
+
             constant = conditions['custom_constant']
 
             return constant / distance ** 2

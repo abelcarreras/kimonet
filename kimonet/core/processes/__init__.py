@@ -62,17 +62,12 @@ def get_decay_rates(state, system):
     """
 
     donor = state.get_center()
-    # origin = system.get_molecule_index(donor)
-
     decay_complete = donor.decay_rates()        # returns a dict {decay_process, decay_rate}
 
     decay_steps = []
     for process in decay_complete:
         new_process = deepcopy(process)
-        new_process.donor = donor
-        #new_process.acceptor = donor
-
-        #decay_steps.append({'donor': origin, 'process': new_process, 'acceptor': origin})
+        new_process.initial = (state,)
         decay_steps.append(new_process)
 
     return decay_steps
@@ -92,53 +87,32 @@ def get_allowed_processes(donor, acceptor, transfer_scheme, cell_incr):
     for coupling in transfer_scheme:
         if (coupling.initial[0].label, coupling.initial[1].label) == (donor.state.label, acceptor.state.label):
             new_coupling = deepcopy(coupling)
-            new_coupling.donor = donor
-            new_coupling.acceptor = acceptor
 
-            #print('initial: ', new_coupling.initial[0].get_molecules(), new_coupling.initial[1].get_molecules(),
-            #      new_coupling.final[0].get_molecules(), new_coupling.final[1].get_molecules())
+            new_coupling.initial = (donor.state, acceptor.state)
 
-            if False:
-                new_coupling.initial = (donor.state, acceptor.state)
+            new_coupling.initial[0].remove_molecules()
+            new_coupling.initial[1].remove_molecules()
+            new_coupling.initial[0].add_molecule(donor)
+            new_coupling.initial[1].add_molecule(acceptor)
 
-                new_coupling.initial[0].remove_molecules()
-                new_coupling.initial[1].remove_molecules()
+            for i in range(2):
+                new_coupling.final[i].remove_molecules()
+                for mol in new_coupling.initial[i].get_molecules():
+                    mol2 = deepcopy(mol)
+                    mol2.set_state(new_coupling.final[i])
+                    new_coupling.final[i].add_molecule(mol2)
 
-                new_coupling.final[0].remove_molecules()
-                new_coupling.final[1].remove_molecules()
+            acceptor_cell_state = new_coupling.final[1].get_center().cell_state
+            donor_cell_state = new_coupling.final[0].get_center().cell_state
 
-                new_coupling.initial[0].add_molecule(donor)
-                new_coupling.initial[1].add_molecule(acceptor)
+            new_coupling.final[1].get_center().cell_state = donor_cell_state - cell_incr
+            new_coupling.final[0].get_center().cell_state = acceptor_cell_state + cell_incr
 
-                new_coupling.final[0].add_molecule(donor)
-                new_coupling.final[1].add_molecule(acceptor)
+            if new_coupling.final[0] == _GS_.label:
+                new_coupling.final[0].get_center().cell_state *= 0
 
-            else:
-                new_coupling.initial = (donor.state, acceptor.state)
-
-                new_coupling.initial[0].remove_molecules()
-                new_coupling.initial[1].remove_molecules()
-                new_coupling.initial[0].add_molecule(donor)
-                new_coupling.initial[1].add_molecule(acceptor)
-
-                for i in range(2):
-                    new_coupling.final[i].remove_molecules()
-                    for mol in new_coupling.initial[i].get_molecules():
-                        mol2 = deepcopy(mol)
-                        mol2.set_state(new_coupling.final[i])
-                        new_coupling.final[i].add_molecule(mol2)
-
-                acceptor_cell_state = new_coupling.final[1].get_center().cell_state
-                donor_cell_state = new_coupling.final[0].get_center().cell_state
-
-                new_coupling.final[1].get_center().cell_state = donor_cell_state - cell_incr
-                new_coupling.final[0].get_center().cell_state = acceptor_cell_state + cell_incr
-
-                if new_coupling.final[0] == _GS_.label:
-                    new_coupling.final[0].get_center().cell_state *= 0
-
-                if new_coupling.final[1] == _GS_.label:
-                    new_coupling.final[1].get_center().cell_state *= 0
+            if new_coupling.final[1] == _GS_.label:
+                new_coupling.final[1].get_center().cell_state *= 0
 
             allowed_couplings.append(new_coupling)
 

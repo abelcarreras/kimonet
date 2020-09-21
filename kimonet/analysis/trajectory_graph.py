@@ -151,9 +151,9 @@ class TrajectoryGraph:
         # print('proc: ', process)
         #print(process.donor, process.acceptor)
 
-        donor_index = system.get_molecule_index(process.donor)
+        donor_index = system.get_molecule_index(process.initial[0].get_center())
         try:
-            acceptor_index = system.get_molecule_index(process.acceptor)
+            acceptor_index = system.get_molecule_index(process.initial[1].get_center())
         except Exception:
             acceptor_index = donor_index
 

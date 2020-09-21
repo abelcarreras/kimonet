@@ -2,7 +2,6 @@ import numpy as np
 from kimonet.utils import distance_vector_periodic
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
-from kimonet.system.state import ground_state as _GS_
 from kimonet.core.processes.types import Transition
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 import kimonet.core.processes.forster as forster
@@ -20,7 +19,7 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
                ) + np.array2string(np.array(supercell), precision=12) + np.array2string(np.array(cell_incr, dtype=int))
 
 
-def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
+def forster_coupling(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
     Only works for 1 molecule states
@@ -33,6 +32,9 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     :return: Forster coupling
     """
 
+    donor = initial[0].get_center()
+    acceptor = initial[1].get_center()
+
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
@@ -41,8 +43,8 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[Transition(donor.state, acceptor.state)]
-    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+    mu_d = transition_moment[Transition(*initial)]
+    mu_a = transition_moment[Transition(*final)]
 
     mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
     mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
@@ -67,7 +69,7 @@ def forster_coupling(donor, acceptor, conditions, supercell, cell_incr, ref_inde
     return forster_coupling
 
 
-def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
+def forster_coupling_py(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
 
@@ -79,6 +81,9 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_i
     :return: Forster coupling
     """
 
+    donor = initial[0].get_center()
+    acceptor = initial[1].get_center()
+
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
@@ -88,8 +93,8 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_i
         return coupling_data[hash_string]
 
 
-    mu_d = transition_moment[Transition(donor.state, _GS_)]
-    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+    mu_d = transition_moment[Transition(*initial)]
+    mu_a = transition_moment[Transition(*final)]
 
     mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
     mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
@@ -110,7 +115,7 @@ def forster_coupling_py(donor, acceptor, conditions, supercell, cell_incr, ref_i
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
+def forster_coupling_extended(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
                               longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
@@ -125,6 +130,9 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     :return: Forster coupling
     """
 
+    donor = initial[0].get_center()
+    acceptor = initial[1].get_center()
+
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
@@ -134,8 +142,8 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[Transition(donor.state, acceptor.state)]
-    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+    mu_d = transition_moment[Transition(*initial)]
+    mu_a = transition_moment[Transition(*final)]
 
     mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
     mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
@@ -153,7 +161,7 @@ def forster_coupling_extended(donor, acceptor, conditions, supercell, cell_incr,
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
+def forster_coupling_extended_py(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
                                  longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV (pure python version)
@@ -167,6 +175,10 @@ def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_in
     :param n_divisions: number of subdivisions. To use with longitude. Increase until convergence.
     :return: Forster coupling
     """
+
+    donor = initial[0].get_center()
+    acceptor = initial[1].get_center()
+
     function_name = inspect.currentframe().f_code.co_name
 
     # donor <-> acceptor interaction symmetry
@@ -177,8 +189,8 @@ def forster_coupling_extended_py(donor, acceptor, conditions, supercell, cell_in
         return coupling_data[hash_string]
 
 
-    mu_d = transition_moment[Transition(donor.state, _GS_)]
-    mu_a = transition_moment[Transition(acceptor.state, donor.state)]
+    mu_d = transition_moment[Transition(*initial)]
+    mu_a = transition_moment[Transition(*final)]
 
     mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
     mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL

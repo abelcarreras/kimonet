@@ -36,8 +36,6 @@ class BaseProcess:
         self.final = final_states
         self.description = description
         self.arguments = arguments if arguments is not None else {}
-        self._donor = None
-        self._acceptor = None
         self._cell_increment = []
         self._supercell = None
 
@@ -46,39 +44,14 @@ class BaseProcess:
 #               + 'initial : {} {}\n'.format(self.initial[0], self.initial[1]) \
 #               + 'final : {} {}\n'.format(self.final[0], self.final[1])
 
-    @property
-    def donor(self):
-        if self._donor is None:
-            raise Exception('No donor set')
-        return self._donor
-
-    @donor.setter
-    def donor(self, molecule):
-        assert molecule.state.label == self.initial[0].label
-        self._donor = molecule
-
-    @property
-    def acceptor(self):
-        if self._acceptor is None:
-            raise Exception('No acceptor set')
-        return self._acceptor
-
-    @acceptor.setter
-    def acceptor(self, molecule):
-        assert molecule.state.label == self.initial[1].label
-        self._acceptor = molecule
+    def add_cell_increment(self, cell_incr):
+        self._cell_increment.append(cell_incr)
 
     @property
     def cell_increment(self):
         if self._cell_increment is None:
             raise Exception('No cell_increment set')
         return self._cell_increment
-
-#    @cell_increment.setter
-#    def cell_increment(self, cell_incr):
-#        self._cell_increment = cell_incr
-    def add_cell_increment(self, cell_incr):
-        self._cell_increment.append(cell_incr)
 
     @property
     def supercell(self):
@@ -107,8 +80,8 @@ class GoldenRule(BaseProcess):
         transition_donor = (self.initial[0], self.final[0])
         transition_acceptor = (self.initial[1], self.final[1])
 
-        donor_vib_dos = self.donor.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
-        acceptor_vib_dos = self.acceptor.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
+        donor_vib_dos = self.initial[0].get_center().vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
+        acceptor_vib_dos = self.initial[1].get_center().vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
 
         # print(donor_vib_dos)
         info = str(hash(donor_vib_dos) + hash(acceptor_vib_dos))
@@ -126,11 +99,11 @@ class GoldenRule(BaseProcess):
 
     def get_electronic_coupling(self, conditions):
         # conditions will be deprecated
-        return self._coupling_function(self.donor, self.acceptor, conditions, self.supercell, self.cell_increment, **self.arguments)
+        return self._coupling_function(self.initial, self.final, conditions, self.supercell, self.cell_increment, **self.arguments)
 
     def get_rate_constant(self, conditions, supercell):
         e_coupling = self.get_electronic_coupling(conditions)
-        #spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
+        # spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
 
         spectral_overlap = self.get_fcwd()
 
@@ -150,7 +123,7 @@ class DirectRate(BaseProcess):
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     def get_rate_constant(self, conditions, supercell):
-        return self.rate_function(self.donor, self.acceptor, conditions, self.supercell, self.cell_increment)
+        return self.rate_function(self.initial, self.final, conditions, self.supercell, self.cell_increment)
 
 
 class DecayRate(BaseProcess):
@@ -166,4 +139,4 @@ class DecayRate(BaseProcess):
         self.rate_function = decay_rate_function
 
     def get_rate_constant(self, *args):
-        return self.rate_function(self.initial, self.final, self.donor, **self.arguments)
+        return self.rate_function(self.initial, self.final, **self.arguments)

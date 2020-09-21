@@ -6,7 +6,7 @@ from kimonet.utils.units import DEBYE_TO_ANGS_EL
 
 
 # Decay functions
-def einstein_radiative_decay(initial, final, molecule, g1=1, g2=1, transition_moment=None):
+def einstein_radiative_decay(initial, final, g1=1, g2=1, transition_moment=None):
     """
     Einstein radiative decay
 
@@ -18,7 +18,7 @@ def einstein_radiative_decay(initial, final, molecule, g1=1, g2=1, transition_mo
     """
     deexcitation_energy = initial[0].energy - final[0].energy
 
-    mu = np.array(transition_moment[Transition(_GS_, molecule.state)]) * DEBYE_TO_ANGS_EL
+    mu = np.array(transition_moment[Transition(initial[0], final[0])]) * DEBYE_TO_ANGS_EL
 
     mu2 = np.dot(mu, mu)  # transition moment norm.
     alpha = 1.0 / 137.036
