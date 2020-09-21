@@ -24,7 +24,6 @@ class Test1DFast(unittest.TestCase):
 
     def setUp(self):
 
-
         # custom decay functions
         def decay_rate(initial, final):
             rates = {'TypeA': 1 / 100,
@@ -36,8 +35,6 @@ class Test1DFast(unittest.TestCase):
         molecule = Molecule(decays=[DecayRate(initial_states=s1, final_states=gs,
                                               decay_rate_function=decay_rate,
                                               description='custom decay rate')],
-                            vibrations=MarcusModel(reorganization_energies={Transition(gs, s1, symmetric=False): 0.07,
-                                                                            Transition(s1, gs, symmetric=False): 0.07})
                             )
 
         molecule1 = molecule.copy()
@@ -124,7 +121,10 @@ class Test1DFast(unittest.TestCase):
                                                   electronic_coupling_function=forster_coupling,
                                                   description='Forster coupling',
                                                   arguments={'ref_index': 1,
-                                                             'transition_moment': {Transition(s1, gs): [0.01]}}
+                                                             'transition_moment': {Transition(s1, gs): [0.01]}},
+                                                  vibrations=MarcusModel(reorganization_energies={
+                                                      Transition(gs, s1, symmetric=False): 0.07,
+                                                      Transition(s1, gs, symmetric=False): 0.07})
                                                   )
                                        ]
 

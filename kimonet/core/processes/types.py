@@ -1,7 +1,7 @@
 from kimonet.core.processes.fcwd import general_fcwd
 from kimonet.utils.units import HBAR_PLANCK
 import numpy as np
-# from kimonet.system.vibrations import NoVibration
+from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
 from copy import deepcopy
 
@@ -71,17 +71,23 @@ class GoldenRule(BaseProcess):
                  electronic_coupling_function,
                  description='',
                  arguments=None,
+                 vibrations=NoVibration(),
                  ):
 
         self._coupling_function = electronic_coupling_function
+        self._vibrations = vibrations
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
+
+    @property
+    def vibrations(self):
+        return self._vibrations
 
     def get_fcwd(self):
         transition_donor = (self.initial[0], self.final[0])
         transition_acceptor = (self.initial[1], self.final[1])
 
-        donor_vib_dos = self.initial[0].get_center().vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
-        acceptor_vib_dos = self.initial[1].get_center().vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
+        donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
+        acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
 
         # print(donor_vib_dos)
         info = str(hash(donor_vib_dos) + hash(acceptor_vib_dos))

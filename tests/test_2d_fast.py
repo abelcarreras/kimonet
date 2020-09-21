@@ -31,11 +31,7 @@ class Test1DFast(unittest.TestCase):
                                   description='singlet_radiative_decay')
                         ]
 
-        molecule = Molecule(vibrations=MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
-                                                                            Transition(gs, s1, symmetric=False): 0.08},
-                                                   temperature=300),  # Kelvin
-                            decays=decay_scheme,
-                            )
+        molecule = Molecule(decays=decay_scheme)
 
         # define system as a crystal
         self.system = crystal_system(conditions={'refractive_index': 1},
@@ -55,12 +51,17 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
+        marcus = MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
+                                                      Transition(gs, s1, symmetric=False): 0.08},
+                             temperature=300)  # Kelvin
+
         # list of transfer functions by state
         self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                   electronic_coupling_function=forster_coupling_extended,
                                                   description='Forster',
                                                   arguments={'ref_index': 2, 'longitude': 2, 'n_divisions': 30,
-                                                             'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}  # Debye
+                                                             'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
+                                                  vibrations=marcus
                                                   )]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom

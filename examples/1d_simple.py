@@ -10,19 +10,22 @@ from kimonet.core.processes.types import Transition
 
 
 # custom transfer functions
-def transfer_rate(donor, acceptor, conditions, supercell, cell_increment):
-    distance = np.linalg.norm(intermolecular_vector(donor, acceptor, supercell, cell_increment))
+def transfer_rate(initial, final, conditions, supercell, cell_increment):
+    distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
+                                                    final[1].get_center(),
+                                                    supercell,
+                                                    cell_increment))
     constant = conditions['custom_constant']
 
     return constant/distance**2
 
 
 # custom decay functions
-def decay_rate(initial_state, final_state, molecule):
-    rates = {'TypeA': 1/100,
-             'TypeB': 1/50,
-             'TypeC': 1/25}
-    return rates[molecule.name]
+def decay_rate(initial, final):
+    rates = {'TypeA': 1 / 100,
+             'TypeB': 1 / 50,
+             'TypeC': 1 / 25}
+    return rates[initial[0].get_center().name]
 
 
 # states list

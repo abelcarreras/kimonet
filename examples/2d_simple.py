@@ -17,17 +17,25 @@ import numpy as np
 
 
 # states list
-# gs = State(label='gs', energy=0.0, multiplicity=1)
+gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 # transition moments
 transition_moment = {Transition(s1, gs): [0.1, 0.0]}
 
+# vibration model
+marcus = MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
+                                              Transition(gs, s1, symmetric=False): 0.08},
+                     temperature=300)  # Kelvin
+
+
 # list of transfer functions by state
 transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                               electronic_coupling_function=forster_coupling,
                               arguments={'transition_moment': transition_moment},
-                              description='Forster')
+                              description='Forster',
+                              vibrations=marcus
+                              )
                    ]
 # list of decay functions by state
 decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
@@ -36,12 +44,7 @@ decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
                           description='singlet_radiative_decay')
                 ]
 
-molecule = Molecule(vibrations=MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
-                                                                    Transition(gs, s1, symmetric=False): 0.08},
-                                           temperature=300),  # Kelvin
-                    # transition_moment={},  # Debye
-                    decays=decay_scheme,
-                    )
+molecule = Molecule(decays=decay_scheme)
 
 
 # physical conditions of the system

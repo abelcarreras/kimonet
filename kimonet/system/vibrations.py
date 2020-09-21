@@ -3,7 +3,6 @@ import warnings
 from kimonet.utils.units import BOLTZMANN_CONSTANT, HBAR_PLANCK
 import scipy.integrate as integrate
 import scipy.interpolate as interpolate
-from kimonet.core.processes.types import Transition
 
 
 class MarcusModel:

@@ -12,7 +12,7 @@ class Molecule:
     def __init__(self,
                  # states,  # eV
                  transition_moment={},  # Debye
-                 vibrations=NoVibration(),
+                 # vibrations=NoVibration(),
                  name=None,
                  decays=(),
                  state=_GS_,
@@ -38,7 +38,7 @@ class Molecule:
         self.orientation = np.array(orientation)
         self.cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
-        self.vibrations = vibrations
+        #self.vibrations = vibrations
         self.name = name
 
         state.add_molecule(self)
@@ -56,8 +56,7 @@ class Molecule:
         return hash((self._state,
                      # str(self.reorganization_energies),
                      np.array2string(self._coordinates, precision=12),
-                     np.array2string(self.orientation, precision=12))) + \
-               hash(self.vibrations)
+                     np.array2string(self.orientation, precision=12)))
 
     def get_vdw_radius(self):
         return self.vdw_radius
@@ -96,8 +95,8 @@ class Molecule:
     def get_state_energy(self):
         return self._state.energy
 
-    def get_vib_dos(self, transition):
-        return self.vibrations.get_vib_spectrum(transition)
+#    def get_vib_dos(self, transition):
+#        return self.vibrations.get_vib_spectrum(transition)
 
     def decay_rates(self):
         """
