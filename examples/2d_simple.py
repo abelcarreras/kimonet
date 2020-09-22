@@ -44,7 +44,7 @@ decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
                           description='singlet_radiative_decay')
                 ]
 
-molecule = Molecule(decays=decay_scheme)
+molecule = Molecule()
 
 
 # physical conditions of the system
@@ -65,6 +65,8 @@ system.add_excitation_index(s1, 1)
 
 # set additional system parameters
 system.transfer_scheme = transfer_scheme
+system.decay_scheme = decay_scheme
+
 system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
 
 # some system analyze functions

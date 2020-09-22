@@ -96,9 +96,11 @@ def system_test_info(system):
             if isinstance(proc, (GoldenRule, DirectRate)):
                 position_a = proc.initial[1].get_center().get_coordinates()
 
+                cell_increment = np.array(proc.final[0].get_center().cell_state) - np.array(proc.initial[1].get_center().cell_state)
+
                 distance = np.linalg.norm(distance_vector_periodic(position_a - position_d,
                                                                    system.supercell,
-                                                                   proc.cell_increment[0]))
+                                                                   cell_increment))
                 print('Distance: ', distance, 'angs')
 
             if isinstance(proc, GoldenRule):

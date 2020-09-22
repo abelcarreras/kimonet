@@ -20,6 +20,29 @@ gs = State(label=gs.label, energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
+# custom transfer function
+def transfer_rate(initial, final, conditions, supercell, cell_increment):
+
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+
+    distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
+                                                    initial[1].get_center(),
+                                                    supercell,
+                                                    cell_increment))
+
+    constant = conditions['custom_constant']
+
+    return constant / distance ** 2
+
+
+# custom decay function
+def decay_rate(initial, final):
+    rates = {'TypeA': 1 / 100,
+             'TypeB': 1 / 50,
+             'TypeC': 1 / 25}
+    return rates[initial[0].get_center().name]
+
+
 class Test1DFast(unittest.TestCase):
 
     def setUp(self):
@@ -60,21 +83,17 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-        # custom transfer functions
-        def transfer_rate(initial, final, conditions, supercell, cell_increment):
-            distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
-                                                            final[1].get_center(),
-                                                            supercell,
-                                                            cell_increment))
-
-            constant = conditions['custom_constant']
-
-            return constant / distance ** 2
+        # custom decay functions
 
         # set additional system parameters
         self.system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
                                                   rate_constant_function=transfer_rate,
                                                   description='custom')]
+
+        self.system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
+                                              decay_rate_function=decay_rate,
+                                              description='custom decay rate')]
+
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
         # some system analyze functions
@@ -127,6 +146,10 @@ class Test1DFast(unittest.TestCase):
                                                       Transition(s1, gs, symmetric=False): 0.07})
                                                   )
                                        ]
+
+        self.system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
+                                              decay_rate_function=decay_rate,
+                                              description='custom decay rate')]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 

@@ -10,9 +10,14 @@ from kimonet.core.processes.types import Transition
 
 
 # custom transfer functions
-def transfer_rate(initial, final, conditions, supercell, cell_increment):
+def transfer_rate(initial, final, conditions, supercell):
+
+    print(supercell)
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+
+
     distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
-                                                    final[1].get_center(),
+                                                    initial[1].get_center(),
                                                     supercell,
                                                     cell_increment))
     constant = conditions['custom_constant']
@@ -35,14 +40,7 @@ s1 = State(label='s1', energy=1.0, multiplicity=1, size=2)
 s2 = State(label='s2', energy=1.5, multiplicity=1)
 
 # setup molecules
-molecule = Molecule(decays=[DecayRate(initial_states=s1, final_states=gs,  # TO SYSTEM
-                                      decay_rate_function=decay_rate,
-                                      description='custom decay rate'),
-                            DecayRate(initial_states=s2, final_states=gs,  # TO SYSTEM
-                                      decay_rate_function=decay_rate,
-                                      description='custom decay rate')
-                            ],
-                    )
+molecule = Molecule()
 
 molecule1 = molecule.copy()
 molecule1.set_coordinates([0])
@@ -76,6 +74,15 @@ system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, 
                                      rate_constant_function=transfer_rate,
                                      description='custom'),
                           ]
+
+system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,  # TO SYSTEM
+                                 decay_rate_function=decay_rate,
+                                 description='custom decay rate'),
+                       DecayRate(initial_states=s2, final_states=gs,  # TO SYSTEM
+                                 decay_rate_function=decay_rate,
+                                 description='custom decay rate')
+                       ]
+
 system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
 # some system analyze functions

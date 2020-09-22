@@ -37,8 +37,10 @@ def forster_coupling(initial, final, conditions, supercell, cell_incr, ref_index
 
     function_name = inspect.currentframe().f_code.co_name
 
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+
     # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
@@ -52,7 +54,8 @@ def forster_coupling(initial, final, conditions, supercell, cell_incr, ref_index
     # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
     # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
+
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment) # position vector between donor and acceptor
 
     coupling_data[hash_string] = forster.dipole(mu_d, mu_a, r_vector, n=ref_index)
     distance = np.linalg.norm(r_vector)
@@ -86,8 +89,10 @@ def forster_coupling_py(initial, final, conditions, supercell, cell_incr, ref_in
 
     function_name = inspect.currentframe().f_code.co_name
 
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+
     # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
@@ -102,7 +107,7 @@ def forster_coupling_py(initial, final, conditions, supercell, cell_incr, ref_in
     # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
     # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr) # position vector between donor and acceptor
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment) # position vector between donor and acceptor
 
     distance = np.linalg.norm(r_vector)
 
@@ -135,8 +140,10 @@ def forster_coupling_extended(initial, final, conditions, supercell, cell_incr, 
 
     function_name = inspect.currentframe().f_code.co_name
 
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+
     # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
     if hash_string in coupling_data:
@@ -151,7 +158,7 @@ def forster_coupling_extended(initial, final, conditions, supercell, cell_incr, 
     # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
     # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment)  # position vector between donor and acceptor
 
     coupling_data[hash_string] = forster.dipole_extended(r_vector, mu_a, mu_d,
                                                          n=ref_index,
@@ -181,8 +188,10 @@ def forster_coupling_extended_py(initial, final, conditions, supercell, cell_inc
 
     function_name = inspect.currentframe().f_code.co_name
 
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+
     # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
     # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
 
     if hash_string in coupling_data:
@@ -200,7 +209,7 @@ def forster_coupling_extended_py(initial, final, conditions, supercell, cell_inc
 
     # ref_index = conditions['refractive_index']                      # refractive index of the material
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)  # position vector between donor and acceptor
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment)  # position vector between donor and acceptor
 
     mu_ai = mu_a / n_divisions
     mu_di = mu_d / n_divisions
@@ -236,7 +245,7 @@ def intermolecular_vector(donor, acceptor, supercell, cell_incr):
     position_d = donor.get_coordinates()
     position_a = acceptor.get_coordinates()
     r_vector = position_a - position_d
-    r = distance_vector_periodic(r_vector, supercell, cell_incr[0])
+    r = distance_vector_periodic(r_vector, supercell, cell_incr)
     return r
 
 

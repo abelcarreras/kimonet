@@ -12,6 +12,7 @@ class System:
                  conditions,
                  supercell,
                  transfers=None,
+                 decays=None,
                  cutoff_radius=10):
 
         self.molecules = molecules
@@ -21,6 +22,8 @@ class System:
         self.is_finished = False
 
         self.transfer_scheme = transfers if transfers is not None else {}
+        self.decay_scheme = decays if decays is not None else {}
+
         self._cutoff_radius = cutoff_radius
 
         # search for states
