@@ -70,7 +70,6 @@ def get_allowed_processes(donor, acceptor, transfer_scheme, cell_incr):
     :param acceptor: Molecule class instance
     :return: Dictionary with the allowed coupling functions
     """
-    # print('allowedTrans', donor.state, acceptor.state)
 
     allowed_couplings = []
     for coupling in transfer_scheme:

@@ -55,10 +55,7 @@ class Test1DFast(unittest.TestCase):
             return rates[initial[0].get_center().name]
 
         # setup molecules
-        molecule = Molecule(decays=[DecayRate(initial_states=s1, final_states=gs,
-                                              decay_rate_function=decay_rate,
-                                              description='custom decay rate')],
-                            )
+        molecule = Molecule()
 
         molecule1 = molecule.copy()
         molecule1.set_coordinates([0])
