@@ -19,7 +19,7 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
                ) + np.array2string(np.array(supercell), precision=12) + np.array2string(np.array(cell_incr, dtype=int))
 
 
-def forster_coupling(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
+def forster_coupling(initial, final, conditions, supercell, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
     Only works for 1 molecule states
@@ -72,7 +72,7 @@ def forster_coupling(initial, final, conditions, supercell, cell_incr, ref_index
     return forster_coupling
 
 
-def forster_coupling_py(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None):
+def forster_coupling_py(initial, final, conditions, supercell, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
 
@@ -120,7 +120,7 @@ def forster_coupling_py(initial, final, conditions, supercell, cell_incr, ref_in
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
+def forster_coupling_extended(initial, final, conditions, supercell, ref_index=1, transition_moment=None,
                               longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
@@ -168,7 +168,7 @@ def forster_coupling_extended(initial, final, conditions, supercell, cell_incr, 
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended_py(initial, final, conditions, supercell, cell_incr, ref_index=1, transition_moment=None,
+def forster_coupling_extended_py(initial, final, conditions, supercell, ref_index=1, transition_moment=None,
                                  longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV (pure python version)
@@ -275,7 +275,7 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 
-def dexter_coupling(donor, acceptor, conditions, supercell, cell_incr):
+def dexter_coupling(initial, final, conditions, supercell):
     """
     Compute Dexter coupling in eV
 
@@ -288,15 +288,17 @@ def dexter_coupling(donor, acceptor, conditions, supercell, cell_incr):
 
     function_name = inspect.currentframe().f_code.co_name
 
-    # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr)
+    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+    donor = initial[0].get_center()
+    acceptor = initial[1].get_center()
 
-    # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
+    # donor <-> acceptor interaction symmetry
+    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_incr)       # position vector between donor and acceptor
+    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment)       # position vector between donor and acceptor
 
     distance = np.linalg.norm(r_vector)
 
@@ -307,15 +309,4 @@ def dexter_coupling(donor, acceptor, conditions, supercell, cell_incr):
     coupling_data[hash_string] = dexter_coupling                            # memory update for new couplings
 
     return dexter_coupling
-
-
-if __name__ == '__main__':
-    import kimonet.core.processes.forster as forster
-    # help(forster.dipole)
-
-    #a = forster.dipole([1, 2, 3],[1., 2., 3.], 4)
-    #print(a)
-    #print('\n')
-    #print('Original:', orientation_factor([1., 2., 3],[4., 2., 3.], [1., 7., 3.]))
-    #print('C function: ', forster.dipole_extended([1., 2., 3.],[4., 2., 3.], [1., 7., 3.]))
 

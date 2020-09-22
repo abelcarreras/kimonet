@@ -105,7 +105,7 @@ class GoldenRule(BaseProcess):
 
     def get_electronic_coupling(self, conditions):
         # conditions will be deprecated
-        return self._coupling_function(self.initial, self.final, conditions, self.supercell, self.cell_increment, **self.arguments)
+        return self._coupling_function(self.initial, self.final, conditions, self.supercell, **self.arguments)
 
     def get_rate_constant(self, conditions, supercell):
         e_coupling = self.get_electronic_coupling(conditions)
@@ -129,7 +129,7 @@ class DirectRate(BaseProcess):
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     def get_rate_constant(self, conditions, supercell):
-        return self.rate_function(self.initial, self.final, conditions, self.supercell, self.cell_increment)
+        return self.rate_function(self.initial, self.final, conditions, self.supercell)
 
 
 class DecayRate(BaseProcess):

@@ -21,7 +21,7 @@ s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
 # custom transfer function
-def transfer_rate(initial, final, conditions, supercell, cell_increment):
+def transfer_rate(initial, final, conditions, supercell):
 
     cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
 

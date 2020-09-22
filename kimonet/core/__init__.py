@@ -73,14 +73,7 @@ def system_test_info(system):
 
         process_list = get_processes(state, system)
         total_r = 0
-        for p in process_list:
-            proc = p#['process']
-            print('proc: ', proc)
-            #exit()
-            # print('{}'.format(p))
-            #print('Process: {}'.format(proc))
-            #print('donor: ', proc.acceptor)
-            print()
+        for proc in process_list:
 
             i_donor = system.get_molecule_index(proc.initial[0].get_center())
             try:
@@ -102,9 +95,9 @@ def system_test_info(system):
                                                                    system.supercell,
                                                                    cell_increment))
                 print('Distance: ', distance, 'angs')
+                print('Cell_increment: {} '.format(cell_increment))
 
             if isinstance(proc, GoldenRule):
-                print('Cell_increment: {} '.format(proc.cell_increment))
 
                 spectral_overlap = proc.get_fcwd()
 

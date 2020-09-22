@@ -31,15 +31,12 @@ def get_transfer_rates(state, system):
 
     donor = state.get_center()
     neighbour_indexes, cell_increment = system.get_neighbours(donor)
-    # origin = system.get_molecule_index(donor)
 
     transfer_steps = []
     for acceptor, cell_incr in zip(neighbour_indexes, cell_increment):
         allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme, cell_incr)
 
         for process in allowed_processes:
-            # I don't like this very much
-            # process.add_cell_increment(cell_incr)  # TODO: cell_incr should be independent by molecule (dict?)
             process.supercell = system.supercell
             transfer_steps.append(process)
 
