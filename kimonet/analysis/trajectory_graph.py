@@ -68,9 +68,9 @@ class TrajectoryGraph:
 
         for i, state in enumerate(system.get_states()):
             self.graph.add_node(i,
-                                coordinates=[list(state.get_center().get_coordinates())],
+                                coordinates=[list(state.get_coordinates())],
                                 state=state.label,
-                                cell_state=[list(state.get_center().cell_state)],
+                                cell_state=[list(state.cell_state)],
                                 time=[0],
                                 event_time=0,
                                 index=[system.get_molecule_index(state.get_center())],
@@ -106,16 +106,15 @@ class TrajectoryGraph:
 
     def _add_node(self, from_node, new_on_molecule, process_label=None):
 
-        if self.system.molecules[new_on_molecule].set_state(_GS_):
-            print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
-            exit()
+        #if self.system.molecules[new_on_molecule].set_state(_GS_):
+        #    print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
+        #    exit()
 
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
-                            coordinates=[list(self.system.molecules[new_on_molecule].get_coordinates())],
+                            coordinates=[list(self.system.molecules[new_on_molecule].state.get_coordinates())],
                             state=self.system.molecules[new_on_molecule].state.label,
-                            cell_state=[list(self.system.molecules[new_on_molecule].cell_state)],
-                            # cell_state=[[0, 0]],
+                            cell_state=[list(self.system.molecules[new_on_molecule].state.cell_state)],
                             time=[0],
                             event_time=self.times[-1],
                             index=[new_on_molecule],
@@ -138,9 +137,6 @@ class TrajectoryGraph:
         :param change_step: process occurred during time_step: {donor, process, acceptor}
         :param time_step: duration of the chosen process
         """
-        # print(change_step)
-        # print(self.system.molecules[change_step['donor']].get_coordinates(), self.system.molecules[change_step['acceptor']].get_coordinates())
-        # print(self.system.molecules[change_step['donor']].cell_state, self.system.molecules[change_step['acceptor']].cell_state)
 
         self.times.append(self.times[-1] + time_step)
 

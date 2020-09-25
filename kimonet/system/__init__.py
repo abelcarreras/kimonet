@@ -94,13 +94,34 @@ class System:
                     r_vec = distance_vector_periodic(coordinates - center_position, self.supercell, cell_increment)
                     if 0 < np.linalg.norm(r_vec) < radius:
                         neighbours.append(molecule)
-                        jumps.append(cell_increment)
+                        jumps.append(list(cell_increment))
 
-            jumps = np.array(jumps)
+            #jumps = np.array(jumps)
 
             self.neighbors['{}_{}'.format(ref_mol, radius)] = [neighbours, jumps]
 
         return self.neighbors['{}_{}'.format(ref_mol, radius)]
+
+    def get_state_neighbours(self, state):
+        assert state in self._states
+        list_mol = []
+        cell_change = []
+        list_states = []
+        for molecule in state.get_molecules():
+            list_mol += self.get_neighbours(molecule)[0]
+            cell_change += list(self.get_neighbours(molecule)[1])
+            print(self.get_neighbours(molecule)[1])
+
+        # remove self
+        for i, molecule in enumerate(state.get_molecules()):
+            if molecule in list_mol:
+                list_mol.remove(molecule)
+                del cell_change[i]
+
+        for molecule in list_mol:
+            list_states.append(molecule.state)
+
+        return cell_change, list_mol
 
     def get_molecule_index(self, molecule):
         return self.molecules.index(molecule)

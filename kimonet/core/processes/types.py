@@ -36,22 +36,12 @@ class BaseProcess:
         self.final = final_states
         self.description = description
         self.arguments = arguments if arguments is not None else {}
-        self._cell_increment = []
         self._supercell = None
 
 #    def __str__(self):
 #        return 'donor/acceptor : {} {}\n'.format(self.donor.state, self.acceptor.state) \
 #               + 'initial : {} {}\n'.format(self.initial[0], self.initial[1]) \
 #               + 'final : {} {}\n'.format(self.final[0], self.final[1])
-
-    def add_cell_increment(self, cell_incr):
-        self._cell_increment.append(cell_incr)
-
-    @property
-    def cell_increment(self):
-        if self._cell_increment is None:
-            raise Exception('No cell_increment set')
-        return self._cell_increment
 
     @property
     def supercell(self):
@@ -107,7 +97,7 @@ class GoldenRule(BaseProcess):
         # conditions will be deprecated
         return self._coupling_function(self.initial, self.final, conditions, self.supercell, **self.arguments)
 
-    def get_rate_constant(self, conditions, supercell):
+    def get_rate_constant(self, conditions, *args):
         e_coupling = self.get_electronic_coupling(conditions)
         # spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
 
@@ -128,7 +118,7 @@ class DirectRate(BaseProcess):
         self.rate_function = rate_constant_function
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
-    def get_rate_constant(self, conditions, supercell):
+    def get_rate_constant(self, conditions, *args):
         return self.rate_function(self.initial, self.final, conditions, self.supercell)
 
 

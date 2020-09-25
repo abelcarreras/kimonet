@@ -16,11 +16,41 @@ def get_processes(state, system):
                 rate_list: List with the respective rates
     """
 
+    # get_all_rates(state, system)
     transfer_processes = get_transfer_rates(state, system)
     decay_processes = get_decay_rates(state, system)
 
     return decay_processes + transfer_processes
 
+
+def get_all_rates(state, system):
+
+    total_processes = system.transfer_scheme + system.decay_scheme
+
+    for c, neigh in system.get_state_neighbours(state):
+        print(c, neigh)
+
+    #print('neight: ', neigh)
+    exit()
+    for proc in total_processes:
+        initial = proc.initial
+
+        for s in initial:
+            unique_mol = set()
+            for mol in s.get_molecules():
+                for neight in mol:
+                    unique_mol.add(neight)
+
+            for mol in s.get_molecules():
+                unique_mol.remove(mol)
+
+            print(list(unique_mol))
+            # list_mol = [system.get_neighbours(mol) for mol in ]
+
+
+
+    exit()
+    return None
 
 def get_transfer_rates(state, system):
     """
@@ -96,11 +126,20 @@ def get_allowed_processes(donor, acceptor, transfer_scheme, cell_incr):
             new_coupling.final[1].get_center().cell_state = donor_cell_state - cell_incr
             new_coupling.final[0].get_center().cell_state = acceptor_cell_state + cell_incr
 
+            acceptor_cell_state = new_coupling.final[1].cell_state
+            donor_cell_state = new_coupling.final[0].cell_state
+
+            new_coupling.final[1].cell_state = donor_cell_state - cell_incr
+            new_coupling.final[0].cell_state = acceptor_cell_state + cell_incr
+
             if new_coupling.final[0] == _GS_.label:
                 new_coupling.final[0].get_center().cell_state *= 0
+                new_coupling.final[0].cell_state *= 0
 
             if new_coupling.final[1] == _GS_.label:
                 new_coupling.final[1].get_center().cell_state *= 0
+                new_coupling.final[1].cell_state *= 0
+
 
             allowed_couplings.append(new_coupling)
 

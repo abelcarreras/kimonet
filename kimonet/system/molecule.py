@@ -43,7 +43,8 @@ class Molecule:
         return hash((self._state,
                      # str(self.reorganization_energies),
                      np.array2string(self._coordinates, precision=12),
-                     np.array2string(self.orientation, precision=12)))
+                     np.array2string(self.orientation, precision=12),
+                     np.array2string(self.cell_state, precision=12)))
 
     def get_vdw_radius(self):
         return self.vdw_radius
