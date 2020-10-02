@@ -70,10 +70,13 @@ class TrajectoryGraph:
             self.graph.add_node(i,
                                 coordinates=[list(state.get_coordinates())],
                                 state=state.label,
-                                cell_state=[list(state.cell_state)],
+                                #cell_state=[list(state.get_center().cell_state)],
+                                cell_state=[list(state.get_center().cell_state*0)],
                                 time=[0],
                                 event_time=0,
-                                index=[system.get_molecule_index(state.get_center())],
+                                #index=[system.get_molecule_index(state.get_center())],
+                                index=[id(state)],
+
                                 finished=False,
                                 )
 
@@ -104,30 +107,38 @@ class TrajectoryGraph:
             node['cell_state'].append(node['cell_state'][-1])
             node['finished'] = True
 
-    def _add_node(self, from_node, new_on_molecule, process_label=None):
+    def _add_node(self, from_node, new_on_state, process_label=None):
 
         #if self.system.molecules[new_on_molecule].set_state(_GS_):
         #    print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
-        #    exit()
+
+        exit()
 
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
-                            coordinates=[list(self.system.molecules[new_on_molecule].state.get_coordinates())],
-                            state=self.system.molecules[new_on_molecule].state.label,
-                            cell_state=[list(self.system.molecules[new_on_molecule].state.cell_state)],
+                            coordinates=[list(new_on_state.get_coordinates())],
+                            state=new_on_state.label,
+                            cell_state=[list(new_on_state.get_center().cell_state)],
                             time=[0],
                             event_time=self.times[-1],
-                            index=[new_on_molecule],
+                            index=[id(new_on_state)],
                             finished=False
                             )
         self.node_count += 1
 
-    def _append_to_node(self, on_node, add_molecule):
+    def _append_to_node(self, on_node, add_state):
         node = self.graph.nodes[on_node]
 
-        node['index'].append(add_molecule)
-        node['coordinates'].append(list(self.system.molecules[add_molecule].get_coordinates()))
-        node['cell_state'].append(list(self.system.molecules[add_molecule].cell_state))
+        add_molecule = self.system.get_molecule_index(add_state.get_center()) # TODO: Old method, to be removed
+        # print('cell_state: ', add_state.get_center().cell_state, add_state.cell_state)
+
+        node['index'].append(id(add_state))
+        #node['coordinates'].append(list(add_state.get_coordinates_2()))
+        #node['cell_state'].append(list(add_state.get_center().cell_state_2))
+
+        node['coordinates'].append(list(add_state.get_coordinates_absolute(self.supercell)))
+        node['cell_state'].append(list(add_state.get_center().cell_state*0))  # TODO: This entry will be removed
+
         node['time'].append(self.times[-1] - node['event_time'])
 
     def add_step(self, change_step, time_step, system):
@@ -145,7 +156,7 @@ class TrajectoryGraph:
 
         process = change_step
         # print('proc: ', process)
-        #print(process.donor, process.acceptor)
+        # print(process.donor, process.acceptor)
 
         donor_index = system.get_molecule_index(process.initial[0].get_center())
         try:
@@ -158,10 +169,11 @@ class TrajectoryGraph:
         node_link = {'donor': None, 'acceptor': None}
         for inode in end_points:
             node = self.graph.nodes[inode]
-            if node['index'][-1] == change_step['donor']:
+            if node['index'][-1] == id(process.initial[0]):
                 node_link['donor'] = inode
-            if node['index'][-1] == change_step['acceptor']:
-                node_link['acceptor'] = inode
+            if len(process.initial) > 2:
+                if node['index'][-1] == id(process.initial[1]):
+                    node_link['acceptor'] = inode
 
         process = change_step['process']
 
@@ -170,10 +182,10 @@ class TrajectoryGraph:
             self._finish_node(node_link['donor'])
 
             # Check if not ground state
-            final_state = self.system.molecules[change_step['acceptor']].state.label
+            final_state = process.final[0].label
             if final_state != _GS_.label:
                 self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'],
+                               new_on_state=process.final[0],
                                process_label=process.description)
 
         else:
@@ -185,7 +197,7 @@ class TrajectoryGraph:
                 # Simple transfer
                 # print('C1')
                 self._append_to_node(on_node=node_link['donor'],
-                                     add_molecule=change_step['acceptor'])
+                                     add_state=process.final[1])
 
             elif (process.initial[0].label != process.final[1].label
                     and process.initial[0].label != _GS_.label and process.final[1].label != _GS_.label
@@ -275,7 +287,7 @@ class TrajectoryGraph:
                   and process.final[1].label != _GS_.label):
                 # s1, s2  ->  s3, s4
                 # Exciton double evolution
-                print('C7')
+                # print('C7')
                 self._finish_node(node_link['donor'])
                 self._finish_node(node_link['acceptor'])
 
@@ -650,6 +662,8 @@ class TrajectoryGraph2(TrajectoryGraph):
         Stores and analyzes the information of a kinetic MC trajectory
         system: system
         """
+
+        exit()
 
         self.node_count = len(system.get_states())
 

@@ -31,8 +31,17 @@ class State:
         return self._molecules_set[0]
 
     def get_coordinates(self):
-        return self.get_center().get_coordinates()
+        # print(self.get_center().get_coordinates())
+        return np.average([mol.get_coordinates() for mol in self.get_molecules()], axis=0)
 
+    def get_coordinates_absolute(self, supercell):
+
+        supercell = np.array(supercell)
+        coor_average = []
+        for mol in self.get_molecules():
+            coor_average.append(mol.get_coordinates() - np.dot(supercell.T, mol.cell_state + self.cell_state))
+
+        return np.average(coor_average, axis=0)
 
     def add_molecule(self, molecule):
         if not molecule in self._molecules_set:
@@ -40,9 +49,22 @@ class State:
             if self._cell_state is None:
                 self._cell_state = np.zeros_like(molecule.get_coordinates(), dtype=int)
 
+    def reorganize_cell(self):
+
+        cell_diff = np.array(np.average([np.array(mol.cell_state) for mol in self.get_molecules()], axis=0), dtype=int)
+
+        for mol in self.get_molecules():
+            mol.cell_state = np.array(mol.cell_state) - cell_diff
+
+        self.cell_state += cell_diff
+
     def remove_molecules(self):
         self._molecules_set = []
-        self._cell_state = None
+        # self._cell_state = None
+
+    def reset_molecules(self):
+        for mol in self.get_molecules():
+            mol.cell_state *= 0
 
     @property
     def label(self):
@@ -67,7 +89,7 @@ class State:
 
     @cell_state.setter
     def cell_state(self, c_state):
-        self._cell_state = c_state
+        self._cell_state = np.array(c_state)
 
 
 ground_state = State(label='gs', energy=0.0, multiplicity=1)

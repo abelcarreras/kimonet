@@ -50,7 +50,13 @@ def update_step(process, system):
             system.add_exciton(process.final[i])
 
         if False:
-            print('**** SYSTEM ****')
+            print('**** SYSTEM STATE ****')
+            for i, state in enumerate(system.get_states()):
+                print(i, state.label, state, state.cell_state)
+            print('****************')
+
+        if False:
+            print('**** SYSTEM MOL ****')
             for i, mol in enumerate(system.molecules):
                 print(i, mol.state.label, mol.state, mol.cell_state)
             print('****************')

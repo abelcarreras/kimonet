@@ -62,6 +62,13 @@ def get_transfer_rates(state, system):
     donor = state.get_center()
     neighbour_indexes, cell_increment = system.get_neighbours(donor)
 
+    if False:
+        print('**** SYSTEM STATE ****')
+        print('donor: ', donor.state.cell_state)
+        for i, state in enumerate(system.get_states()):
+            print(i, state.label, state, state.cell_state)
+        print('****************')
+
     transfer_steps = []
     for acceptor, cell_incr in zip(neighbour_indexes, cell_increment):
         allowed_processes = get_allowed_processes(donor, acceptor, system.transfer_scheme, cell_incr)
@@ -108,17 +115,28 @@ def get_allowed_processes(donor, acceptor, transfer_scheme, cell_incr):
 
             new_coupling.initial = (donor.state, acceptor.state)
 
+            for final in new_coupling.final:
+                final.cell_state = donor.state.cell_state * 0  # TODO: add better looking dimension independent zero set
+                for initial in new_coupling.initial:
+                    if initial.label == final.label and initial.label != _GS_.label:
+                        final.cell_state = initial.cell_state
+
+            # TODO: expand this to a arbitrary number of states
             new_coupling.initial[0].remove_molecules()
-            new_coupling.initial[1].remove_molecules()
             new_coupling.initial[0].add_molecule(donor)
+
+            new_coupling.initial[1].remove_molecules()
             new_coupling.initial[1].add_molecule(acceptor)
 
-            for i in range(2):
-                new_coupling.final[i].remove_molecules()
-                for mol in new_coupling.initial[i].get_molecules():
+            for initial, final in zip(new_coupling.initial, new_coupling.final):
+                final.remove_molecules()
+                for mol in initial.get_molecules():
                     mol2 = deepcopy(mol)
-                    mol2.set_state(new_coupling.final[i])
-                    new_coupling.final[i].add_molecule(mol2)
+                    mol2.set_state(final)
+                    final.add_molecule(mol2)
+
+
+            # print('initial', new_coupling.final[0].cell_state, new_coupling.final[1].cell_state)
 
             acceptor_cell_state = new_coupling.final[1].get_center().cell_state
             donor_cell_state = new_coupling.final[0].get_center().cell_state
@@ -126,20 +144,21 @@ def get_allowed_processes(donor, acceptor, transfer_scheme, cell_incr):
             new_coupling.final[1].get_center().cell_state = donor_cell_state - cell_incr
             new_coupling.final[0].get_center().cell_state = acceptor_cell_state + cell_incr
 
-            acceptor_cell_state = new_coupling.final[1].cell_state
-            donor_cell_state = new_coupling.final[0].cell_state
+            # TODO: To be removed in the future if multiexction systems work
+            #if new_coupling.final[0] == _GS_.label:
+            #    new_coupling.final[0].get_center().cell_state *= 0
 
-            new_coupling.final[1].cell_state = donor_cell_state - cell_incr
-            new_coupling.final[0].cell_state = acceptor_cell_state + cell_incr
+            #if new_coupling.final[1] == _GS_.label:
+            #    new_coupling.final[1].get_center().cell_state *= 0
 
-            if new_coupling.final[0] == _GS_.label:
-                new_coupling.final[0].get_center().cell_state *= 0
-                new_coupling.final[0].cell_state *= 0
+            for state in new_coupling.final:
+                if state.label != _GS_.label:
+                    state.reorganize_cell()
 
-            if new_coupling.final[1] == _GS_.label:
-                new_coupling.final[1].get_center().cell_state *= 0
-                new_coupling.final[1].cell_state *= 0
-
+            # print('final1', new_coupling.final[0].cell_state, new_coupling.final[1].cell_state)
+            # print('final2', new_coupling.final[0].get_center().cell_state, new_coupling.final[1].get_center().cell_state)
+            # print('final3', new_coupling.final[0].get_center().cell_state_2, new_coupling.final[1].get_center().cell_state_2)
+            # print('------------------------------')
 
             allowed_couplings.append(new_coupling)
 

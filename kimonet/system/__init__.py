@@ -165,6 +165,8 @@ class System:
                 mol.set_state(exciton)
 
             self._states.append(exciton)
+        else:
+            exciton.reset_molecules()
 
     def add_excitation_random(self, type, n):
         for i in range(n):

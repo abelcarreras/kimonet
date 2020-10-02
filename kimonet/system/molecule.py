@@ -19,8 +19,6 @@ class Molecule:
         """
         :param states_energies: dictionary {'state': energy} (eV)
         :param state: string containing the current state
-        :param transition_moment: Transition dipole moment dictionary (Debye)
-        :param vibrations: Vibrations object. This contains all the information about how to handle temperature dependence
         :param coordinates: the coordinates vector of the molecule within the system (Angstrom)
         :param orientation: 3d unit vector containing the orientation angles of the molecule defined in radiants respect X, Y and Z axes.
         """
@@ -32,7 +30,7 @@ class Molecule:
         self._state = state
         self._coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
-        self.cell_state = np.zeros_like(coordinates, dtype=int)
+        self._cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
         #self.vibrations = vibrations
         self.name = name
@@ -44,7 +42,7 @@ class Molecule:
                      # str(self.reorganization_energies),
                      np.array2string(self._coordinates, precision=12),
                      np.array2string(self.orientation, precision=12),
-                     np.array2string(self.cell_state, precision=12)))
+                     np.array2string(self._cell_state, precision=12)))
 
     def get_vdw_radius(self):
         return self.vdw_radius
@@ -58,7 +56,7 @@ class Molecule:
         :param coordinates: coordinate vector
         """
         self._coordinates = np.array(coordinates)
-        self.cell_state = np.zeros_like(self._coordinates, dtype=int)
+        self._cell_state = np.zeros_like(self._coordinates, dtype=int)
 
     def get_coordinates(self):
         """
@@ -83,9 +81,6 @@ class Molecule:
     def get_state_energy(self):
         return self._state.energy
 
-#    def get_vib_dos(self, transition):
-#        return self.vibrations.get_vib_spectrum(transition)
-
     def copy(self):
         """
         returns a deep copy of this molecule
@@ -109,3 +104,15 @@ class Molecule:
     @property
     def state(self):
         return self._state
+
+    @property
+    def cell_state(self):
+        return self._cell_state
+
+    @cell_state.setter
+    def cell_state(self, c_state):
+        self._cell_state = np.array(c_state)
+
+    @property
+    def cell_state_2(self):
+        return self._cell_state + self.state.cell_state
