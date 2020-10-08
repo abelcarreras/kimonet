@@ -1,17 +1,17 @@
 import numpy as np
 from kimonet.utils import rotate_vector
 import copy
-from kimonet.utils.units import DEBYE_TO_ANGS_EL
-from kimonet.system.vibrations import NoVibration
+#from kimonet.utils.units import DEBYE_TO_ANGS_EL
+#from kimonet.system.vibrations import NoVibration
 from kimonet.system.state import ground_state as _GS_
-from kimonet.core.processes.types import Transition
+#from kimonet.core.processes.types import Transition
 
 
 class Molecule:
 
     def __init__(self,
                  name=None,
-                 state=_GS_,
+                 state=_GS_.copy(),
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
@@ -32,17 +32,17 @@ class Molecule:
         self.orientation = np.array(orientation)
         self._cell_state = np.zeros_like(coordinates, dtype=int)
         self.vdw_radius = vdw_radius
-        #self.vibrations = vibrations
         self.name = name
 
         state.add_molecule(self)
 
     def __hash__(self):
-        return hash((self._state,
-                     # str(self.reorganization_energies),
+        return hash((self._state.label,
+                     self.name,
                      np.array2string(self._coordinates, precision=12),
                      np.array2string(self.orientation, precision=12),
                      np.array2string(self._cell_state, precision=12)))
+
 
     def get_vdw_radius(self):
         return self.vdw_radius

@@ -61,6 +61,8 @@ def get_transfer_rates(state, system):
 
     donor = state.get_center()
     neighbour_indexes, cell_increment = system.get_neighbours(donor)
+    # states, cell_increments = system.get_state_neighbours(donor.state)
+
 
     if False:
         print('**** SYSTEM STATE ****')

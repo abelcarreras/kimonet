@@ -102,26 +102,38 @@ class System:
 
         return self.neighbors['{}_{}'.format(ref_mol, radius)]
 
-    def get_state_neighbours(self, state):
-        assert state in self._states
-        list_mol = []
-        cell_change = []
-        list_states = []
-        for molecule in state.get_molecules():
-            list_mol += self.get_neighbours(molecule)[0]
-            cell_change += list(self.get_neighbours(molecule)[1])
-            print(self.get_neighbours(molecule)[1])
+    def get_state_neighbours(self, ref_state):
 
-        # remove self
-        for i, molecule in enumerate(state.get_molecules()):
-            if molecule in list_mol:
-                list_mol.remove(molecule)
-                del cell_change[i]
+        radius = self.cutoff_radius
+        center_position = ref_state.get_coordinates_relative(self.supercell)
 
-        for molecule in list_mol:
-            list_states.append(molecule.state)
+        def get_supercell_increments(supercell, radius):
+            # TODO: This function can be optimized as a function of the particular molecule coordinates
+            v = np.array(radius/np.linalg.norm(supercell, axis=1), dtype=int) + 1  # here extensive approximation
+            return list(itertools.product(*[range(-i, i+1) for i in v]))
 
-        return cell_change, list_mol
+        cell_increments = get_supercell_increments(self.supercell, radius)
+
+        neighbours = []
+        for state in self.get_ground_states():
+            coordinates = state.get_coordinates()
+            for cell_increment in cell_increments:
+                r_vec = distance_vector_periodic(coordinates - center_position, self.supercell, cell_increment)
+                if 0 < np.linalg.norm(r_vec) < radius:
+                    state = state.copy()
+                    state.cell_state = ref_state.cell_state + cell_increment
+                    neighbours.append(state)
+
+        return neighbours
+
+    def get_ground_states(self):
+
+        gs_list = []
+        for mol in self.molecules:
+            if (mol.state not in gs_list) and mol.state.label == _GS_.label:
+                gs_list.append(mol.state)
+
+        return gs_list
 
     def get_molecule_index(self, molecule):
         return self.molecules.index(molecule)
@@ -191,3 +203,47 @@ class System:
 
     def get_volume(self):
         return np.abs(np.linalg.det(self.supercell))
+
+
+if __name__ == '__main__':
+    from kimonet.system.state import State
+    from kimonet.system.molecule import Molecule
+
+    s1 = State(label='s1', energy=1.0, multiplicity=1)
+    molecule = Molecule()
+
+    molecule1 = molecule.copy()
+    molecule1.set_coordinates([0])
+    molecule1.name = 'TypeA'
+
+    molecule2 = molecule.copy()
+    molecule2.set_coordinates([1])
+    molecule2.name = 'TypeB'
+
+    molecule3 = molecule.copy()
+    molecule3.set_coordinates([2])
+    molecule3.name = 'TypeC'
+
+    # setup system
+    system = System(molecules=[molecule1, molecule2, molecule3],
+                    conditions={'custom_constant': 1},
+                    supercell=[[3]])
+
+    system.add_excitation_index(s1, 2)
+    print(system.get_ground_states())
+
+    s1 = system.get_states()[0]
+    print(s1, s1.label)
+    s_list = system.get_state_neighbours(s1)
+    for s in s_list:
+        print(s.label, s.get_coordinates_absolute(system.supercell))
+        # print(s.label, s.get_coordinates_absolute(system.supercell) - s1.get_center().get_coordinates())
+
+
+    print('----')
+    m_list = system.get_neighbours(s1.get_center())
+    print('m_list', m_list[0])
+    for m, c in np.array(m_list).T:
+        if m.state.label != 's1':
+            # print(np.array(system.supercell).T, c, np.dot(np.array(system.supercell).T, c))
+            print(m.state.label, m.state.get_coordinates() - np.dot(np.array(system.supercell).T, c))

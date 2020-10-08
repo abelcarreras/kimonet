@@ -10,7 +10,7 @@ from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
 from kimonet.system.state import ground_state as gs
-from kimonet.core.processes.types import Transition
+from kimonet.core.processes.transitions import Transition
 
 import unittest
 import numpy as np

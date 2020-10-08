@@ -2,7 +2,7 @@ import numpy as np
 from kimonet.utils import distance_vector_periodic
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
-from kimonet.core.processes.types import Transition
+from kimonet.core.processes.transitions import Transition
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 import kimonet.core.processes.forster as forster
 from kimonet.utils import rotate_vector

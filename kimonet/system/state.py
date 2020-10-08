@@ -15,9 +15,18 @@ class State:
         self._size = size
         self._molecules_set = molecules_list if molecules_list is not None else []
         self._cell_state = None
+        self.supercell = None
 
     def __hash__(self):
-        return hash((self._label, self._energy, self._multiplicity, self._size))
+        return hash((self._label,
+                     self._energy,
+                     self._multiplicity,
+                     self._size,
+                     str(self._cell_state),
+                     tuple(self.get_molecules())))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -33,6 +42,16 @@ class State:
     def get_coordinates(self):
         # print(self.get_center().get_coordinates())
         return np.average([mol.get_coordinates() for mol in self.get_molecules()], axis=0)
+
+    def get_coordinates_relative(self, supercell):
+
+        supercell = np.array(supercell)
+        coor_average = []
+        for mol in self.get_molecules():
+            coor_average.append(mol.get_coordinates() - np.dot(supercell.T, mol.cell_state))
+
+        return np.average(coor_average, axis=0)
+
 
     def get_coordinates_absolute(self, supercell):
 
@@ -99,3 +118,10 @@ if __name__ == '__main__':
     print('Test state')
     s = State(label='s1', energy=1.5, multiplicity=1)
     print(hash(s))
+    s2 = State(label='s1', energy=1.5, multiplicity=1)
+    s2.cell_state = [1, 2]
+    print(hash(s2))
+
+    print(s == s2)
+    print(s in [s])
+    print(s2 in [s])

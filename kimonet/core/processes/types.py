@@ -1,28 +1,11 @@
-from kimonet.core.processes.fcwd import general_fcwd
+#from kimonet.core.processes.fcwd import general_fcwd
 from kimonet.utils.units import HBAR_PLANCK
 import numpy as np
 from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
-from copy import deepcopy
+
 
 overlap_data = {}
-
-
-class Transition:
-    def __init__(self, state1, state2, symmetric=True):
-        self._state1 = state1
-        self._state2 = state2
-        self._symmetric = symmetric
-
-    def __hash__(self):
-        if self._symmetric:
-            return hash(self._state1) + hash(self._state2)
-        else:
-            return hash((self._state1, self._state2))
-
-    def __eq__(self, other):
-        return hash(self) == hash(other)
-
 
 class BaseProcess:
     def __init__(self,

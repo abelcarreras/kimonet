@@ -8,7 +8,7 @@ from kimonet.core.processes import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
 from kimonet.system.generators import regular_system, crystal_system
 from kimonet.system.state import ground_state
-from kimonet.core.processes.types import Transition
+from kimonet.core.processes.transitions import Transition
 
 import unittest
 import numpy as np

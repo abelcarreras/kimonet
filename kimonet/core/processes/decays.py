@@ -1,6 +1,6 @@
 import numpy as np
 from kimonet.utils.units import SPEED_OF_LIGHT, HBAR_PLANCK
-from kimonet.core.processes.types import Transition
+from kimonet.core.processes.transitions import Transition
 from kimonet.system.state import ground_state as _GS_
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 

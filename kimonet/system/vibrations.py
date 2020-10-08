@@ -3,6 +3,7 @@ import warnings
 from kimonet.utils.units import BOLTZMANN_CONSTANT, HBAR_PLANCK
 import scipy.integrate as integrate
 import scipy.interpolate as interpolate
+from kimonet.core.processes.transitions import Transition
 
 
 class MarcusModel:
@@ -35,7 +36,8 @@ class MarcusModel:
         elec_trans_ene = target_state.energy - origin_state.energy
 
         temp = self.temperature  # temperature (K)
-        reorg_ene = np.sum(self.reorganization_energies[(target_state, origin_state)])
+
+        reorg_ene = np.sum(self.reorganization_energies[Transition(target_state, origin_state, symmetric=False)])
 
         sign = np.sign(elec_trans_ene)
 
