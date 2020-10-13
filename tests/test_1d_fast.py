@@ -16,7 +16,7 @@ import unittest
 import numpy as np
 
 # states list
-gs = State(label=gs.label, energy=0.0, multiplicity=1)
+gs = gs.copy()
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
@@ -46,13 +46,6 @@ def decay_rate(initial, final):
 class Test1DFast(unittest.TestCase):
 
     def setUp(self):
-
-        # custom decay functions
-        def decay_rate(initial, final):
-            rates = {'TypeA': 1 / 100,
-                     'TypeB': 1 / 50,
-                     'TypeC': 1 / 25}
-            return rates[initial[0].get_center().name]
 
         # setup molecules
         molecule = Molecule()
@@ -149,6 +142,9 @@ class Test1DFast(unittest.TestCase):
                                               description='custom decay rate')]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
+
+        for mol in self.system.molecules:
+            print(mol.name)
 
         # some system analyze functions
         system_test_info(self.system)

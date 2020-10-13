@@ -83,6 +83,7 @@ class State:
 
     def reset_molecules(self):
         for mol in self.get_molecules():
+            # mol.set_state(self)
             mol.cell_state *= 0
 
     @property

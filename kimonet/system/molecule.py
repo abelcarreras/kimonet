@@ -34,6 +34,7 @@ class Molecule:
         self.vdw_radius = vdw_radius
         self.name = name
 
+        state.remove_molecules()
         state.add_molecule(self)
 
     def __hash__(self):
@@ -43,6 +44,8 @@ class Molecule:
                      np.array2string(self.orientation, precision=12),
                      np.array2string(self._cell_state, precision=12)))
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def get_vdw_radius(self):
         return self.vdw_radius

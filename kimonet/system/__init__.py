@@ -102,7 +102,7 @@ class System:
 
         return self.neighbors['{}_{}'.format(ref_mol, radius)]
 
-    def get_state_neighbours(self, ref_state):
+    def get_state_neighbors_copy(self, ref_state):
 
         radius = self.cutoff_radius
         center_position = ref_state.get_coordinates_relative(self.supercell)
@@ -125,6 +125,30 @@ class System:
                     neighbours.append(state)
 
         return neighbours
+
+    def get_state_neighbors(self, ref_state):
+
+        radius = self.cutoff_radius
+        center_position = ref_state.get_coordinates_relative(self.supercell)
+
+        def get_supercell_increments(supercell, radius):
+            # TODO: This function can be optimized as a function of the particular molecule coordinates
+            v = np.array(radius/np.linalg.norm(supercell, axis=1), dtype=int) + 1  # here extensive approximation
+            return list(itertools.product(*[range(-i, i+1) for i in v]))
+
+        cell_increments = get_supercell_increments(self.supercell, radius)
+
+        state_neighbors = []
+        state_cell_incr = []
+        for state in self.get_ground_states():
+            coordinates = state.get_coordinates()
+            for cell_increment in cell_increments:
+                r_vec = distance_vector_periodic(coordinates - center_position, self.supercell, cell_increment)
+                if 0 < np.linalg.norm(r_vec) < radius:
+                    state_neighbors.append(state)
+                    state_cell_incr.append(list(cell_increment))
+
+        return state_neighbors, state_cell_incr
 
     def get_ground_states(self):
 
@@ -234,16 +258,24 @@ if __name__ == '__main__':
 
     s1 = system.get_states()[0]
     print(s1, s1.label)
-    s_list = system.get_state_neighbours(s1)
+    s_list = system.get_state_neighbors_copy(s1)
     for s in s_list:
         print(s.label, s.get_coordinates_absolute(system.supercell))
         # print(s.label, s.get_coordinates_absolute(system.supercell) - s1.get_center().get_coordinates())
 
+    print('----')
+
+
+    s_list, c_list = system.get_state_neighbors(s1)
+    for s, c in zip(s_list, c_list):
+        print(s.label, s.get_coordinates_absolute(system.supercell) - np.dot(np.array(system.supercell).T, c), state.get_center().name)
+        # print(s.label, s.get_coordinates_absolute(system.supercell) - s1.get_center().get_coordinates())
+
 
     print('----')
-    m_list = system.get_neighbours(s1.get_center())
-    print('m_list', m_list[0])
-    for m, c in np.array(m_list).T:
+    m_list, c_list = system.get_neighbours(s1.get_center())
+    print('m_list', m_list)
+    for m, c in zip(m_list, c_list):
         if m.state.label != 's1':
             # print(np.array(system.supercell).T, c, np.dot(np.array(system.supercell).T, c))
-            print(m.state.label, m.state.get_coordinates() - np.dot(np.array(system.supercell).T, c))
+            print(m.state.label, m.state.get_coordinates() - np.dot(np.array(system.supercell).T, c), m.state.get_center().name)

@@ -12,6 +12,12 @@ def do_simulation_step(system):
     :return: the chosen process
     """
 
+    if False:
+        print('**** SYSTEM STATE ****')
+        for i, mol in enumerate(system.molecules):
+            print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
+        print('****************')
+
     process_collector = []                          # list with the respective processes (for all centers)
     for state in system.get_states():
         process_collector += get_processes(state, system)
@@ -36,6 +42,79 @@ def update_step(process, system):
     :param process: instance of Process object containing all the information of the chosen process
     """
 
+    #print('**** SYSTEM INI STATE ****')
+    #for i, state in enumerate(system.get_states()):
+    #    print(i, state.label, state, state.cell_state, state.get_molecules())
+    #print('****************')
+
+    try:
+        #print(process.initial[0].get_molecules(), process.initial[1].get_molecules())
+        #print(process.final_test[0].get_molecules(), process.final_test[1].get_molecules())
+        #print(process.initial[0].label, process.initial[1].label)
+        #print(process.final_test[0].label, process.final_test[1].label)
+
+        #print(process.cell_states[process.initial[0].get_molecules()[0]])
+        #print(process.cell_states[process.final_test[1].get_molecules()[0]])
+        pass
+
+    except:
+        pass
+
+    if True:
+        #print('dic', process.cell_states)
+        n_dim = len(process.initial)
+        for i in range(n_dim):
+            system.remove_exciton(process.initial[i])
+            #print('remove', process.initial[i].label, process.initial[i].get_molecules())
+            for mol in process.final_test[i].get_molecules():
+                if process.final_test[i].label != _GS_.label:
+                    #print('mol', mol, process.cell_states, mol in process.cell_states)
+                    mol.cell_state = process.cell_states[mol]
+                mol.set_state(process.final_test[i])
+
+            #print('add', process.final_test[i].label, process.final_test[i].get_molecules())
+            system.add_exciton(process.final_test[i])
+
+        process.final = process.final_test
+
+        print('**** SYSTEM FIN STATE ****')
+        for i, state in enumerate(system.get_states()):
+            print(i, state.label, state, state.cell_state, state.get_molecules())
+        print('****************')
+
+        return
+
+
+    if isinstance(process, (GoldenRule, DirectRate, DecayRate)):
+        n_dim = len(process.initial)
+        for i in range(n_dim):
+            system.remove_exciton(process.initial[i])
+            for molecule_t, molecule_o in zip(process.initial[i].get_molecules(), process.final[i].get_molecules()):
+                molecule_t.set_state(molecule_o.state)
+                molecule_t.cell_state = molecule_o.cell_state
+                print(molecule_t.cell_state)
+
+            process.final[i]._molecules_set = process.initial[i].get_molecules()
+            system.add_exciton(process.final[i])
+
+    else:
+        raise Exception('Process type not recognized')
+
+
+    print('**** SYSTEM FIN STATE ****')
+    for i, state in enumerate(system.get_states()):
+        print(i, state.label, state, state.cell_state, state.get_molecules())
+    print('****************')
+
+
+
+def update_step_2(process, system):
+    """
+    Gets the data in process object and updates the system accordingly
+
+    :param process: instance of Process object containing all the information of the chosen process
+    """
+
     if isinstance(process, (GoldenRule, DirectRate, DecayRate)):
 
         n_dim = len(process.initial)
@@ -48,6 +127,11 @@ def update_step(process, system):
 
             process.final[i]._molecules_set = process.initial[i].get_molecules()
             system.add_exciton(process.final[i])
+
+            for mol in process.final[i].get_molecules():
+                print(mol.state.label)
+                print(process.cell_states)
+                print('->', mol.cell_state)
 
         if False:
             print('**** SYSTEM STATE ****')

@@ -3,7 +3,7 @@ from kimonet.utils.units import HBAR_PLANCK
 import numpy as np
 from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
-
+from copy import deepcopy
 
 overlap_data = {}
 
@@ -17,7 +17,10 @@ class BaseProcess:
 
         self.initial = initial_states
         self.final = final_states
+        self.final_test = deepcopy(final_states)
+
         self.description = description
+        self.cell_states = {}
         self.arguments = arguments if arguments is not None else {}
         self._supercell = None
 
@@ -25,6 +28,21 @@ class BaseProcess:
 #        return 'donor/acceptor : {} {}\n'.format(self.donor.state, self.acceptor.state) \
 #               + 'initial : {} {}\n'.format(self.initial[0], self.initial[1]) \
 #               + 'final : {} {}\n'.format(self.final[0], self.final[1])
+
+    #@property
+    #def final(self):
+    #    new_final = deepcopy(self.final_test)
+    #    for nf in new_final:
+    #        for mol in nf.get_molecules():
+    #            mol.cell_state = self.cell_states[mol]
+    #            mol.set_state(nf)
+
+    #    return new_final
+
+    #@final.setter
+    #def final(self, final):
+    #    self._final = final
+
 
     @property
     def supercell(self):
