@@ -228,6 +228,16 @@ class System:
     def get_volume(self):
         return np.abs(np.linalg.det(self.supercell))
 
+    def update(self, process):
+        for initial, final in zip(process.initial, process.final_test):
+            self.remove_exciton(initial)
+            for mol in final.get_molecules():
+                if final.label != _GS_.label:
+                    mol.cell_state = process.cell_states[mol]
+                mol.set_state(final)
+            self.add_exciton(final)
+
+        process.reset_cell_states()
 
 if __name__ == '__main__':
     from kimonet.system.state import State

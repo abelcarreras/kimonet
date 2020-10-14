@@ -4,6 +4,8 @@ import numpy as np
 from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
 from copy import deepcopy
+from kimonet.system.state import ground_state as _GS_
+
 
 overlap_data = {}
 
@@ -16,7 +18,7 @@ class BaseProcess:
                  ):
 
         self.initial = initial_states
-        self.final = final_states
+        self._final = final_states
         self.final_test = deepcopy(final_states)
 
         self.description = description
@@ -29,19 +31,18 @@ class BaseProcess:
 #               + 'initial : {} {}\n'.format(self.initial[0], self.initial[1]) \
 #               + 'final : {} {}\n'.format(self.final[0], self.final[1])
 
-    #@property
-    #def final(self):
-    #    new_final = deepcopy(self.final_test)
-    #    for nf in new_final:
-    #        for mol in nf.get_molecules():
-    #            mol.cell_state = self.cell_states[mol]
-    #            mol.set_state(nf)
+    @property
+    def final(self):
+        new_final = deepcopy(self.final_test)
+        for state in new_final:
+            for mol in state.get_molecules():
+                mol.cell_state = self.cell_states[mol]
+                mol.set_state(state)
+        return new_final
 
-    #    return new_final
-
-    #@final.setter
-    #def final(self, final):
-    #    self._final = final
+    @final.setter
+    def final(self, final):
+        self._final = final
 
 
     @property
@@ -53,6 +54,12 @@ class BaseProcess:
     @supercell.setter
     def supercell(self, cell):
         self._supercell = cell
+
+    def reset_cell_states(self):
+        self.cell_states.clear()
+        for state in self.final_test:
+            for mol in state.get_molecules():
+                self.cell_states[mol] = np.zeros(mol.get_dim())
 
 
 class GoldenRule(BaseProcess):

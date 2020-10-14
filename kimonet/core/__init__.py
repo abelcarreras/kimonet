@@ -1,7 +1,8 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes
 from kimonet.core.processes import GoldenRule, DirectRate, DecayRate
-from kimonet.system.state import ground_state as _GS_
+from kimonet.utils import distance_vector_periodic
+import numpy as np
 
 import warnings
 
@@ -9,11 +10,11 @@ import warnings
 def do_simulation_step(system):
     """
     :param system: system object
-    :return: the chosen process
+    :return: the chosen process and time
     """
 
     if False:
-        print('**** SYSTEM STATE ****')
+        print('**** SYSTEM STATE INITIAL ****')
         for i, mol in enumerate(system.molecules):
             print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
         print('****************')
@@ -28,135 +29,18 @@ def do_simulation_step(system):
         return None, 0
     chosen_process, time = kmc_algorithm(process_collector, system)
 
-    # chooses one of the processes and gives it a duration using the Kinetic Monte-Carlo algorithm
-    update_step(chosen_process, system)        # updates both lists according to the chosen process
+    system.update(chosen_process)
 
-    # finally the chosen process and the advanced time are returned
+    if False:
+        print('**** SYSTEM STATE FINAL ****')
+        for i, mol in enumerate(system.molecules):
+            print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
+        print('****************')
+
     return chosen_process, time
 
 
-def update_step(process, system):
-    """
-    Gets the data in process object and updates the system accordingly
-
-    :param process: instance of Process object containing all the information of the chosen process
-    """
-
-    #print('**** SYSTEM INI STATE ****')
-    #for i, state in enumerate(system.get_states()):
-    #    print(i, state.label, state, state.cell_state, state.get_molecules())
-    #print('****************')
-
-    try:
-        #print(process.initial[0].get_molecules(), process.initial[1].get_molecules())
-        #print(process.final_test[0].get_molecules(), process.final_test[1].get_molecules())
-        #print(process.initial[0].label, process.initial[1].label)
-        #print(process.final_test[0].label, process.final_test[1].label)
-
-        #print(process.cell_states[process.initial[0].get_molecules()[0]])
-        #print(process.cell_states[process.final_test[1].get_molecules()[0]])
-        pass
-
-    except:
-        pass
-
-    if True:
-        #print('dic', process.cell_states)
-        n_dim = len(process.initial)
-        for i in range(n_dim):
-            system.remove_exciton(process.initial[i])
-            #print('remove', process.initial[i].label, process.initial[i].get_molecules())
-            for mol in process.final_test[i].get_molecules():
-                if process.final_test[i].label != _GS_.label:
-                    #print('mol', mol, process.cell_states, mol in process.cell_states)
-                    mol.cell_state = process.cell_states[mol]
-                mol.set_state(process.final_test[i])
-
-            #print('add', process.final_test[i].label, process.final_test[i].get_molecules())
-            system.add_exciton(process.final_test[i])
-
-        process.final = process.final_test
-
-        print('**** SYSTEM FIN STATE ****')
-        for i, state in enumerate(system.get_states()):
-            print(i, state.label, state, state.cell_state, state.get_molecules())
-        print('****************')
-
-        return
-
-
-    if isinstance(process, (GoldenRule, DirectRate, DecayRate)):
-        n_dim = len(process.initial)
-        for i in range(n_dim):
-            system.remove_exciton(process.initial[i])
-            for molecule_t, molecule_o in zip(process.initial[i].get_molecules(), process.final[i].get_molecules()):
-                molecule_t.set_state(molecule_o.state)
-                molecule_t.cell_state = molecule_o.cell_state
-                print(molecule_t.cell_state)
-
-            process.final[i]._molecules_set = process.initial[i].get_molecules()
-            system.add_exciton(process.final[i])
-
-    else:
-        raise Exception('Process type not recognized')
-
-
-    print('**** SYSTEM FIN STATE ****')
-    for i, state in enumerate(system.get_states()):
-        print(i, state.label, state, state.cell_state, state.get_molecules())
-    print('****************')
-
-
-
-def update_step_2(process, system):
-    """
-    Gets the data in process object and updates the system accordingly
-
-    :param process: instance of Process object containing all the information of the chosen process
-    """
-
-    if isinstance(process, (GoldenRule, DirectRate, DecayRate)):
-
-        n_dim = len(process.initial)
-        for i in range(n_dim):
-            system.remove_exciton(process.initial[i])
-
-            for molecule_t, molecule_o in zip(process.initial[i].get_molecules(), process.final[i].get_molecules()):
-                molecule_t.set_state(molecule_o.state)
-                molecule_t.cell_state = molecule_o.cell_state
-
-            process.final[i]._molecules_set = process.initial[i].get_molecules()
-            system.add_exciton(process.final[i])
-
-            for mol in process.final[i].get_molecules():
-                print(mol.state.label)
-                print(process.cell_states)
-                print('->', mol.cell_state)
-
-        if False:
-            print('**** SYSTEM STATE ****')
-            for i, state in enumerate(system.get_states()):
-                print(i, state.label, state, state.cell_state)
-            print('****************')
-
-        if False:
-            print('**** SYSTEM MOL ****')
-            for i, mol in enumerate(system.molecules):
-                print(i, mol.state.label, mol.state, mol.cell_state)
-            print('****************')
-
-    else:
-        raise Exception('Process type not recognized')
-
-
 def system_test_info(system):
-    from kimonet.core.processes.fcwd import general_fcwd
-    from kimonet.utils.units import HBAR_PLANCK
-    from kimonet.utils import distance_vector_periodic
-    import numpy as np
-
-    # molecules = system.molecules                # list of all instances of Molecule
-
     for state in system.get_states():
         center = system.get_molecule_index(state.get_center())
         print('*' * 80 + '\n CENTER {}\n'.format(center) + '*' * 80)

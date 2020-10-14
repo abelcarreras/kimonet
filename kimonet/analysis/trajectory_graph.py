@@ -182,22 +182,22 @@ class TrajectoryGraph:
             self._finish_node(node_link['donor'])
 
             # Check if not ground state
-            final_state = process.final[0].label
+            final_state = process.final_test[0].label
             if final_state != _GS_.label:
                 self._add_node(from_node=node_link['donor'],
-                               new_on_state=process.final[0],
+                               new_on_state=process.final_test[0],
                                process_label=process.description)
 
         else:
             # Intermolecular process
-            if (process.initial[0].label == process.final[1].label
-                    and process.final[1].label != _GS_.label
-                    and process.final[0].label == _GS_.label):
+            if (process.initial[0].label == process.final_test[1].label
+                    and process.final_test[1].label != _GS_.label
+                    and process.final_test[0].label == _GS_.label):
                 # s1, X  -> X, s1
                 # Simple transfer
                 # print('C1')
                 self._append_to_node(on_node=node_link['donor'],
-                                     add_state=process.final[1])
+                                     add_state=process.final_test[1])
 
             elif (process.initial[0].label != process.final[1].label
                     and process.initial[0].label != _GS_.label and process.final[1].label != _GS_.label
