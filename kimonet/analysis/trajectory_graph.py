@@ -16,6 +16,7 @@ def count_keys_dict(dictionary, key):
     else:
         dictionary[key] = 1
 
+
 class ArrayHandler():
     def __init__(self, arraystructure, data):
         self.arraystructure = arraystructure

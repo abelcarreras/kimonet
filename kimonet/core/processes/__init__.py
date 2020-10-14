@@ -64,12 +64,9 @@ def get_decay_rates(state, system):
         new_process = deepcopy(process)
         new_process.initial = [state]
 
+        new_process.final_test[0].remove_molecules()
         for mol in new_process.initial[0].get_molecules():
-            new_process.final_test[0].remove_molecules()
             new_process.final_test[0].add_molecule(mol)
-
-        for mol in new_process.initial[0].get_molecules():
-            new_process.cell_states[mol] = np.zeros(mol.get_dim())
 
         new_process.reset_cell_states()
 
@@ -108,23 +105,19 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
                 for mol in initial.get_molecules():
                     final.add_molecule(mol)
 
+            # Define cell positions of molecules in final states
             for mol in new_coupling.final_test[0].get_molecules():
                 new_coupling.cell_states[mol] = np.array(cell_incr)
 
             for mol in new_coupling.final_test[1].get_molecules():
                 new_coupling.cell_states[mol] = -np.array(cell_incr)
 
-            #print('CS0b', new_coupling.cell_states[new_coupling.final_test[0].get_center()])
-            #print('CS1b', new_coupling.cell_states[new_coupling.final_test[1].get_center()])
-
             for initial, final in zip(new_coupling.initial, new_coupling.final_test):
                 if final.label != _GS_.label:
                     cell_diff = np.array(np.average([new_coupling.cell_states[mol] for mol in final.get_molecules()], axis=0),
                                          dtype=int)
 
-                    #print('cd', cell_diff, [new_coupling.cell_states[mol] for mol in final.get_molecules()])
                     for mol in final.get_molecules():
-                        #print('cell', np.array(new_coupling.cell_states[mol]))
                         new_coupling.cell_states[mol] -= cell_diff
 
                     final.cell_state += cell_diff
