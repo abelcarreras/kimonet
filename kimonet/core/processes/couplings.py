@@ -10,6 +10,14 @@ from kimonet.utils import rotate_vector
 
 coupling_data = {}
 
+def generate_hash_2(function_name, d_transition, a_transition, d_orientation, a_orientation, r_vector, data_list):
+
+    return hash((d_transition, a_transition,
+                 np.array2string(d_orientation, precision=12),
+                 np.array2string(a_orientation, precision=12),
+                 function_name, tuple(data_list),
+                 np.array2string(np.array(r_vector), precision=12)))
+
 
 def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr):
     # return str(hash((donor, acceptor, function_name))) # No symmetry
@@ -22,54 +30,39 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
 def forster_coupling(initial, final, conditions, supercell, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
-    Only works for 1 molecule states
 
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
-    :param conditions: dictionary with physical conditions
+    :param conditions: to be deprecated
     :param supercell: the supercell of the system
-    :param cell_incr: integer vector indicating the difference between supercells of acceptor and donor
     :return: Forster coupling
     """
 
-    donor = initial[0].get_center()
-    acceptor = initial[1].get_center()
+    d_transition = Transition(initial[0], final[0])
+    a_transition = Transition(initial[1], final[1])
 
-    function_name = inspect.currentframe().f_code.co_name
+    d_orientation = initial[0].get_center().molecular_orientation()
+    a_orientation = initial[1].get_center().molecular_orientation()
 
-    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+    r_vector = initial[1].get_coordinates_absolute(supercell) - final[0].get_coordinates_absolute(supercell)
 
-    # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
+    hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
+                                  d_transition, a_transition,
+                                  d_orientation, a_orientation,
+                                  r_vector, [ref_index])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[Transition(*initial)]
-    mu_a = transition_moment[Transition(*final)]
+    mu_d = transition_moment[d_transition]
+    mu_a = transition_moment[a_transition]
 
-    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
-
-    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
-    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
-
-
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment) # position vector between donor and acceptor
+    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
 
     coupling_data[hash_string] = forster.dipole(mu_d, mu_a, r_vector, n=ref_index)
-    distance = np.linalg.norm(r_vector)
 
-    k = orientation_factor(mu_d, mu_a, r_vector)              # orientation factor between molecules
-
-    k_e = 1.0/(4.0*np.pi*VAC_PERMITTIVITY)
-
-    forster_coupling = k_e * k**2 * np.dot(mu_d, mu_a) / (ref_index**2 * distance**3)
-
-    coupling_data[hash_string] = forster_coupling                            # memory update for new couplings
-
-    # print('f:', forster_coupling, distance, cell_incr)
-    return forster_coupling
+    return coupling_data[hash_string]
 
 
 def forster_coupling_py(initial, final, conditions, supercell, ref_index=1, transition_moment=None):
@@ -84,30 +77,29 @@ def forster_coupling_py(initial, final, conditions, supercell, ref_index=1, tran
     :return: Forster coupling
     """
 
-    donor = initial[0].get_center()
-    acceptor = initial[1].get_center()
+    d_transition = Transition(initial[0], final[0])
+    a_transition = Transition(initial[1], final[1])
 
-    function_name = inspect.currentframe().f_code.co_name
+    d_orientation = initial[0].get_center().molecular_orientation()
+    a_orientation = initial[1].get_center().molecular_orientation()
 
-    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+    r_vector = initial[1].get_coordinates_absolute(supercell) - final[0].get_coordinates_absolute(supercell)
 
-    # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
+    hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
+                                  d_transition, a_transition,
+                                  d_orientation, a_orientation,
+                                  r_vector, [ref_index])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
 
-    mu_d = transition_moment[Transition(*initial)]
-    mu_a = transition_moment[Transition(*final)]
+    mu_d = transition_moment[d_transition]
+    mu_a = transition_moment[a_transition]
 
-    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
 
-    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
-    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
-
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment) # position vector between donor and acceptor
 
     distance = np.linalg.norm(r_vector)
 

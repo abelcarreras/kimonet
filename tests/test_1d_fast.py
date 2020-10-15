@@ -1,4 +1,3 @@
-from kimonet.core.processes.couplings import intermolecular_vector
 from kimonet.core.processes import DecayRate, DirectRate
 from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
@@ -23,12 +22,8 @@ s1 = State(label='s1', energy=1.0, multiplicity=1)
 # custom transfer function
 def transfer_rate(initial, final, conditions, supercell):
 
-    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
-
-    distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
-                                                    initial[1].get_center(),
-                                                    supercell,
-                                                    cell_increment))
+    r_vector = initial[1].get_coordinates_absolute(supercell) - final[0].get_coordinates_absolute(supercell)
+    distance = np.linalg.norm(r_vector)
 
     constant = conditions['custom_constant']
 

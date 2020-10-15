@@ -6,7 +6,6 @@ from kimonet.system import System
 from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
 import numpy as np
-from kimonet.core.processes.types import Transition
 
 
 # custom transfer functions
