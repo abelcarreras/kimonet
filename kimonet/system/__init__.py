@@ -113,6 +113,12 @@ class System:
         return self.neighbors['{}_{}'.format(ref_mol, radius)]
 
     def get_state_neighbors_copy(self, ref_state):
+        """
+        Not used for now. To be deprecated in the future
+
+        :param ref_state:
+        :return:
+        """
 
         radius = self.cutoff_radius
         center_position = ref_state.get_coordinates_relative(self.supercell)
@@ -160,12 +166,17 @@ class System:
                         state_neighbors.append(state)
                         state_cell_incr.append(list(cell_increment))
 
+            # TODO: check if this can be ised like this
+            # state_neighbors_, state_cell_incr_ = self.get_ground_states_improved(ref_state)
+
+            # print(state_cell_incr_)
+            # print(state_cell_incr)
+            # assert state_cell_incr_ == state_cell_incr
             self._state_neighbors[ref_state] = [state_neighbors, state_cell_incr]
 
         return self._state_neighbors[ref_state]
 
     def get_ground_states(self):
-
         if self._gs_list is None:
             self._gs_list = []
             for mol in self.molecules:
@@ -173,6 +184,19 @@ class System:
                     self._gs_list.append(mol.state)
 
         return self._gs_list
+
+    def get_ground_states_improved(self, ref_state):
+
+        mol_list, radius_list = self.get_neighbours(ref_state)
+
+        gs_list = []
+        gs_cell = []
+        for mol, cell_incr in zip(mol_list, radius_list):
+            if mol.state.label == _GS_.label:
+                gs_list.append(mol.state)
+                gs_cell.append(cell_incr)
+
+        return gs_list, gs_cell
 
     def get_molecule_index(self, molecule):
         return self.molecules.index(molecule)

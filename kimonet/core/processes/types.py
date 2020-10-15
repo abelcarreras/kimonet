@@ -9,6 +9,23 @@ from kimonet.system.state import ground_state as _GS_
 
 overlap_data = {}
 
+
+def ordered_states(state_list):
+    """
+    get GS states behind and other states at front
+    :param state_list: List of states behind and
+    :return: ordered List
+    """
+    ordered_list = []
+    for state in state_list:
+        if state.label == _GS_.label:
+            ordered_list.append(state)
+        else:
+            ordered_list.insert(0, state)
+
+    return tuple(ordered_list)
+
+
 class BaseProcess:
     def __init__(self,
                  initial_states,
@@ -17,7 +34,7 @@ class BaseProcess:
                  arguments=None
                  ):
 
-        self.initial = initial_states
+        self.initial = ordered_states(initial_states)
         self._final = None
         self.final_test = deepcopy(final_states)
 
