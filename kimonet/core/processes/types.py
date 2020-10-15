@@ -18,7 +18,7 @@ class BaseProcess:
                  ):
 
         self.initial = initial_states
-        self._final = final_states
+        self._final = None
         self.final_test = deepcopy(final_states)
 
         self.description = description
@@ -33,16 +33,14 @@ class BaseProcess:
 
     @property
     def final(self):
-        new_final = deepcopy(self.final_test)
-        for state in new_final:
-            for mol in state.get_molecules():
-                mol.cell_state = self.cell_states[mol]
-                mol.set_state(state)
-        return new_final
+        if self._final is None:
+            self._final = deepcopy(self.final_test)
+            for state in self._final:
+                for mol in state.get_molecules():
+                    mol.cell_state = self.cell_states[mol]
+                    mol.set_state(state)
 
-    @final.setter
-    def final(self, final):
-        self._final = final
+        return self._final
 
 
     @property
