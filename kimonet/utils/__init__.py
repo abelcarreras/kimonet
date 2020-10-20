@@ -1,5 +1,6 @@
 import numpy as np
 from kimonet.utils.rotation import rotate_vector
+import itertools
 
 
 def minimum_distance_vector(r_vector, supercell):
@@ -16,6 +17,12 @@ def minimum_distance_vector(r_vector, supercell):
         cell_vector.append(-n_n)
 
     return r_vector, np.array(cell_vector, dtype=int)
+
+
+def get_supercell_increments(supercell, radius):
+    # TODO: This function can be optimized as a function of the particular molecule coordinates
+    v = np.array(radius / np.linalg.norm(supercell, axis=1), dtype=int) + 1  # here extensive approximation
+    return list(itertools.product(*[range(-i, i + 1) for i in v]))
 
 
 def distance_vector_periodic(r, supercell, cell_increment):

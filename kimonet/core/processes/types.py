@@ -43,7 +43,13 @@ class BaseProcess:
         self.arguments = arguments if arguments is not None else {}
         self._supercell = None
 
-#    def __str__(self):
+        # Check input coherence
+        total_size_initial = np.sum([state.size for state in initial_states])
+        total_size_final = np.sum([state.size for state in final_states])
+
+        assert total_size_initial == total_size_final
+
+    #    def __str__(self):
 #        return 'donor/acceptor : {} {}\n'.format(self.donor.state, self.acceptor.state) \
 #               + 'initial : {} {}\n'.format(self.initial[0], self.initial[1]) \
 #               + 'final : {} {}\n'.format(self.final[0], self.final[1])

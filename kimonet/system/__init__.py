@@ -21,7 +21,7 @@ class System:
         self.neighbors = {}
         self.is_finished = False
 
-        self.transfer_scheme = transfers if transfers is not None else {}
+        self._transfer_scheme = transfers if transfers is not None else {}
         self.decay_scheme = decays if decays is not None else {}
 
         self._cutoff_radius = cutoff_radius
@@ -35,6 +35,16 @@ class System:
         # speed up purpose savings
         self._gs_list = None
         self._state_neighbors = {}
+
+    @property
+    def transfer_scheme(self):
+        return self._transfer_scheme
+
+    @transfer_scheme.setter
+    def transfer_scheme(self, transfers):
+        for transfer in transfers:
+            transfer.supercell = self.supercell
+        self._transfer_scheme = transfers
 
     def _reset_data(self):
         self._gs_list = None
@@ -156,9 +166,11 @@ class System:
 
             cell_increments = get_supercell_increments(self.supercell, radius)
 
+            # Get neighbor non ground states
             state_neighbors = []
             state_cell_incr = []
-            for state in self.get_ground_states() + self.get_states():
+            # for state in self.get_ground_states() + self.get_states():
+            for state in self.get_states():
                 coordinates = state.get_coordinates()
                 for cell_increment in cell_increments:
                     r_vec = distance_vector_periodic(coordinates - center_position, self.supercell, cell_increment)
@@ -166,12 +178,11 @@ class System:
                         state_neighbors.append(state)
                         state_cell_incr.append(list(cell_increment))
 
-            # TODO: check if this can be ised like this
-            # state_neighbors_, state_cell_incr_ = self.get_ground_states_improved(ref_state)
+            # Include neighbor ground states
+            state_neighbors_gs, state_cell_incr_gs = self.get_ground_states_improved(ref_state)
+            state_cell_incr = state_cell_incr_gs + state_cell_incr
+            state_neighbors = state_neighbors_gs + state_neighbors
 
-            # print(state_cell_incr_)
-            # print(state_cell_incr)
-            # assert state_cell_incr_ == state_cell_incr
             self._state_neighbors[ref_state] = [state_neighbors, state_cell_incr]
 
         return self._state_neighbors[ref_state]
@@ -187,11 +198,11 @@ class System:
 
     def get_ground_states_improved(self, ref_state):
 
-        mol_list, radius_list = self.get_neighbours(ref_state)
+        mol_list, cell_incr_list = self.get_neighbours(ref_state.get_center())
 
         gs_list = []
         gs_cell = []
-        for mol, cell_incr in zip(mol_list, radius_list):
+        for mol, cell_incr in zip(mol_list, cell_incr_list):
             if mol.state.label == _GS_.label:
                 gs_list.append(mol.state)
                 gs_cell.append(cell_incr)

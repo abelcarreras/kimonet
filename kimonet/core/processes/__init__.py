@@ -1,7 +1,8 @@
 from kimonet.core.processes.fcwd import general_fcwd
 from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
-from copy import deepcopy
+from copy import deepcopy, copy
 from kimonet.system.state import ground_state as _GS_
+from kimonet.utils.combinations import combinations_group
 import numpy as np
 
 
@@ -89,39 +90,90 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
     for coupling in transfer_scheme:
         if (coupling.initial[0].label, coupling.initial[1].label) == (donor_state.label, acceptor_state.label):
 
-            new_coupling = deepcopy(coupling)
-            new_coupling.initial = (donor_state, acceptor_state)
+            # Getting all possible configurations for the final states
+            elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
+            elements_list = [item for sublist in elements_list for item in sublist]
+            group_list = [state.size for state in coupling.final_test]
 
-            # Binding states
-            for final in new_coupling.final_test:
-                final.cell_state = donor_state.cell_state * 0  # TODO: add better looking dimension independent zero set
-                for initial in new_coupling.initial:
-                    if initial.label == final.label and initial.label != _GS_.label:
-                        final.cell_state = initial.cell_state
+            configurations = combinations_group(elements_list, group_list, supercell=coupling.supercell)
 
-            # Binding new molecules
-            for initial, final in zip(new_coupling.initial, new_coupling.final_test):
-                final.remove_molecules()
-                for mol in initial.get_molecules():
-                    final.add_molecule(mol)
+            for configuration in configurations[:1]:
+                print(configuration)
 
-            # Define cell positions of molecules in final states
-            for mol in new_coupling.final_test[0].get_molecules():
-                new_coupling.cell_states[mol] = np.array(cell_incr)
+                new_coupling = deepcopy(coupling)
+                new_coupling.initial = (donor_state, acceptor_state)
 
-            for mol in new_coupling.final_test[1].get_molecules():
-                new_coupling.cell_states[mol] = -np.array(cell_incr)
+                # Binding states
+                for final in new_coupling.final_test:
+                    final.cell_state = donor_state.cell_state * 0  # TODO: add better looking dimension independent zero set
+                    for initial in new_coupling.initial:
+                        if initial.label == final.label and initial.label != _GS_.label:
+                            final.cell_state = initial.cell_state
 
-            for initial, final in zip(new_coupling.initial, new_coupling.final_test):
-                if final.label != _GS_.label:
-                    cell_diff = np.array(np.average([new_coupling.cell_states[mol] for mol in final.get_molecules()], axis=0),
-                                         dtype=int)
+                # Binding new molecules
+                for molecules, final in zip(configuration, new_coupling.final_test):
+                    final.remove_molecules()
+                    for mol in molecules:
+                        final.add_molecule(mol)
 
-                    for mol in final.get_molecules():
-                        new_coupling.cell_states[mol] -= cell_diff
+                print(new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules())
 
-                    final.cell_state += cell_diff
+                def is_same_type(state_list1, state_list2):
+                    """
+                    TODO: Not working as spected yet!
+                    :param state_list1:
+                    :param state_list2:
+                    :return:
+                    """
+                    sum1 = np.multiply(*[hash(state) for state in state_list1])
+                    sum2 = np.multiply(*[hash(state) for state in state_list2])
 
-            allowed_couplings.append(new_coupling)
+                    #sum = 0
+                    #for state1, state2 in zip(state_list1, state_list2):
+                    #    print(hash(state1), hash(state2))
+                    #    sum += hash(state1) - hash(state2)
+                    #print('sum: ', sum, sum1, sum2)
+                    # return sum == 0
+                    return sum1 == sum2
+
+                if is_same_type(new_coupling.initial, new_coupling.final_test):
+                    exit()
+                    continue
+
+                ll1 = copy([new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules()])
+
+                for initial, final in zip(new_coupling.initial, new_coupling.final_test):
+                    final.remove_molecules()
+                    for mol in initial.get_molecules():
+                        final.add_molecule(mol)
+
+                print(is_same_type(new_coupling.initial, new_coupling.final_test))
+
+                print(new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules())
+                ll2 = [new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules()]
+
+                print(id(ll1), id(ll2))
+                assert ll1 == ll2
+                print('----')
+
+                #exit()
+                # Define cell positions of molecules in final states
+                for mol in new_coupling.final_test[0].get_molecules():
+                    new_coupling.cell_states[mol] = np.array(cell_incr)
+
+                for mol in new_coupling.final_test[1].get_molecules():
+                    new_coupling.cell_states[mol] = -np.array(cell_incr)
+
+                for initial, final in zip(new_coupling.initial, new_coupling.final_test):
+                    if final.label != _GS_.label:
+                        cell_diff = np.array(np.average([new_coupling.cell_states[mol] for mol in final.get_molecules()], axis=0),
+                                             dtype=int)
+
+                        for mol in final.get_molecules():
+                            new_coupling.cell_states[mol] -= cell_diff
+
+                        final.cell_state += cell_diff
+
+                allowed_couplings.append(new_coupling)
 
     return allowed_couplings
