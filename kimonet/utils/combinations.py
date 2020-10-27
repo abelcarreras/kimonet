@@ -47,7 +47,8 @@ def partition(elements_list, group_list):
     return partition
 
 
-def combinations_group(elements_list, group_list, supercell=None):
+def combinations_group(elements_list_o, group_list, supercell=None):
+    elements_list = list(range(len(elements_list_o)))
 
     combinations_list = []
 
@@ -65,15 +66,10 @@ def combinations_group(elements_list, group_list, supercell=None):
 
     combination(elements_list, 0, [])
 
-
+    # filter by connectivity
+    combinations_list = [[[elements_list_o[l] for l in state] for state in conf] for conf in combinations_list]
     if supercell is not None:
-        # p = partition(elements_list, group_list)
         for c in combinations_list:
-            # print(c == p, c, p)
-            #if c == p:
-            #    combinations_list.remove(c)
-            #    continue
-
             if not is_connected(c, supercell, connected_distance=1):
                 combinations_list.remove(c)
 
@@ -112,6 +108,7 @@ if __name__ == '__main__':
 
     configuration = partition(test_list, group_list)
 
+    print('initial:', test_list)
     combinations_list = combinations_group(test_list, group_list, supercell)
 
     for c in combinations_list:

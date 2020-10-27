@@ -22,7 +22,7 @@ class System:
         self.is_finished = False
 
         self._transfer_scheme = transfers if transfers is not None else {}
-        self.decay_scheme = decays if decays is not None else {}
+        self._decay_scheme = decays if decays is not None else {}
 
         self._cutoff_radius = cutoff_radius
 
@@ -45,6 +45,16 @@ class System:
         for transfer in transfers:
             transfer.supercell = self.supercell
         self._transfer_scheme = transfers
+
+    @property
+    def decay_scheme(self):
+        return self._decay_scheme
+
+    @decay_scheme.setter
+    def decay_scheme(self, decays):
+        for decay in decays:
+            decay.supercell = self.supercell
+        self._decay_scheme = decays
 
     def _reset_data(self):
         self._gs_list = None

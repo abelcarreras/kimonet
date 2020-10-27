@@ -22,7 +22,7 @@ class State:
                      self._energy,
                      self._multiplicity,
                      self._size,
-                     str(self._cell_state),
+                     str(self._cell_state) if self._label != ground_state.label else '',
                      tuple(self.get_molecules())))
 
     def __eq__(self, other):
