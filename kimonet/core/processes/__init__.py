@@ -76,7 +76,9 @@ def get_decay_rates(state, system):
 
             for molecules, final in zip(configuration, new_process.final_test):
                 final.remove_molecules()
+                final.cell_state = np.zeros_like(molecules[0].cell_state) # set zero to final state cell_states
                 for mol in molecules:
+                    new_process.cell_states[mol] = mol.cell_state  # keep molecules with same cell_states
                     final.add_molecule(mol)
 
             new_process.reset_cell_states()
@@ -105,20 +107,12 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
             elements_list = [item for sublist in elements_list for item in sublist]
             group_list = [state.size for state in coupling.final_test]
 
-            #print('elements_list', elements_list)
             configurations = combinations_group(elements_list, group_list, supercell=coupling.supercell)
 
-            #print('configurations')
-            #for c in configurations:
-            #    print(c)
-
             for configuration in configurations:
-                #print('conf: ', configuration)
 
                 new_coupling = deepcopy(coupling)
                 new_coupling.initial = (donor_state, acceptor_state)
-
-                # print('initial', hash(new_coupling.initial[0].get_center()), hash(new_coupling.initial[1].get_center()))
 
                 # Binding states
                 for final in new_coupling.final_test:
@@ -127,22 +121,15 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
                         if initial.label == final.label and initial.label != _GS_.label:
                             final.cell_state = initial.cell_state
 
-                #print('final', hash(new_coupling.initial[0].get_center()), hash(new_coupling.initial[1].get_center()))
-                #print('configuration', hash(configuration[0][0]), hash(configuration[1][0]))
-
                 # Binding new molecules
-                #print('initial ---->', [state.get_molecules() for state in new_coupling.initial])
                 for molecules, final in zip(configuration, new_coupling.final_test):
                     final.remove_molecules()
                     for mol in molecules:
                         final.add_molecule(mol)
 
-                #print(new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules())
-                #print('final1', hash(new_coupling.initial[0].get_center()), hash(new_coupling.initial[1].get_center()))
 
                 def is_same_type(state_list1, state_list2):
                     """
-                    TODO: Not working as spected yet!
                     :param state_list1:
                     :param state_list2:
                     :return:
@@ -155,32 +142,9 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
                     return sum1 == sum2
 
-                #print('option', is_same_type(new_coupling.initial, new_coupling.final_test))
-
                 if is_same_type(new_coupling.initial, new_coupling.final_test):
                     continue
 
-                #print('--------------')
-                #ll1 = copy([new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules()])
-
-                #for initial, final in zip(new_coupling.initial, new_coupling.final_test):
-                #    final.remove_molecules()
-                #    print('cs_final', final.cell_state)
-                #    for mol in initial.get_molecules():
-                #        print('mol2', mol, mol.cell_state)
-                #        final.add_molecule(mol)
-
-                #print('final2', hash(new_coupling.initial[0].get_center()), hash(new_coupling.initial[1].get_center()))
-
-
-                #print(new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules())
-                #ll2 = [new_coupling.final_test[0].get_molecules(), new_coupling.final_test[1].get_molecules()]
-
-                #print(id(ll1), id(ll2))
-                #assert ll1 == ll2
-                #print('----')
-
-                #exit()
                 # Define cell positions of molecules in final states
                 for mol in new_coupling.final_test[0].get_molecules():
                     new_coupling.cell_states[mol] = np.array(cell_incr)
