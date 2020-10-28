@@ -21,8 +21,8 @@ class System:
         self.neighbors = {}
         self.is_finished = False
 
-        self._transfer_scheme = transfers if transfers is not None else {}
-        self._decay_scheme = decays if decays is not None else {}
+        self._transfer_scheme = transfers if transfers is not None else []
+        self._decay_scheme = decays if decays is not None else []
 
         self._cutoff_radius = cutoff_radius
 
@@ -59,6 +59,22 @@ class System:
         for decay in decays:
             decay.supercell = self.supercell
         self._decay_scheme = decays
+
+
+    @property
+    def process_scheme(self):
+        return self._decay_scheme + self._transfer_scheme
+
+    @process_scheme.setter
+    def process_scheme(self, processes):
+        for process in processes:
+            process.supercell = self.supercell
+            if len(process.initial) == 1:
+                self._decay_scheme.append(process)
+            elif len(process.initial) == 2:
+                self._transfer_scheme.append(process)
+            else:
+                raise Exception('Only processes involving 1 or 2 states are currently supported')
 
     def _reset_data(self):
         self._gs_list = None

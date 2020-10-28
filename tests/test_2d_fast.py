@@ -50,18 +50,18 @@ class Test1DFast(unittest.TestCase):
                              temperature=300)  # Kelvin
 
         # list of transfer functions by state
-        self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
-                                                  electronic_coupling_function=forster_coupling_extended,
-                                                  description='Forster',
-                                                  arguments={'ref_index': 2, 'longitude': 2, 'n_divisions': 30,
+        self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
+                                                 electronic_coupling_function=forster_coupling_extended,
+                                                 description='Forster',
+                                                 arguments={'ref_index': 2, 'longitude': 2, 'n_divisions': 30,
                                                              'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
-                                                  vibrations=marcus
-                                                  )]
-
-        self.system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
-                                              decay_rate_function=einstein_radiative_decay,
-                                              arguments={'transition_moment': {Transition(s1, gs): [0.3, 0.1]}},  # Debye
-                                              description='singlet_radiative_decay')]
+                                                 vibrations=marcus
+                                                 ),
+                                      DecayRate(initial_states=s1, final_states=gs,
+                                                decay_rate_function=einstein_radiative_decay,
+                                                arguments={'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
+                                                description='singlet_radiative_decay')
+                                      ]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 

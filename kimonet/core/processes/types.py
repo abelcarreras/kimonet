@@ -65,7 +65,6 @@ class BaseProcess:
 
         return self._final
 
-
     @property
     def supercell(self):
         if self._supercell is None:
@@ -91,6 +90,7 @@ class BaseProcess:
             molecules_list += state.get_molecules()
 
         return molecules_list
+
 
 class GoldenRule(BaseProcess):
     def __init__(self,

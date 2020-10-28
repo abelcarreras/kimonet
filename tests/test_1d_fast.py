@@ -68,16 +68,14 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-        # custom decay functions
-
         # set additional system parameters
-        self.system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
-                                                  rate_constant_function=transfer_rate,
-                                                  description='custom')]
-
-        self.system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
-                                              decay_rate_function=decay_rate,
-                                              description='custom decay rate')]
+        self.system.process_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
+                                                 rate_constant_function=transfer_rate,
+                                                 description='custom'),
+                                      DecayRate(initial_states=s1, final_states=gs,
+                                                decay_rate_function=decay_rate,
+                                                description='custom decay rate')
+                                      ]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
@@ -121,25 +119,21 @@ class Test1DFast(unittest.TestCase):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
         # set additional system parameters
-        self.system.transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
-                                                  electronic_coupling_function=forster_coupling,
-                                                  description='Forster coupling',
-                                                  arguments={'ref_index': 1,
-                                                             'transition_moment': {Transition(s1, gs): [0.01]}},
-                                                  vibrations=MarcusModel(reorganization_energies={
-                                                      Transition(gs, s1, symmetric=False): 0.07,
-                                                      Transition(s1, gs, symmetric=False): 0.07})
-                                                  )
-                                       ]
-
-        self.system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
-                                              decay_rate_function=decay_rate,
-                                              description='custom decay rate')]
+        self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
+                                                 electronic_coupling_function=forster_coupling,
+                                                 description='Forster coupling',
+                                                 arguments={'ref_index': 1,
+                                                            'transition_moment': {Transition(s1, gs): [0.01]}},
+                                                 vibrations=MarcusModel(reorganization_energies={
+                                                     Transition(gs, s1, symmetric=False): 0.07,
+                                                     Transition(s1, gs, symmetric=False): 0.07})
+                                                 ),
+                                      DecayRate(initial_states=s1, final_states=gs,
+                                                decay_rate_function=decay_rate,
+                                                description='custom decay rate')
+                                      ]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
-
-        for mol in self.system.molecules:
-            print(mol.name)
 
         # some system analyze functions
         system_test_info(self.system)
