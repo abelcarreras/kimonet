@@ -55,12 +55,14 @@ def system_test_info(system):
             except Exception:
                 i_acceptor = i_donor
 
+            print('Description:', proc.description)
             print('Donor: {} / Acceptor: {}'.format(i_donor, i_acceptor))
 
             position_d = proc.initial[0].get_center().get_coordinates()
             r = proc.get_rate_constant(system.conditions, system.supercell)
 
-            if isinstance(proc, (GoldenRule, DirectRate)):
+            # if isinstance(proc, (GoldenRule, DirectRate)):
+            if len(proc.initial) == 2:
                 position_a = proc.initial[1].get_center().get_coordinates()
 
                 cell_increment = np.array(proc.final[0].get_center().cell_state) - np.array(proc.initial[1].get_center().cell_state)
@@ -75,7 +77,7 @@ def system_test_info(system):
 
                 spectral_overlap = proc.get_fcwd()
 
-                e_coupling = proc.get_electronic_coupling(system.conditions)
+                e_coupling = proc.get_electronic_coupling()
 
                 print('Electronic coupling: ', e_coupling, 'eV')
                 print('Spectral overlap:    ', spectral_overlap, 'eV-1')

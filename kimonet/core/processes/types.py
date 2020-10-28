@@ -131,12 +131,12 @@ class GoldenRule(BaseProcess):
 
         return overlap_data[info]
 
-    def get_electronic_coupling(self, conditions):
+    def get_electronic_coupling(self):
         # conditions will be deprecated
-        return self._coupling_function(self.initial, self.final, conditions, self.supercell, **self.arguments)
+        return self._coupling_function(self.initial, self.final, **self.arguments)
 
     def get_rate_constant(self, conditions, *args):
-        e_coupling = self.get_electronic_coupling(conditions)
+        e_coupling = self.get_electronic_coupling()
         # spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
 
         spectral_overlap = self.get_fcwd()
@@ -157,7 +157,7 @@ class DirectRate(BaseProcess):
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     def get_rate_constant(self, conditions, *args):
-        return self.rate_function(self.initial, self.final, conditions, self.supercell)
+        return self.rate_function(self.initial, self.final, **self.arguments)
 
 
 class DecayRate(BaseProcess):

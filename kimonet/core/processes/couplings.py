@@ -10,6 +10,7 @@ from kimonet.utils import rotate_vector
 
 coupling_data = {}
 
+
 def generate_hash_2(function_name, d_transition, a_transition, d_orientation, a_orientation, r_vector, data_list):
 
     return hash((d_transition, a_transition,
@@ -27,7 +28,7 @@ def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_in
                ) + np.array2string(np.array(supercell), precision=12) + np.array2string(np.array(cell_incr, dtype=int))
 
 
-def forster_coupling(initial, final, conditions, supercell, ref_index=1, transition_moment=None):
+def forster_coupling(initial, final, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
 
@@ -65,7 +66,7 @@ def forster_coupling(initial, final, conditions, supercell, ref_index=1, transit
     return coupling_data[hash_string]
 
 
-def forster_coupling_py(initial, final, conditions, supercell, ref_index=1, transition_moment=None):
+def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
     """
     Compute Forster coupling in eV
 
@@ -112,45 +113,44 @@ def forster_coupling_py(initial, final, conditions, supercell, ref_index=1, tran
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(initial, final, conditions, supercell, ref_index=1, transition_moment=None,
-                              longitude=3, n_divisions=300):
+def forster_coupling_extended(initial, final, ref_index=1, transition_moment=None, longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
 
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
-    :param conditions: dictionary with physical conditions
-    :param supercell: the supercell of the system
     :param cell_incr: integer vector indicating the difference between supercells of acceptor and donor
     :param longitude: extension length of the dipole
     :param n_divisions: number of subdivisions. To use with longitude. Increase until convergence.
     :return: Forster coupling
     """
 
-    donor = initial[0].get_center()
-    acceptor = initial[1].get_center()
+    d_transition = Transition(initial[0], final[0])
+    a_transition = Transition(initial[1], final[1])
 
-    function_name = inspect.currentframe().f_code.co_name
+    d_orientation = initial[0].get_center().molecular_orientation()
+    a_orientation = initial[1].get_center().molecular_orientation()
 
-    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+    r_vector = initial[1].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
-    # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, donor, acceptor, conditions, supercell, cell_increment)
-    # hash_string = str(hash((donor, acceptor, function_name))) # No symmetry
+    hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
+                                  d_transition, a_transition,
+                                  d_orientation, a_orientation,
+                                  r_vector, [ref_index])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[Transition(*initial)]
-    mu_a = transition_moment[Transition(*final)]
+    mu_d = transition_moment[d_transition]
+    mu_a = transition_moment[a_transition]
 
-    mu_d = rotate_vector(mu_d, donor.molecular_orientation()) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, acceptor.molecular_orientation()) * DEBYE_TO_ANGS_EL
+    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
 
     # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
     # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
 
-    r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment)  # position vector between donor and acceptor
+    #r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment)  # position vector between donor and acceptor
 
     coupling_data[hash_string] = forster.dipole_extended(r_vector, mu_a, mu_d,
                                                          n=ref_index,
@@ -160,16 +160,12 @@ def forster_coupling_extended(initial, final, conditions, supercell, ref_index=1
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended_py(initial, final, conditions, supercell, ref_index=1, transition_moment=None,
-                                 longitude=3, n_divisions=300):
+def forster_coupling_extended_py(initial, final, ref_index=1, transition_moment=None, longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV (pure python version)
 
     :param donor: excited molecules. Donor
     :param acceptor: neighbouring molecule. Possible acceptor
-    :param conditions: dictionary with physical conditions
-    :param supercell: the supercell of the system
-    :param cell_incr: integer vector indicating the difference between supercells of acceptor and donor
     :param longitude: extension length of the dipole
     :param n_divisions: number of subdivisions. To use with longitude. Increase until convergence.
     :return: Forster coupling

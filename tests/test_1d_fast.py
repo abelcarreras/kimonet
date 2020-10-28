@@ -20,14 +20,12 @@ s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
 # custom transfer function
-def transfer_rate(initial, final, conditions, supercell):
+def transfer_rate(initial, final, custom_constant=1):
 
     r_vector = initial[1].get_coordinates_absolute() - final[0].get_coordinates_absolute()
     distance = np.linalg.norm(r_vector)
 
-    constant = conditions['custom_constant']
-
-    return constant / distance ** 2
+    return custom_constant / distance ** 2
 
 
 # custom decay function
@@ -71,10 +69,11 @@ class Test1DFast(unittest.TestCase):
         # set additional system parameters
         self.system.process_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
                                                  rate_constant_function=transfer_rate,
+                                                 arguments={'custom_constant': 1},
                                                  description='custom'),
-                                      DecayRate(initial_states=s1, final_states=gs,
-                                                decay_rate_function=decay_rate,
-                                                description='custom decay rate')
+                                      DirectRate(initial_states=(s1,), final_states=(gs,),
+                                                 rate_constant_function=decay_rate,
+                                                 description='custom decay rate')
                                       ]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
