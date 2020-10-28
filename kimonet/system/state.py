@@ -52,10 +52,9 @@ class State:
 
         return np.average(coor_average, axis=0)
 
+    def get_coordinates_absolute(self):
 
-    def get_coordinates_absolute(self, supercell):
-
-        supercell = np.array(supercell)
+        supercell = np.array(self.supercell)
         coor_average = []
         for mol in self.get_molecules():
             coor_average.append(mol.get_coordinates() - np.dot(supercell.T, mol.cell_state + self.cell_state))

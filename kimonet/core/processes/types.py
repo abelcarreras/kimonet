@@ -75,6 +75,8 @@ class BaseProcess:
     @supercell.setter
     def supercell(self, cell):
         self._supercell = cell
+        for state in self.final_test:
+            state.supercell = cell
 
     def reset_cell_states(self):
         self.cell_states.clear()
@@ -82,6 +84,13 @@ class BaseProcess:
             for mol in state.get_molecules():
                 self.cell_states[mol] = np.zeros(mol.get_dim())
 
+    def get_molecules(self):
+
+        molecules_list = []
+        for state in self.initial:
+            molecules_list += state.get_molecules()
+
+        return molecules_list
 
 class GoldenRule(BaseProcess):
     def __init__(self,

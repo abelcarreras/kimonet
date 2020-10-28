@@ -36,6 +36,10 @@ class System:
         self._gs_list = None
         self._state_neighbors = {}
 
+        # set supercell to all states in the system
+        for molecule in self.molecules:
+            molecule.state.supercell = supercell
+
     @property
     def transfer_scheme(self):
         return self._transfer_scheme
@@ -240,16 +244,16 @@ class System:
     def get_number_of_excitations(self):
         return len(self._states)
 
-    def add_excitation_index(self, type, index, do_copy=True):
-        if do_copy:
-            type = type.copy()
+    def add_excitation_index(self, state, index):
 
-        if type.label == _GS_.label:
+        state = state.copy()
+        state.supercell = self.supercell
+        if state.label == _GS_.label:
             self._states.remove(self.molecules[index].state)
         else:
-            self._states.append(type)
+            self._states.append(state)
 
-        self.molecules[index].set_state(type)
+        self.molecules[index].set_state(state)
         self._reset_data()
 
     def remove_exciton(self, exciton):

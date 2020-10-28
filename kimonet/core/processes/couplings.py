@@ -44,7 +44,7 @@ def forster_coupling(initial, final, conditions, supercell, ref_index=1, transit
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute(supercell) - final[0].get_coordinates_absolute(supercell)
+    r_vector = initial[1].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,

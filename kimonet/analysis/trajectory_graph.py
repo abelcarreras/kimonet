@@ -137,7 +137,7 @@ class TrajectoryGraph:
         #node['coordinates'].append(list(add_state.get_coordinates_2()))
         #node['cell_state'].append(list(add_state.get_center().cell_state_2))
 
-        node['coordinates'].append(list(add_state.get_coordinates_absolute(self.supercell)))
+        node['coordinates'].append(list(add_state.get_coordinates_absolute()))
         node['cell_state'].append(list(add_state.get_center().cell_state*0))  # TODO: This entry will be removed
 
         node['time'].append(self.times[-1] - node['event_time'])
