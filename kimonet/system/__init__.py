@@ -327,6 +327,7 @@ class System:
         process.reset_cell_states()
         self._reset_data()
 
+
 if __name__ == '__main__':
     from kimonet.system.state import State
     from kimonet.system.molecule import Molecule

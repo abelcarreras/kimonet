@@ -142,11 +142,11 @@ class TrajectoryGraph:
 
         node['time'].append(self.times[-1] - node['event_time'])
 
-    def add_step(self, change_step, time_step, system):
+    def add_step(self, process, time_step):
         """
         Adds trajectory step
 
-        :param change_step: process occurred during time_step: {donor, process, acceptor}
+        :param process: process occurred during time_step: {donor, process, acceptor}
         :param time_step: duration of the chosen process
         """
 
@@ -155,155 +155,33 @@ class TrajectoryGraph:
         end_points = [node for node in self.graph.nodes
                       if len(list(self.graph.successors(node))) == 0 and not self.graph.nodes[node]['finished']]
 
-        process = change_step
-        # print('proc: ', process)
-        # print(process.donor, process.acceptor)
+        node_links = {}
+        for state in process.initial:
+            for inode in end_points:
+                node = self.graph.nodes[inode]
+                if node['index'][-1] == id(state):
+                    node_links[state] = inode
+                    break
 
-        donor_index = system.get_molecule_index(process.initial[0].get_center())
-        try:
-            acceptor_index = system.get_molecule_index(process.initial[1].get_center())
-        except Exception:
-            acceptor_index = donor_index
+        for initial_state, inode in node_links.items():
 
-        change_step = {'donor': donor_index, 'acceptor': acceptor_index, 'process': change_step}
+            finish_node = True
+            for final_state in process.final_test:
+                if (initial_state.label == final_state.label and final_state.label != _GS_.label):
+                    # Transfer
+                    self._append_to_node(on_node=inode,
+                                         add_state=final_state)
+                    finish_node = False
 
-        node_link = {'donor': None, 'acceptor': None}
-        for inode in end_points:
-            node = self.graph.nodes[inode]
-            if node['index'][-1] == id(process.initial[0]):
-                node_link['donor'] = inode
-            if len(process.initial) > 2:
-                if node['index'][-1] == id(process.initial[1]):
-                    node_link['acceptor'] = inode
+            if finish_node:
+                # splitting & merging
+                self._finish_node(inode)
 
-        process = change_step['process']
-
-        if change_step['donor'] == change_step['acceptor']:
-            # Intramolecular conversion
-            self._finish_node(node_link['donor'])
-
-            # Check if not ground state
-            for state in process.final_test:
-                if state.label != _GS_.label:
-                    self._add_node(from_node=node_link['donor'],
-                                   new_on_state=state,
-                                   process_label=process.description)
-
-        else:
-            # Intermolecular process
-            if (process.initial[0].label == process.final_test[1].label
-                    and process.final_test[1].label != _GS_.label
-                    and process.final_test[0].label == _GS_.label):
-                # s1, X  -> X, s1
-                # Simple transfer
-                # print('C1')
-                self._append_to_node(on_node=node_link['donor'],
-                                     add_state=process.final_test[1])
-
-            elif (process.initial[0].label != process.final[1].label
-                    and process.initial[0].label != _GS_.label and process.final[1].label != _GS_.label
-                    and process.final[0].label == _GS_.label and process.initial[1].label == _GS_.label):
-                # s1, X  -> X, s2
-                # Transfer with change
-                # print('C2')
-                self._finish_node(node_link['donor'])
-
-                self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'],
-                               process_label=process.description)
-
-            elif (process.initial[0].label != process.final[0].label and process.initial[0].label != process.final[1].label
-                    and process.initial[0].label != _GS_.label
-                    and process.final[0].label != _GS_.label
-                    and process.final[1].label != _GS_.label
-                    and process.initial[1].label == _GS_.label):
-                # s1, X  -> s2, s3
-                # Exciton splitting
-                # print('C3')
-                self._finish_node(node_link['donor'])
-
-                self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['donor'],
-                               process_label=process.description)
-
-                self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'],
-                               process_label=process.description)
-
-            elif (process.initial[0].label != process.final[1].label and process.initial[1].label != process.final[1].label
-                    and process.initial[0].label != _GS_.label
-                    and process.initial[1].label != _GS_.label
-                    and process.final[0].label == _GS_.label
-                    and process.final[1].label != _GS_.label):
-                # s1, s2  ->  X, s3
-                # Exciton merge type 1
-                # print('C4')
-                self._finish_node(node_link['donor'])
-                self._finish_node(node_link['acceptor'])
-
-                self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'],
-                               process_label=process.description)
-
-                self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
-
-            elif (process.initial[0].label != process.final[0].label and process.initial[1].label != process.final[0].label
-                    and process.initial[0].label != _GS_.label
-                    and process.initial[1].label != _GS_.label
-                    and process.final[0].label != _GS_.label
-                    and process.final[1].label == _GS_.label):
-                # s1, s2  ->  s3, X
-                # Exciton merge type 2
-                # print('C5')
-                self._finish_node(node_link['donor'])
-                self._finish_node(node_link['acceptor'])
-
-                self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['donor'],
-                               process_label=process.description)
-
-                self.graph.add_edge(node_link['acceptor'], self.node_count-1, process_label=process.description)
-
-            elif (process.initial[0].label != process.final[0].label and process.initial[1].label != process.final[1].label
-                  and process.initial[0].label == process.final[1].label and process.initial[0].label == process.final[1].label
-                  and process.initial[0].label != _GS_.label
-                  and process.initial[1].label != _GS_.label
-                  and process.final[0].label != _GS_.label
-                  and process.final[1].label != _GS_.label):
-                # s1, s2  ->  s2, s1
-                # Exciton cross interaction (treated as double transport)
-                # print('C6')
-
-                self._append_to_node(on_node=node_link['donor'],
-                                     add_molecule=change_step['acceptor'])
-
-                self._append_to_node(on_node=node_link['acceptor'],
-                                     add_molecule=change_step['donor'])
-
-            elif (process.initial[0].label != process.final[0].label and process.initial[1].label != process.final[1].label
-                  and process.initial[0].label != process.final[1].label and process.initial[0].label != process.final[1].label
-                  and process.initial[0].label != _GS_.label
-                  and process.initial[1].label != _GS_.label
-                  and process.final[0].label != _GS_.label
-                  and process.final[1].label != _GS_.label):
-                # s1, s2  ->  s3, s4
-                # Exciton double evolution
-                # print('C7')
-                self._finish_node(node_link['donor'])
-                self._finish_node(node_link['acceptor'])
-
-                self._add_node(from_node=node_link['donor'],
-                               new_on_molecule=change_step['acceptor'],
-                               process_label=process.description)
-
-                self._add_node(from_node=node_link['acceptor'],
-                               new_on_molecule=change_step['donor'],
-                               process_label=process.description)
-
-                self.graph.add_edge(node_link['acceptor'], self.node_count-2, process_label=process.description)
-                self.graph.add_edge(node_link['donor'], self.node_count-1, process_label=process.description)
-            else:
-                raise Exception('Error: No process type found')
+                for final_state in process.get_state_connections()[initial_state]:
+                    for inode in node_links.values():
+                        self._add_node(from_node=inode,
+                                       new_on_state=final_state,
+                                       process_label=process.description)
 
         ce = {}
         for state in self.system.get_states():
@@ -311,7 +189,6 @@ class TrajectoryGraph:
             count_keys_dict(ce, state.label)
 
         self.current_excitons.append(ce)
-        # print('add_step_out:', self.graph.nodes[node_link['donor']]['cell_state'][-5:], len(self.graph.nodes[node_link['donor']]['cell_state']))
 
     def plot_graph(self):
 

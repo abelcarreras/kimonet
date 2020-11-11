@@ -23,11 +23,14 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
             if system_copy.is_finished:
                 break
 
-            trajectory.add_step(change_step, step_time, system_copy)
+            trajectory.add_step(change_step, step_time)
 
             if i == max_steps-1:
                 warn('Maximum number of steps reached!!')
 
+        # trajectory.plot_distances('s1').show()
+        # trajectory.plot_distances('s2').show()
+        # trajectory.plot_graph().show()
         trajectories.append(trajectory)
 
     return trajectories
@@ -45,7 +48,7 @@ def _run_trajectory(index, system, max_steps, silent):
         if system_copy.is_finished:
             break
 
-        trajectory.add_step(change_step, step_time, system_copy)
+        trajectory.add_step(change_step, step_time)
 
         if i == max_steps-1:
             warn('Maximum number of steps reached!!')

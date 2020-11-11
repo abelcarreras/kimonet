@@ -31,8 +31,13 @@ class BaseProcess:
                  initial_states,
                  final_states,
                  description='',
-                 arguments=None
+                 arguments=None,
+                 do_copy=True,
                  ):
+
+        if do_copy:
+            initial_states = tuple([s.copy() for s in initial_states])
+            final_states = tuple([s.copy() for s in final_states])
 
         self.initial = ordered_states(initial_states)
         self._final = None
@@ -42,11 +47,13 @@ class BaseProcess:
         self.cell_states = {}
         self.arguments = arguments if arguments is not None else {}
         self._supercell = None
+        self._dict_states = None
 
         # Check input coherence
         total_size_initial = np.sum([state.size for state in initial_states])
         total_size_final = np.sum([state.size for state in final_states])
 
+        # Check initial & final states sizes match
         assert total_size_initial == total_size_final
 
     #    def __str__(self):
@@ -90,6 +97,31 @@ class BaseProcess:
             molecules_list += state.get_molecules()
 
         return molecules_list
+
+    def get_state_connections(self):
+
+        # print(self.initial, self.final)
+        if self._dict_states is None:
+            self._dict_states = {}
+            inital_states = [s for s in self.initial if s.label != _GS_.label]
+            final_states = [s for s in self.final_test if s.label != _GS_.label]
+
+            if len(inital_states) == 1:
+                # print('--', final_states)
+                self._dict_states[inital_states[0]] = []
+                for fstate in final_states:
+                    print(fstate.label)
+                    self._dict_states[inital_states[0]].append(fstate)
+            elif len(final_states) == 1:
+                for istate in inital_states:
+                    self._dict_states[istate] = [final_states[0]]
+            else:
+                for istate in self.initial:
+                    self._dict_states[istate] = []
+                    for fstate in self.final_test:
+                        self._dict_states[istate].append(fstate)
+
+        return self._dict_states
 
 
 class GoldenRule(BaseProcess):
