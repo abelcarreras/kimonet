@@ -113,13 +113,13 @@ class TrajectoryGraph:
         #if self.system.molecules[new_on_molecule].set_state(_GS_):
         #    print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
 
-        exit()
 
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
-                            coordinates=[list(new_on_state.get_coordinates())],
+                            coordinates=[list(new_on_state.get_coordinates_absolute())],
                             state=new_on_state.label,
-                            cell_state=[list(new_on_state.get_center().cell_state)],
+                            # cell_state=[list(new_on_state.get_center().cell_state)],
+                            cell_state=[list(new_on_state.get_center().cell_state * 0)],
                             time=[0],
                             event_time=self.times[-1],
                             index=[id(new_on_state)],
@@ -183,11 +183,11 @@ class TrajectoryGraph:
             self._finish_node(node_link['donor'])
 
             # Check if not ground state
-            final_state = process.final_test[0].label
-            if final_state != _GS_.label:
-                self._add_node(from_node=node_link['donor'],
-                               new_on_state=process.final_test[0],
-                               process_label=process.description)
+            for state in process.final_test:
+                if state.label != _GS_.label:
+                    self._add_node(from_node=node_link['donor'],
+                                   new_on_state=state,
+                                   process_label=process.description)
 
         else:
             # Intermolecular process
@@ -516,7 +516,7 @@ class TrajectoryGraph:
 
             # print('->', [np.linalg.norm(v, axis=0) for v in vector])
             # print('->', t)
-            # plt.plot(self.graph.nodes[node]['time'], [np.linalg.norm(v, axis=0) for v in vector], '-o')
+            plt.plot(self.graph.nodes[node]['time'], [np.linalg.norm(v, axis=0) for v in vector], '-o')
 
             coordinates += vector
 

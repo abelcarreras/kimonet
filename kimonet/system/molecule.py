@@ -38,7 +38,8 @@ class Molecule:
         state.add_molecule(self)
 
     def __hash__(self):
-        return hash((self._state.label,
+        return hash((
+                     # self._state.label,
                      self.name,
                      np.array2string(self._coordinates, precision=12),
                      np.array2string(self.orientation, precision=12),
