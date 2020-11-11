@@ -62,27 +62,29 @@ def get_decay_rates(state, system):
     decay_steps = []
     for process in decay_complete:
 
+        if process.initial[0].label == state.label:
 
-        elements_list = state.get_molecules()
-        group_list = [state.size for state in process.final_test]
+            elements_list = state.get_molecules()
+            group_list = [state.size for state in process.final_test]
 
-        configurations = combinations_group(elements_list, group_list, supercell=process.supercell)
+            configurations = combinations_group(elements_list, group_list, supercell=process.supercell)
 
-        for configuration in configurations:
+            for configuration in configurations:
 
-            new_process = deepcopy(process)
-            new_process.initial = [state]
+                new_process = deepcopy(process)
+                new_process.initial = (state,)
 
-            for molecules, final in zip(configuration, new_process.final_test):
-                final.remove_molecules()
-                final.cell_state = np.zeros_like(molecules[0].cell_state) # set zero to final state cell_states
-                for mol in molecules:
-                    new_process.cell_states[mol] = mol.cell_state  # keep molecules with same cell_states
-                    final.add_molecule(mol)
+                for molecules, final in zip(configuration, new_process.final_test):
+                    final.remove_molecules()
+                    final.cell_state = np.zeros_like(molecules[0].cell_state) # set zero to final state cell_states
+                    for mol in molecules:
+                        new_process.cell_states[mol] = mol.cell_state  # keep molecules with same cell_states
+                        final.add_molecule(mol)
 
-            new_process.reset_cell_states()
+                new_process.reset_cell_states()
 
-            decay_steps.append(new_process)
+                # print(new_process.initial[0].label, '--', new_process.final[0].label)
+                decay_steps.append(new_process)
 
     return decay_steps
 
