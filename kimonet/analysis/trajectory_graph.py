@@ -156,6 +156,7 @@ class TrajectoryGraph:
                       if len(list(self.graph.successors(node))) == 0 and not self.graph.nodes[node]['finished']]
 
         node_links = {}
+        created_nodes = {}
         for state in process.initial:
             for inode in end_points:
                 node = self.graph.nodes[inode]
@@ -179,10 +180,17 @@ class TrajectoryGraph:
 
                 for final_state in process.get_state_connections()[initial_state]:
                     for inode in node_links.values():
-                        self._add_node(from_node=inode,
-                                       new_on_state=final_state,
-                                       process_label=process.description)
+                        if final_state in created_nodes:
+                            self.graph.add_edge(inode,
+                                                created_nodes[final_state],
+                                                process_label=process.description)
+                        else:
+                            self._add_node(from_node=inode,
+                                           new_on_state=final_state,
+                                           process_label=process.description)
+                            created_nodes[final_state] = self.node_count - 1
 
+            # print('------', initial_state, [state.label for state in process.initial], [state.label for state in process.final_test])
         ce = {}
         for state in self.system.get_states():
             self.states.add(state.label)

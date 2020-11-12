@@ -244,7 +244,8 @@ class System:
 
     def reset(self):
         for molecule in self.molecules:
-            molecule.set_state(_GS_)
+            molecule.set_state(_GS_.copy())
+            molecule.state.supercell = self.supercell
             molecule.cell_state = np.zeros(molecule.get_dim())
         # self._centers = []
         self._reset_data()
@@ -275,8 +276,10 @@ class System:
     def remove_exciton(self, exciton):
         if exciton.label != _GS_.label:
             for mol in exciton.get_molecules():
-                mol.set_state(_GS_)
-            self._states.remove(exciton)
+                mol.set_state(_GS_.copy())
+                mol.state.supercell = self.supercell
+            if exciton in self._states:
+                self._states.remove(exciton)
         self._reset_data()
 
     def add_exciton(self, exciton):

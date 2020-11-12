@@ -17,6 +17,9 @@ def do_simulation_step(system):
         print('**** SYSTEM STATE INITIAL ****')
         for i, mol in enumerate(system.molecules):
             print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
+        print('----')
+        for state in system.get_states():
+            print(state.label, state, state.get_molecules())
         print('****************')
 
     process_collector = []                          # list with the respective processes (for all centers)
@@ -35,6 +38,9 @@ def do_simulation_step(system):
         print('**** SYSTEM STATE FINAL ****')
         for i, mol in enumerate(system.molecules):
             print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
+        print('----')
+        for state in system.get_states():
+            print(state.label, state, state.get_molecules())
         print('****************')
 
     return chosen_process, time

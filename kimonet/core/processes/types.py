@@ -110,7 +110,6 @@ class BaseProcess:
                 # print('--', final_states)
                 self._dict_states[inital_states[0]] = []
                 for fstate in final_states:
-                    print(fstate.label)
                     self._dict_states[inital_states[0]].append(fstate)
             elif len(final_states) == 1:
                 for istate in inital_states:

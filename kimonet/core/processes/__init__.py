@@ -34,10 +34,12 @@ def get_transfer_rates(state, system):
     neighbors, cell_increments = system.get_state_neighbors(state)
 
     if False:
-        print('**** SYSTEM STATE ****')
-        print('donor: ', donor.state.cell_state)
-        for i, state in enumerate(system.get_states()):
-            print(i, state.label, state, state.cell_state)
+        print('**** SYSTEM STATE INTER ****')
+        for i, mol in enumerate(system.molecules):
+            print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
+        print('----')
+        for state in system.get_states():
+            print(state.label, state, state.supercell)
         print('****************')
 
     transfer_steps = []
