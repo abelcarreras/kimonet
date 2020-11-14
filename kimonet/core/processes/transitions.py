@@ -6,6 +6,9 @@ class Transition:
         self._state2 = state2
         self._symmetric = symmetric
 
+    def __str__(self):
+        return '{} {} {}'.format(self._state1.label, self._state2.label, id(self))
+
     def __hash__(self):
         if self._symmetric:
             return hash(self._state1.label) + hash(self._state2.label)

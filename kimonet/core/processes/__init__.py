@@ -110,7 +110,16 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
             elements_list = [item for sublist in elements_list for item in sublist]
             group_list = [state.size for state in process.final_test]
 
-            configurations = combinations_group(elements_list, group_list, supercell=process.supercell)
+            def is_same_p_configuration(p_configuration_1, p_configuration_2):
+
+                sum1 = np.multiply(*[hash(state) for state in p_configuration_1])
+                sum2 = np.multiply(*[hash(state) for state in p_configuration_2])
+
+                return sum1 == sum2
+
+            include_self = not is_same_p_configuration(process.initial, process.final_test)
+
+            configurations = combinations_group(elements_list, group_list, supercell=process.supercell, include_self=include_self)
 
             for configuration in configurations:
 
@@ -119,34 +128,21 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
                 # Binding final states to initial states if equal
                 for final in new_process.final_test:
-                    final.cell_state = donor_state.cell_state * 0  # TODO: add better looking dimension independent zero set
+                    final.cell_state = np.zeros_like(donor_state.cell_state)
                     for initial in new_process.initial:
                         if initial.label == final.label and initial.label != _GS_.label:
                             final.cell_state = initial.cell_state
+
+                #for final in new_process.final_test:
+                #    final.cell_state = np.zeros_like(donor_state.cell_state)
+                #for initial, final in new_process.get_transport_connections().items():
+                #    final.cell_state = initial.cell_state
 
                 # Binding molecules to states
                 for molecules, final in zip(configuration, new_process.final_test):
                     final.remove_molecules()
                     for mol in molecules:
                         final.add_molecule(mol)
-
-                # discard self configuration
-                def is_same_p_configuration(p_configuration_1, p_configuration_2):
-                    """
-                    :param p_configuration_1:
-                    :param p_configuration_2:
-                    :return:
-                    """
-                    #for state1, state2 in zip(state_list1, state_list2):
-                    #    print(hash(state1), hash(state2))
-
-                    sum1 = np.multiply(*[hash(state) for state in p_configuration_1])
-                    sum2 = np.multiply(*[hash(state) for state in p_configuration_2])
-
-                    return sum1 == sum2
-
-                if is_same_p_configuration(new_process.initial, new_process.final_test):
-                    continue
 
                 # redefine cell states for molecules in the process
                 for mol in new_process.get_molecules():

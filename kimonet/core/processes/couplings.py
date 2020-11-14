@@ -6,6 +6,7 @@ from kimonet.core.processes.transitions import Transition
 from kimonet.utils.units import DEBYE_TO_ANGS_EL
 import kimonet.core.processes.forster as forster
 from kimonet.utils import rotate_vector
+from kimonet.system.state import ground_state as _GS_
 
 
 coupling_data = {}
@@ -39,13 +40,13 @@ def forster_coupling(initial, final, ref_index=1, transition_moment=None):
     :return: Forster coupling
     """
 
-    d_transition = Transition(initial[0], final[0])
-    a_transition = Transition(initial[1], final[1])
+    d_transition = Transition(initial[0], final[1])
+    a_transition = Transition(initial[1], final[0])
 
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute() - final[0].get_coordinates_absolute()
+    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
@@ -125,13 +126,13 @@ def forster_coupling_extended(initial, final, ref_index=1, transition_moment=Non
     :return: Forster coupling
     """
 
-    d_transition = Transition(initial[0], final[0])
-    a_transition = Transition(initial[1], final[1])
+    d_transition = Transition(initial[0], final[1])
+    a_transition = Transition(initial[1], final[0])
 
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute() - final[0].get_coordinates_absolute()
+    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,

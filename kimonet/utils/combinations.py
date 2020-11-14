@@ -47,7 +47,7 @@ def partition(elements_list, group_list):
     return partition
 
 
-def combinations_group(elements_list_o, group_list, supercell=None):
+def combinations_group(elements_list_o, group_list, supercell=None, include_self=True):
     elements_list = list(range(len(elements_list_o)))
 
     combinations_list = []
@@ -72,6 +72,9 @@ def combinations_group(elements_list_o, group_list, supercell=None):
         for c in combinations_list:
             if not is_connected(c, supercell, connected_distance=1):
                 combinations_list.remove(c)
+
+    if not include_self:
+        combinations_list = combinations_list[1:]
 
     return combinations_list
 

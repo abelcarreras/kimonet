@@ -22,7 +22,7 @@ s1 = State(label='s1', energy=1.0, multiplicity=1)
 # custom transfer function
 def transfer_rate(initial, final, custom_constant=1):
 
-    r_vector = initial[1].get_coordinates_absolute() - final[0].get_coordinates_absolute()
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
     distance = np.linalg.norm(r_vector)
 
     return custom_constant / distance ** 2

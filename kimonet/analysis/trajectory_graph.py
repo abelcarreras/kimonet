@@ -178,7 +178,7 @@ class TrajectoryGraph:
                 # splitting & merging
                 self._finish_node(inode)
 
-                for final_state in process.get_state_connections()[initial_state]:
+                for final_state in process.get_transition_connections()[initial_state]:
                     for inode in node_links.values():
                         if final_state in created_nodes:
                             self.graph.add_edge(inode,

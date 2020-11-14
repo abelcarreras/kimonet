@@ -280,6 +280,10 @@ class System:
                 mol.state.supercell = self.supercell
             if exciton in self._states:
                 self._states.remove(exciton)
+#        else:
+#            exciton.cell_state *= 0
+#            exciton.reset_molecules()
+
         self._reset_data()
 
     def add_exciton(self, exciton):
@@ -288,8 +292,10 @@ class System:
                 mol.set_state(exciton)
 
             self._states.append(exciton)
-        else:
-            exciton.reset_molecules()
+ #       else:
+ #           exciton.cell_state *= 0
+ #           exciton.reset_molecules()
+
         self._reset_data()
 
     def add_excitation_random(self, type, n):

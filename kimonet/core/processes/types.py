@@ -16,6 +16,10 @@ def ordered_states(state_list):
     :param state_list: List of states behind and
     :return: ordered List
     """
+    labels = [s.label for s in state_list]
+    indices = np.argsort(labels)
+    state_list = np.array(state_list)[indices].tolist()
+
     ordered_list = []
     for state in state_list:
         if state.label == _GS_.label:
@@ -39,15 +43,17 @@ class BaseProcess:
             initial_states = tuple([s.copy() for s in initial_states])
             final_states = tuple([s.copy() for s in final_states])
 
-        self.initial = ordered_states(initial_states)
+        self._initial = ordered_states(initial_states)
+        self._final_test = ordered_states(deepcopy(final_states))
+
         self._final = None
-        self.final_test = deepcopy(final_states)
 
         self.description = description
         self.cell_states = {}
         self.arguments = arguments if arguments is not None else {}
         self._supercell = None
-        self._dict_states = None
+        self._transition_connect = None
+        self._tansport_connect = None
 
         # Check input coherence
         total_size_initial = np.sum([state.size for state in initial_states])
@@ -73,6 +79,26 @@ class BaseProcess:
         return self._final
 
     @property
+    def initial(self):
+        return self._initial
+
+    @initial.setter
+    def initial(self, state_list):
+        self._transition_connect = None
+        self._tansport_connect = None
+        self._initial = state_list
+
+    @property
+    def final_test(self):
+        self._transition_connect = None
+        self._tansport_connect = None
+        return self._final_test
+
+    @final_test.setter
+    def final_test(self, state_list):
+        self._final_test = state_list
+
+    @property
     def supercell(self):
         if self._supercell is None:
             raise Exception('No supercell')
@@ -93,34 +119,53 @@ class BaseProcess:
     def get_molecules(self):
 
         molecules_list = []
-        for state in self.initial:
+        for state in self._initial:
             molecules_list += state.get_molecules()
 
         return molecules_list
 
-    def get_state_connections(self):
+    def get_transport_connections(self):
+        """
+        Get the connections between initial and final states
+        that are considered to be transport (same state moving)
+        :return:
+        """
+        if self._tansport_connect is None:
+            self._tansport_connect = {}
+            for istate in self._initial:
+                for fstate in self._final_test:
+                    if istate.label == istate.label and istate.label != _GS_.label:
+                        self._tansport_connect[istate] = fstate
+        return self._tansport_connect
+
+    def get_transition_connections(self):
+        """
+        Get the connections between initial and final states
+        that are considered to be transitions (state converting to other)
+        :return:
+        """
 
         # print(self.initial, self.final)
-        if self._dict_states is None:
-            self._dict_states = {}
-            inital_states = [s for s in self.initial if s.label != _GS_.label]
-            final_states = [s for s in self.final_test if s.label != _GS_.label]
+        if self._transition_connect is None:
+            self._transition_connect = {}
+            inital_states = [s for s in self._initial if s.label != _GS_.label]
+            final_states = [s for s in self._final_test if s.label != _GS_.label]
 
             if len(inital_states) == 1:
                 # print('--', final_states)
-                self._dict_states[inital_states[0]] = []
+                self._transition_connect[inital_states[0]] = []
                 for fstate in final_states:
-                    self._dict_states[inital_states[0]].append(fstate)
+                    self._transition_connect[inital_states[0]].append(fstate)
             elif len(final_states) == 1:
                 for istate in inital_states:
-                    self._dict_states[istate] = [final_states[0]]
+                    self._transition_connect[istate] = [final_states[0]]
             else:
-                for istate in self.initial:
-                    self._dict_states[istate] = []
+                for istate in self._initial:
+                    self._transition_connect[istate] = []
                     for fstate in self.final_test:
-                        self._dict_states[istate].append(fstate)
+                        self._transition_connect[istate].append(fstate)
 
-        return self._dict_states
+        return self._transition_connect
 
 
 class GoldenRule(BaseProcess):
@@ -142,8 +187,8 @@ class GoldenRule(BaseProcess):
         return self._vibrations
 
     def get_fcwd(self):
-        transition_donor = (self.initial[0], self.final[0])
-        transition_acceptor = (self.initial[1], self.final[1])
+        transition_donor = (self.initial[0], self.final[1])
+        transition_acceptor = (self.initial[1], self.final[0])
 
         donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
         acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
