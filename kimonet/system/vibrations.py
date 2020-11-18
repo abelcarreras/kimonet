@@ -18,14 +18,14 @@ class MarcusModel:
             for key in list(external_reorganization_energies):
                 external_reorganization_energies[key[::-1]] = external_reorganization_energies[key]
         """
-        self.reorganization_energies = reorganization_energies
+        #self.reorganization_energies = reorganization_energies
         self.temperature = temperature
         # self.state_energies = None
 
         # symmetrize external reorganization energies
         # print(item[0] for item in reorganization_energies.items())
-        #self.reorganization_energies = {Transition(*key, symmetric=False): item
-        #                                for key, item in reorganization_energies.items()}
+        self.reorganization_energies = {Transition(*key, symmetric=False): item
+                                        for key, item in reorganization_energies.items()}
 
     def __hash__(self):
         return hash((str(self.reorganization_energies)))

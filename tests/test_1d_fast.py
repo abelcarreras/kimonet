@@ -124,8 +124,8 @@ class Test1DFast(unittest.TestCase):
                                                  arguments={'ref_index': 1,
                                                             'transition_moment': {Transition(s1, gs): [0.01]}},
                                                  vibrations=MarcusModel(reorganization_energies={
-                                                     Transition(gs, s1, symmetric=False): 0.07,
-                                                     Transition(s1, gs, symmetric=False): 0.07})
+                                                     (gs, s1): 0.07,
+                                                     (s1, gs): 0.07})
                                                  ),
                                       DecayRate(initial_states=s1, final_states=gs,
                                                 decay_rate_function=decay_rate,

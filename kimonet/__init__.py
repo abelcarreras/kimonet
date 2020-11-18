@@ -28,6 +28,7 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
             if i == max_steps-1:
                 warn('Maximum number of steps reached!!')
 
+        # trajectory.plot_2d('s1').show()
         # trajectory.plot_distances('s1').show()
         # trajectory.plot_distances('s2').show()
         # trajectory.plot_graph().show()

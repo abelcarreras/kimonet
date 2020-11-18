@@ -45,8 +45,8 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-        marcus = MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
-                                                      Transition(gs, s1, symmetric=False): 0.08},
+        marcus = MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
+                                                      (gs, s1): 0.08},
                              temperature=300)  # Kelvin
 
         # list of transfer functions by state

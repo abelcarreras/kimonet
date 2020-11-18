@@ -150,7 +150,6 @@ class BaseProcess:
             self._transition_connect = {}
             inital_states = [s for s in self._initial if s.label != _GS_.label]
             final_states = [s for s in self._final_test if s.label != _GS_.label]
-
             if len(inital_states) == 1:
                 # print('--', final_states)
                 self._transition_connect[inital_states[0]] = []

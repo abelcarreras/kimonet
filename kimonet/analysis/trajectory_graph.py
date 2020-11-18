@@ -130,12 +130,12 @@ class TrajectoryGraph:
     def _append_to_node(self, on_node, add_state):
         node = self.graph.nodes[on_node]
 
-        add_molecule = self.system.get_molecule_index(add_state.get_center()) # TODO: Old method, to be removed
+        # add_molecule = self.system.get_molecule_index(add_state.get_center()) # TODO: Old method, to be removed
         # print('cell_state: ', add_state.get_center().cell_state, add_state.cell_state)
 
         node['index'].append(id(add_state))
-        #node['coordinates'].append(list(add_state.get_coordinates_2()))
-        #node['cell_state'].append(list(add_state.get_center().cell_state_2))
+        # node['coordinates'].append(list(add_state.get_coordinates_2()))
+        # node['cell_state'].append(list(add_state.get_center().cell_state_2))
 
         node['coordinates'].append(list(add_state.get_coordinates_absolute()))
         node['cell_state'].append(list(add_state.get_center().cell_state*0))  # TODO: This entry will be removed
@@ -161,8 +161,11 @@ class TrajectoryGraph:
             for inode in end_points:
                 node = self.graph.nodes[inode]
                 if node['index'][-1] == id(state):
-                    node_links[state] = inode
-                    break
+                    if state.label != _GS_.label:  # Check this no GS should be found!!!!
+                        node_links[state] = inode
+                        break
+                    else:
+                        print('warning!')
 
         for initial_state, inode in node_links.items():
 
@@ -344,6 +347,9 @@ class TrajectoryGraph:
         else:
             node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == state]
 
+        if len(node_list) == 0:
+            warnings.warn('Exciton {} not found for plot'.format(state))
+
         t = []
         coordinates = []
         for node in node_list:
@@ -374,7 +380,7 @@ class TrajectoryGraph:
             return plt
 
         # plt.plot(coordinates[0], coordinates[1], '-o')
-        plt.title('exciton trajectories ({})'.format(state))
+        plt.title('exciton trajectories ({})'.format(state if state is not None else 'All'))
 
         return plt
 

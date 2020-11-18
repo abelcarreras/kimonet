@@ -111,6 +111,8 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
             group_list = [state.size for state in process.final_test]
 
             def is_same_p_configuration(p_configuration_1, p_configuration_2):
+                if len(p_configuration_1) != len(p_configuration_2):
+                    return False
 
                 sum1 = np.multiply(*[hash(state) for state in p_configuration_1])
                 sum2 = np.multiply(*[hash(state) for state in p_configuration_2])
