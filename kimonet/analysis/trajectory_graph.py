@@ -67,8 +67,10 @@ class TrajectoryGraph:
 
         self.graph = nx.DiGraph()
 
-        for i, state in enumerate(system.get_states()):
-            self.graph.add_node(i,
+        for inode, state in enumerate(system.get_states()):
+            # print('add_node', inode, state.label, state)
+
+            self.graph.add_node(inode,
                                 coordinates=[list(state.get_coordinates())],
                                 state=state.label,
                                 #cell_state=[list(state.get_center().cell_state)],
@@ -126,6 +128,7 @@ class TrajectoryGraph:
                             finished=False
                             )
         self.node_count += 1
+        return self.node_count - 1
 
     def _append_to_node(self, on_node, add_state):
         node = self.graph.nodes[on_node]
@@ -134,9 +137,6 @@ class TrajectoryGraph:
         # print('cell_state: ', add_state.get_center().cell_state, add_state.cell_state)
 
         node['index'].append(id(add_state))
-        # node['coordinates'].append(list(add_state.get_coordinates_2()))
-        # node['cell_state'].append(list(add_state.get_center().cell_state_2))
-
         node['coordinates'].append(list(add_state.get_coordinates_absolute()))
         node['cell_state'].append(list(add_state.get_center().cell_state*0))  # TODO: This entry will be removed
 
@@ -150,44 +150,59 @@ class TrajectoryGraph:
         :param time_step: duration of the chosen process
         """
 
+        #print('-------------------------------')
+        #print('process: ', process.description)
+
         self.times.append(self.times[-1] + time_step)
 
         end_points = [node for node in self.graph.nodes
                       if len(list(self.graph.successors(node))) == 0 and not self.graph.nodes[node]['finished']]
 
+        #print('end_points', end_points)
+        #print('initial: ', process.initial)
         node_links = {}
         created_nodes = {}
         for state in process.initial:
             for inode in end_points:
                 node = self.graph.nodes[inode]
                 if node['index'][-1] == id(state):
-                    if state.label != _GS_.label:  # Check this no GS should be found!!!!
-                        node_links[state] = inode
-                        break
-                    else:
-                        print('warning!')
+                    node_links[state] = inode
+                    break
+
+        #print('node_links', node_links)
+        if len(node_links) == 0:
+            exit()
 
         for initial_state, inode in node_links.items():
 
-            finish_node = True
-            for final_state in process.final_test:
-                if (initial_state.label == final_state.label and final_state.label != _GS_.label):
+
+            #for final_state in process.final_test:
+            #    if (initial_state.label == final_state.label and final_state.label != _GS_.label):
+            #        # Transfer
+            #        print('append:', inode, final_state.label, final_state)
+            #        self._append_to_node(on_node=inode,
+            #                             add_state=final_state)
+            #        finish_node = False
+
+            if initial_state in process.get_transport_connections():
+                for final_state in process.get_transport_connections()[initial_state]:
                     # Transfer
+                    #print('append:', inode, final_state.label, final_state)
                     self._append_to_node(on_node=inode,
                                          add_state=final_state)
-                    finish_node = False
-
-            if finish_node:
+            else:
                 # splitting & merging
                 self._finish_node(inode)
 
                 for final_state in process.get_transition_connections()[initial_state]:
-                    for inode in node_links.values():
+                    #for inode in node_links.values():
                         if final_state in created_nodes:
+                            #print('add edge: ', inode, '-', created_nodes[final_state], final_state.label, final_state)
                             self.graph.add_edge(inode,
                                                 created_nodes[final_state],
                                                 process_label=process.description)
                         else:
+                            #print('add_node: ', inode, '-', self.node_count, final_state.label, final_state)
                             self._add_node(from_node=inode,
                                            new_on_state=final_state,
                                            process_label=process.description)

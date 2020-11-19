@@ -275,11 +275,11 @@ class System:
 
     def remove_exciton(self, exciton):
         if exciton.label != _GS_.label:
+            self._states.remove(exciton)
             for mol in exciton.get_molecules():
                 mol.set_state(_GS_.copy())
                 mol.state.supercell = self.supercell
-            if exciton in self._states:
-                self._states.remove(exciton)
+            # if exciton in self._states:
 #        else:
 #            exciton.cell_state *= 0
 #            exciton.reset_molecules()
@@ -325,8 +325,10 @@ class System:
         return np.abs(np.linalg.det(self.supercell))
 
     def update(self, process):
-        for initial, final in zip(process.initial, process.final_test):
+        for initial in process.initial:
             self.remove_exciton(initial)
+
+        for final in process.final_test:
             for mol in final.get_molecules():
                 if final.label != _GS_.label:
                     mol.cell_state = process.cell_states[mol]
@@ -335,6 +337,13 @@ class System:
 
         process.reset_cell_states()
         self._reset_data()
+
+    def print_status(self):
+        for i, mol in enumerate(self.molecules):
+            print(i, mol.state.label, mol.state, mol.state.cell_state, mol.name, mol)
+        print('----')
+        for state in self.get_states():
+            print(state.label, state, state.get_molecules())
 
 
 if __name__ == '__main__':
@@ -372,7 +381,6 @@ if __name__ == '__main__':
         # print(s.label, s.get_coordinates_absolute(system.supercell) - s1.get_center().get_coordinates())
 
     print('----')
-
 
     s_list, c_list = system.get_state_neighbors(s1)
     for s, c in zip(s_list, c_list):

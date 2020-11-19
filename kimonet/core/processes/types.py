@@ -54,6 +54,7 @@ class BaseProcess:
         self._supercell = None
         self._transition_connect = None
         self._tansport_connect = None
+        self._is_symmetry = None
 
         # Check input coherence
         total_size_initial = np.sum([state.size for state in initial_states])
@@ -110,6 +111,20 @@ class BaseProcess:
         for state in self.final_test:
             state.supercell = cell
 
+    def is_symmetry(self):
+        if self._is_symmetry is None:
+            label_list = [s.label for s in self._initial]
+            self._is_symmetry = not len(np.unique(label_list)) == len(label_list)
+
+        return self._is_symmetry
+
+    def get_self_interaction_process(self):
+        """
+        By default not allow self interaction in this process
+        :return:
+        """
+        return None
+
     def reset_cell_states(self):
         self.cell_states.clear()
         for state in self.final_test:
@@ -134,8 +149,12 @@ class BaseProcess:
             self._tansport_connect = {}
             for istate in self._initial:
                 for fstate in self._final_test:
-                    if istate.label == istate.label and istate.label != _GS_.label:
-                        self._tansport_connect[istate] = fstate
+                    if istate.label == fstate.label and istate.label != _GS_.label:
+                        if istate in self._tansport_connect:
+                            self._tansport_connect[istate].append(fstate)
+                        else:
+                            self._tansport_connect[istate] = [fstate]
+
         return self._tansport_connect
 
     def get_transition_connections(self):

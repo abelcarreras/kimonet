@@ -103,6 +103,12 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
     allowed_processes = []
     for process in transfer_scheme:
+
+        if donor_state == acceptor_state:
+            process = process.get_self_interaction_process()
+            if process is None:
+                continue
+
         if (process.initial[0].label, process.initial[1].label) == (donor_state.label, acceptor_state.label):
 
             # Getting all possible configurations for the final states
@@ -129,16 +135,18 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
                 new_process.initial = (donor_state, acceptor_state)
 
                 # Binding final states to initial states if equal
-                for final in new_process.final_test:
-                    final.cell_state = np.zeros_like(donor_state.cell_state)
-                    for initial in new_process.initial:
-                        if initial.label == final.label and initial.label != _GS_.label:
-                            final.cell_state = initial.cell_state
-
                 #for final in new_process.final_test:
                 #    final.cell_state = np.zeros_like(donor_state.cell_state)
-                #for initial, final in new_process.get_transport_connections().items():
-                #    final.cell_state = initial.cell_state
+                #    for initial in new_process.initial:
+                #        if initial.label == final.label and initial.label != _GS_.label:
+                #            print(final, initial)
+                #            final.cell_state = initial.cell_state
+
+                for final in new_process.final_test:
+                    final.cell_state = np.zeros_like(donor_state.cell_state)
+                for initial, final_list in new_process.get_transport_connections().items():
+                    for final in final_list:
+                        final.cell_state = initial.cell_state
 
                 # Binding molecules to states
                 for molecules, final in zip(configuration, new_process.final_test):
