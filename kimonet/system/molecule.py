@@ -41,8 +41,8 @@ class Molecule:
         return hash((
                      # self._state.label,
                      self.name,
-                     self._coordinates.tostring(),
-                     self.orientation.tostring()
+                     self._coordinates.tobytes(),
+                     self.orientation.tobytes()
                      # np.array2string(self._cell_state, precision=12)
                      )
                     )

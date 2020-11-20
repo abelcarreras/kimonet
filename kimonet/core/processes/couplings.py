@@ -15,10 +15,10 @@ coupling_data = {}
 def generate_hash_2(function_name, d_transition, a_transition, d_orientation, a_orientation, r_vector, data_list):
 
     return hash((d_transition, a_transition,
-                 d_orientation.tostring(),
-                 a_orientation.tostring(),
+                 d_orientation.tobytes(),
+                 a_orientation.tobytes(),
                  function_name, tuple(data_list),
-                 np.array(r_vector).tostring()))
+                 np.array(r_vector).tobytes()))
 
 
 def generate_hash(function_name, donor, acceptor, conditions, supercell, cell_incr):

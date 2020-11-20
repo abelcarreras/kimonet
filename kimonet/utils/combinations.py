@@ -42,7 +42,7 @@ def is_connected(molecules_list, supercell, connected_distance=1):
 def partition(elements_list, group_list):
 
     partition = []
-    n=0
+    n = 0
     for i in group_list:
         partition.append(tuple(elements_list[n: n+i]))
         n += i
@@ -56,7 +56,6 @@ def combinations_group(elements_list_o, group_list, supercell=None, include_self
 
     combinations_list = []
 
-    #print(elements_list, group_list)
     if (elements_list, group_list) not in combinations_data:
 
         def combination(data_list, i, cumulative_list):
@@ -88,60 +87,13 @@ def combinations_group(elements_list_o, group_list, supercell=None, include_self
 
     return combinations_list
 
-def distance_pairs(center_position, system, supercell, l=1):
 
-    # Set maximum possible distance everywhere
-    distances = np.ones_like(system) * np.product(np.diag(supercell))
+def get_molecules_centered_in_mol(central_mol, molecules_list, supercell, size=1, connected_distance=1):
+    for c in itertools.combinations(molecules_list, size):
+        if central_mol in c and is_connected([c], supercell, connected_distance=connected_distance):
+            return list(c)
 
-    pairs = []
-
-    for vector in itertools.product(*[range(len(system))]):
-        print(vector)
-        coordinates = np.array(vector)
-        center_position = np.array(center_position)
-        cell_increments = get_supercell_increments(supercell, l)
-        for cell_increment in cell_increments:
-            r_vec = distance_vector_periodic(coordinates - center_position, supercell, cell_increment)
-            d = np.linalg.norm(r_vec)
-
-            if distances[vector] > d and system[vector] < 1:
-                pairs.append((vector, r_vec))
-
-    return pairs
-
-
-def get_exciton_space(position, system, supercell, size=1, l=1):
-
-    # Check if site is occupied
-    if system[position].label != _GS_.label:
-        return False
-
-    pairs = distance_pairs(position, system, supercell, l=1)
-    indices = np.argsort([np.linalg.norm(item[1]) for item in pairs])
-
-    # Check if enough neighbors
-    if len(indices) < size:
-        return False
-
-    print(len(pairs))
-    print(len(list(itertools.combinations(pairs, size))))
-
-    path = []
-    for i in range(size):
-        print('pair', pairs[indices[i]], np.linalg.norm(pairs[indices[i]][1]))
-        system[tuple(pairs[indices[i]][0])] = 2
-        path.append(pairs[indices[i]])
-
-    # check if connected
-    d = distance_matrix(path)
-    print('d')
-    print(d)
-    print(np.min(np.ma.masked_where(d == 0, d), axis=1))
-    print(l >= np.min(np.ma.masked_where(d == 0, d), axis=1))
-    if not np.all(l >= np.min(np.ma.masked_where(d == 0, d), axis=1)):
-        return False
-
-    return True
+    return None
 
 
 if __name__ == '__main__':
@@ -182,11 +134,10 @@ if __name__ == '__main__':
     for c in combinations_list:
         print('total: ', c)
 
-
     a = distance_matrix(test_list, supercell, max_distance=1)
     print(a)
 
+    print('centered:', molecule1)
+    mols = get_molecules_centered_in_mol(molecule1, test_list, supercell, size=3)
+    print('mols: ', mols)
     exit()
-
-    a = get_exciton_space(position=1, system=test_list, supercell=supercell, size=2)
-    print('a: ', a)

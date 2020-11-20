@@ -4,7 +4,7 @@ import copy
 from scipy.spatial import distance
 from kimonet.utils import distance_vector_periodic
 from kimonet.system.state import ground_state as _GS_
-
+from kimonet.utils.combinations import get_molecules_centered_in_mol
 
 class System:
     def __init__(self,
@@ -265,12 +265,21 @@ class System:
 
         state = state.copy()
         state.supercell = self.supercell
+
+        gs_list = [s.get_center() for s in self.get_ground_states()]
+        mol_list = get_molecules_centered_in_mol(self.molecules[index], gs_list, self.supercell,
+                                                 size=state.size, connected_distance=2)
+        if mol_list is None:
+            raise Exception('Not enough space is system')
+
         if state.label == _GS_.label:
             self._states.remove(self.molecules[index].state)
         else:
             self._states.append(state)
 
-        self.molecules[index].set_state(state)
+        for molecule in mol_list:
+            molecule.set_state(state)
+
         self._reset_data()
 
     def remove_exciton(self, exciton):
@@ -298,15 +307,32 @@ class System:
 
         self._reset_data()
 
-    def add_excitation_random(self, type, n):
-        for i in range(n):
-            while True:
-                num = np.random.randint(0, self.get_num_molecules())
-                if self.molecules[num].state == _GS_:
-                    # self.molecules[num] = type
-                    self.add_excitation_index(type, num)
-                    break
-        self._reset_data()
+    def add_excitation_random(self, exciton_ref, n_states):
+        max_cycles = len(self.molecules) * 2
+        for i in range(n_states):
+            for nc in range(max_cycles):
+
+                gs_list = [s.get_center() for s in self.get_ground_states()]
+                choice_state = np.random.choice(gs_list, 1)
+
+                exciton = exciton_ref.copy()
+                exciton.supercell = self.supercell
+
+                mol_list = get_molecules_centered_in_mol(choice_state, gs_list, self.supercell,
+                                                         size=exciton.size, connected_distance=2)
+
+                if mol_list is None:
+                    if nc == max_cycles - 1:
+                        raise Exception('Not enough space in system')
+                    continue
+
+                self._states.append(exciton)
+
+                for molecule in mol_list:
+                    molecule.set_state(exciton)
+
+                self._reset_data()
+                break
 
     def add_excitation_center(self, type):
         center_coor = np.diag(self.supercell)/2
