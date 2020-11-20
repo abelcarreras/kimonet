@@ -104,6 +104,7 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
     allowed_processes = []
     for process in transfer_scheme:
 
+        # handle self interaction
         if donor_state == acceptor_state:
             process = process.get_self_interaction_process()
             if process is None:

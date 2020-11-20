@@ -73,13 +73,9 @@ class TrajectoryGraph:
             self.graph.add_node(inode,
                                 coordinates=[list(state.get_coordinates())],
                                 state=state.label,
-                                #cell_state=[list(state.get_center().cell_state)],
-                                cell_state=[list(state.get_center().cell_state*0)],
                                 time=[0],
                                 event_time=0,
-                                #index=[system.get_molecule_index(state.get_center())],
                                 index=[id(state)],
-
                                 finished=False,
                                 )
 
@@ -107,7 +103,6 @@ class TrajectoryGraph:
             node['index'].append(node['index'][-1])
             node['coordinates'].append(node['coordinates'][-1])
             node['time'].append(self.times[-1] - node['event_time'])
-            node['cell_state'].append(node['cell_state'][-1])
             node['finished'] = True
 
     def _add_node(self, from_node, new_on_state, process_label=None):
@@ -120,8 +115,6 @@ class TrajectoryGraph:
         self.graph.add_node(self.node_count,
                             coordinates=[list(new_on_state.get_coordinates_absolute())],
                             state=new_on_state.label,
-                            # cell_state=[list(new_on_state.get_center().cell_state)],
-                            cell_state=[list(new_on_state.get_center().cell_state * 0)],
                             time=[0],
                             event_time=self.times[-1],
                             index=[id(new_on_state)],
@@ -133,13 +126,8 @@ class TrajectoryGraph:
     def _append_to_node(self, on_node, add_state):
         node = self.graph.nodes[on_node]
 
-        # add_molecule = self.system.get_molecule_index(add_state.get_center()) # TODO: Old method, to be removed
-        # print('cell_state: ', add_state.get_center().cell_state, add_state.cell_state)
-
         node['index'].append(id(add_state))
         node['coordinates'].append(list(add_state.get_coordinates_absolute()))
-        node['cell_state'].append(list(add_state.get_center().cell_state*0))  # TODO: This entry will be removed
-
         node['time'].append(self.times[-1] - node['event_time'])
 
     def add_step(self, process, time_step):
@@ -150,16 +138,16 @@ class TrajectoryGraph:
         :param time_step: duration of the chosen process
         """
 
-        #print('-------------------------------')
-        #print('process: ', process.description)
+        # print('-------------------------------')
+        # print('process: ', process.description)
 
         self.times.append(self.times[-1] + time_step)
 
         end_points = [node for node in self.graph.nodes
                       if len(list(self.graph.successors(node))) == 0 and not self.graph.nodes[node]['finished']]
 
-        #print('end_points', end_points)
-        #print('initial: ', process.initial)
+        # print('end_points', end_points)
+        # print('initial: ', process.initial)
         node_links = {}
         created_nodes = {}
         for state in process.initial:
@@ -169,12 +157,11 @@ class TrajectoryGraph:
                     node_links[state] = inode
                     break
 
-        #print('node_links', node_links)
+        # print('node_links', node_links)
         if len(node_links) == 0:
             exit()
 
         for initial_state, inode in node_links.items():
-
 
             #for final_state in process.final_test:
             #    if (initial_state.label == final_state.label and final_state.label != _GS_.label):
@@ -187,7 +174,7 @@ class TrajectoryGraph:
             if initial_state in process.get_transport_connections():
                 for final_state in process.get_transport_connections()[initial_state]:
                     # Transfer
-                    #print('append:', inode, final_state.label, final_state)
+                    # print('append:', inode, final_state.label, final_state)
                     self._append_to_node(on_node=inode,
                                          add_state=final_state)
             else:
@@ -195,20 +182,18 @@ class TrajectoryGraph:
                 self._finish_node(inode)
 
                 for final_state in process.get_transition_connections()[initial_state]:
-                    #for inode in node_links.values():
-                        if final_state in created_nodes:
-                            #print('add edge: ', inode, '-', created_nodes[final_state], final_state.label, final_state)
-                            self.graph.add_edge(inode,
-                                                created_nodes[final_state],
-                                                process_label=process.description)
-                        else:
-                            #print('add_node: ', inode, '-', self.node_count, final_state.label, final_state)
-                            self._add_node(from_node=inode,
-                                           new_on_state=final_state,
-                                           process_label=process.description)
-                            created_nodes[final_state] = self.node_count - 1
+                    if final_state in created_nodes:
+                        # print('add edge: ', inode, '-', created_nodes[final_state], final_state.label, final_state)
+                        self.graph.add_edge(inode,
+                                            created_nodes[final_state],
+                                            process_label=process.description)
+                    else:
+                        # print('add_node: ', inode, '-', self.node_count, final_state.label, final_state)
+                        created_nodes[final_state] = self._add_node(from_node=inode,
+                                                                    new_on_state=final_state,
+                                                                    process_label=process.description)
 
-            # print('------', initial_state, [state.label for state in process.initial], [state.label for state in process.final_test])
+        # print('------', initial_state, [state.label for state in process.initial], [state.label for state in process.final_test])
         ce = {}
         for state in self.system.get_states():
             self.states.add(state.label)
@@ -268,12 +253,8 @@ class TrajectoryGraph:
             # print('node**', node)
 
             initial = np.array(self.graph.nodes[node]['coordinates'][0])
-            cell_state_i = self.graph.nodes[node]['cell_state'][0]
-
-            # print('cell**', self.G.nodes[node]['cell_state'], len(self.G.nodes[node]['cell_state']))
-            for coordinate, cell_state in zip(self.graph.nodes[node]['coordinates'], self.graph.nodes[node]['cell_state']):
-                lattice = np.dot(self.supercell.T, cell_state) - np.dot(self.supercell.T, cell_state_i)
-                vector.append(np.array(coordinate) - lattice - initial)
+            for coordinate in self.graph.nodes[node]['coordinates']:
+                vector.append(np.array(coordinate) - initial)
 
         vector = np.array(vector).T
         return vector, t
@@ -375,11 +356,8 @@ class TrajectoryGraph:
 
             else:
                 vector = []
-                initial = self.graph.nodes[node]['coordinates'][0]
-                for cell_state, coordinate in zip(self.graph.nodes[node]['cell_state'], self.graph.nodes[node]['coordinates']):
-                    lattice = np.dot(self.supercell.T, cell_state)
-                    vector.append(np.array(coordinate) - lattice)
-                    # print(lattice)
+                for coordinate in self.graph.nodes[node]['coordinates']:
+                    vector.append(np.array(coordinate))
                 coordinates += vector
                 # print(vector)
                 plt.plot(np.array(vector).T[0], np.array(vector).T[1], '-o')
@@ -413,12 +391,9 @@ class TrajectoryGraph:
 
             vector = []
             initial = self.graph.nodes[node]['coordinates'][0]
-            cell_state_i = self.graph.nodes[node]['cell_state'][0]
 
-            for cell_state, coordinate in zip(self.graph.nodes[node]['cell_state'], self.graph.nodes[node]['coordinates']):
-                lattice = np.dot(self.supercell.T, cell_state) - np.dot(self.supercell.T, cell_state_i)
-                vector.append(np.array(coordinate) - lattice - initial)
-                # print('lattice: ', lattice)
+            for coordinate in self.graph.nodes[node]['coordinates']:
+                vector.append(np.array(coordinate) - initial)
 
             # print('->', [np.linalg.norm(v, axis=0) for v in vector])
             # print('->', t)
@@ -450,12 +425,8 @@ class TrajectoryGraph:
 
             vector = []
             initial = np.array(self.graph.nodes[node]['coordinates'][0])
-            cell_state_i = self.graph.nodes[node]['cell_state'][0]
             final = np.array(self.graph.nodes[node]['coordinates'][-1])
-            cell_state_f = self.graph.nodes[node]['cell_state'][-1]
-
-            lattice = np.dot(self.supercell.T, cell_state_f) - np.dot(self.supercell.T, cell_state_i)
-            vector.append(final - lattice - initial)
+            vector.append(final - initial)
 
             coordinates += vector
 
@@ -505,18 +476,10 @@ class TrajectoryGraph:
         dot_list = []
         for node in node_list:
             # print('node', node)
-
-
             coordinates_i = np.array(self.graph.nodes[node]['coordinates'][0])
-            cell_state_i = np.array(self.graph.nodes[node]['cell_state'][0])
-
             coordinates_f = np.array(self.graph.nodes[node]['coordinates'][-1])
-            cell_state_f = np.array(self.graph.nodes[node]['cell_state'][-1])
 
-            # print('cell', cell_state_f, cell_state_i)
-            lattice_diff = np.dot(self.supercell.T, cell_state_f) - np.dot(self.supercell.T, cell_state_i)
-
-            vector = coordinates_f - lattice_diff - coordinates_i
+            vector = coordinates_f - coordinates_i
 
             dot_list.append(np.dot(vector, vector))
 
@@ -534,14 +497,8 @@ class TrajectoryGraph:
         distances = []
         for node in node_list:
             coordinates_i = np.array(self.graph.nodes[node]['coordinates'][0])
-            cell_state_i = np.array(self.graph.nodes[node]['cell_state'][0])
-
             coordinates_f = np.array(self.graph.nodes[node]['coordinates'][-1])
-            cell_state_f = np.array(self.graph.nodes[node]['cell_state'][-1])
-
-            lattice_diff = np.dot(self.supercell.T, cell_state_f) - np.dot(self.supercell.T, cell_state_i)
-
-            vector = coordinates_f - lattice_diff - coordinates_i
+            vector = coordinates_f - coordinates_i
 
             distances.append(vector)
 

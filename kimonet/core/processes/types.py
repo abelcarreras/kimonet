@@ -5,6 +5,7 @@ from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
 from copy import deepcopy
 from kimonet.system.state import ground_state as _GS_
+from kimonet.utils.combinations import combinations_group
 
 
 overlap_data = {}
@@ -185,6 +186,26 @@ class BaseProcess:
 
         return self._transition_connect
 
+    def get_combinations(self, donor_state, acceptor_state):
+
+        elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
+        elements_list = [item for sublist in elements_list for item in sublist]
+        group_list = [state.size for state in self._final_test]
+
+        def is_same_p_configuration(p_configuration_1, p_configuration_2):
+            if len(p_configuration_1) != len(p_configuration_2):
+                return False
+
+            sum1 = np.multiply(*[hash(state) for state in p_configuration_1])
+            sum2 = np.multiply(*[hash(state) for state in p_configuration_2])
+
+            return sum1 == sum2
+
+        include_self = not is_same_p_configuration(self._initial, self._final_test)
+
+        configurations = combinations_group(elements_list, group_list, supercell=self._supercell, include_self=include_self)
+
+        return configurations
 
 class GoldenRule(BaseProcess):
     def __init__(self,
