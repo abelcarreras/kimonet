@@ -334,19 +334,6 @@ class System:
                 self._reset_data()
                 break
 
-    def add_excitation_center(self, type):
-        center_coor = np.diag(self.supercell)/2
-        min = np.linalg.norm(self.supercell[0])
-        index = 0
-        for i, molecule in enumerate(self.molecules):
-            dist = distance.euclidean(center_coor, molecule.get_coordinates())
-            if dist < min:
-                min = dist
-                index = i
-
-        self.add_excitation_index(type, index)
-        self._reset_data()
-
     def get_volume(self):
         return np.abs(np.linalg.det(self.supercell))
 
