@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def kmc_algorithm(process_list, system):
+def kmc_algorithm(process_list):
     """
     :param rate_list: List with all the computed rates for all the neighbours for all the centers
     :param process_list: List of elements dict(center, process, new molecule).
@@ -14,33 +14,33 @@ def kmc_algorithm(process_list, system):
                 time: the duration of the process
     """
 
-    rate_list = [proc.get_rate_constant(system.conditions, system.supercell) for proc in process_list]
+    rates_list = [proc.get_rate_constant() for proc in process_list]
 
-    process_index = select_process(rate_list)
+    process_index = select_process(rates_list)
     chosen_process = process_list[process_index]
 
-    time = time_advance(rate_list)
+    time = time_advance(rates_list)
 
     return chosen_process, time
 
 
-def select_process(constant_list):
+def select_process(rates_list):
     """
-    :param constant_list: List with the constant rates
+    :param rates_list: List with the constant rates
     :return: Chooses a position of the list chosen proportionally to its value.
     """
-    r = np.sum(constant_list) * np.random.rand()
+    r = np.sum(rates_list) * np.random.rand()
     # random number picked from the uniform distribution U(0, rates sum)
 
-    sub_list = np.where(r > np.cumsum(constant_list))
+    sub_list = np.where(r > np.cumsum(rates_list))
 
     return len(sub_list[0])
 
 
-def time_advance(rate_list):
+def time_advance(rates_list):
     """
-    :param rate_list: List with all the rates. Considering all the processes for all exciton
+    :param rates_list: List with all the rates. Considering all the processes for all exciton
     :return: Process duration. Picks a random time from an exponential distribution
     """
     r = 1 - np.random.rand()  # interval [0, 1) -> (0, 1]
-    return (-np.log(r)) / (np.sum(rate_list))
+    return (-np.log(r)) / (np.sum(rates_list))

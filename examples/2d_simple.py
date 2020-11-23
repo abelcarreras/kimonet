@@ -10,22 +10,21 @@ from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis import plot_polar_plot
 from kimonet import calculate_kmc, calculate_kmc_parallel
 from kimonet.system.state import State
-from kimonet.core.processes.types import Transition
 from kimonet.system.state import ground_state as gs
+from kimonet.core.processes.transitions import Transition
 
 import numpy as np
 
 
 # states list
-gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 # transition moments
 transition_moment = {Transition(s1, gs): [0.1, 0.0]}
 
 # vibration model
-marcus = MarcusModel(reorganization_energies={Transition(s1, gs, symmetric=False): 0.08,  # eV
-                                              Transition(gs, s1, symmetric=False): 0.08},
+marcus = MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
+                                              (gs, s1): 0.08},
                      temperature=300)  # Kelvin
 
 

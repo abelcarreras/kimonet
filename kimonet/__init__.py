@@ -47,11 +47,9 @@ def _run_trajectory(index, system, max_steps, silent):
     for i in range(max_steps):
 
         chosen_process, step_time = do_simulation_step(system_copy)
-
         if system_copy.is_finished:
             break
 
-        print('wer')
         trajectory.add_step(chosen_process, step_time)
 
         if i == max_steps-1:

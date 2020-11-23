@@ -12,10 +12,10 @@ from kimonet.core.processes.transitions import Transition
 
 import unittest
 import numpy as np
-from copy import deepcopy
 
 
 # states list
+# gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
@@ -35,7 +35,8 @@ class Test1DFast(unittest.TestCase):
                                      orientations=[[0.0, 0.0, np.pi / 2]])  # if element is None then random, if list then Rx Ry Rz
 
         # set initial exciton
-        self.system.add_excitation_center(s1)
+        self.system.add_excitation_index(s1, 1)
+        self.system.add_excitation_index(s1, 0)
 
         # set additional system parameters
         self.system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
@@ -89,17 +90,16 @@ class Test1DFast(unittest.TestCase):
                 'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1', unit_cell=[[0.0, 0.5],
                                                                                                [0.2, 0.0]]), decimals=4).tolist(),
                 'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1', unit_cell=[[0.0, 0.5],
-                                                                                                                      [0.2, 0.0]])), decimals=6).tolist()
+                                                                                                                      [0.2, 0.0]])), decimals=4).tolist()
                 }
-        print(test)
 
-        ref = {'diffusion coefficient': 7.0191,
-               'lifetime': 81.2738,
-               'diffusion length': 45.2769,
-               'diffusion tensor': [[8.8997, -5.8377],
-                                    [-5.8377, 5.1384]],
-               'diffusion length tensor': [[35.701541, 27.081359],
-                                           [27.081359, 27.846005]]
+        ref = {'diffusion coefficient': 3.0024,
+               'lifetime': 60.7097,
+               'diffusion length': 31.0016,
+               'diffusion tensor': [[3.3135, 0.3028],
+                                    [0.3028, 2.6914]],
+               'diffusion length tensor': [[23.2884, 9.9925],
+                                           [9.9925, 20.4634]]
                }
 
         self.assertDictEqual(ref, test)

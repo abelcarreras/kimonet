@@ -16,6 +16,7 @@ import numpy as np
 
 # states list
 s1 = State(label='s1', energy=1.0, multiplicity=1)
+s2 = State(label='s2', energy=1.1, multiplicity=1)
 
 
 # custom transfer function
@@ -60,7 +61,8 @@ class Test1DFast(unittest.TestCase):
                              supercell=[[3]])
 
         # set initial exciton
-        self.system.add_excitation_index(s1, 1)
+        self.system.add_excitation_index(s2, 1)
+        self.system.add_excitation_index(s1, 2)
 
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
@@ -69,11 +71,29 @@ class Test1DFast(unittest.TestCase):
         self.system.process_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
                                                  rate_constant_function=transfer_rate,
                                                  arguments={'custom_constant': 1},
-                                                 description='custom'),
-                                      DecayRate(initial_states=(s1), final_states=(gs),
-                                                 decay_rate_function=decay_rate,
-                                                 description='custom decay rate')
+                                                 description='transport'),
+                                      DirectRate(initial_states=(s1,), final_states=(gs,),
+                                                 rate_constant_function=decay_rate,
+                                                 description='custom decay rate'),
+                                      DirectRate(initial_states=(s2, s2), final_states=(gs, s1),
+                                                 rate_constant_function=decay_rate,
+                                                 description='merge'),
+                                      DirectRate(initial_states=(s1, gs), final_states=(s2, s2),
+                                                 rate_constant_function=decay_rate,
+                                                 description='split'),
+                                      DirectRate(initial_states=(s2, gs), final_states=(gs, s2),
+                                                 rate_constant_function=transfer_rate,
+                                                 arguments={'custom_constant': 1},
+                                                 description='transport 2'),
+                                      DirectRate(initial_states=(s2,), final_states=(gs,),
+                                                 rate_constant_function=decay_rate,
+                                                 description='custom decay rate 2'),
                                       ]
+
+        #print([s.label for s in self.system.decay_scheme[0].initial], '--',
+        #      [s.label for s in self.system.decay_scheme[0].final])
+        #print([s.label for s in self.system.decay_scheme[1].initial], '--',
+        #      [s.label for s in self.system.decay_scheme[1].final])
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
@@ -82,7 +102,7 @@ class Test1DFast(unittest.TestCase):
 
         trajectories = calculate_kmc(self.system,
                                      num_trajectories=10,  # number of trajectories that will be simulated
-                                     max_steps=100000,  # maximum number of steps for trajectory allowed
+                                     max_steps=100,  # maximum number of steps for trajectory allowed
                                      silent=True)
 
         # Results analysis
@@ -101,14 +121,16 @@ class Test1DFast(unittest.TestCase):
                 'lifetime': np.around(analysis.lifetime('s1'), decimals=4),
                 'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=4),
                 'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=4).tolist(),
-                'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1')), decimals=6).tolist()
+                'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1')), decimals=4).tolist()
                 }
 
-        ref = {'diffusion coefficient': 6.6671,
-               'lifetime': 35.9001,
-               'diffusion length': 18.3685,
-               'diffusion tensor': [[6.6671]],
-               'diffusion length tensor': [[18.368451]]
+        print(test)
+
+        ref = {'diffusion coefficient': 4.1673,
+               'lifetime':  2.5089,
+               'diffusion length': 5.0392,
+               'diffusion tensor': [[4.1673]],
+               'diffusion length tensor': [[5.0392]]
                }
 
         self.assertDictEqual(ref, test)
@@ -160,11 +182,11 @@ class Test1DFast(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 0.7894,
-               'lifetime': 40.8351,
-               'diffusion length': 8.0561,
-               'diffusion tensor': [[0.7894]],
-               'diffusion length tensor': [[8.056054]]
+        ref = {'diffusion coefficient': 0.0065,
+               'lifetime': 50.2957,
+               'diffusion length': 1.9235,
+               'diffusion tensor': [[0.0065]],
+               'diffusion length tensor': [[1.923538]]
                }
 
         self.assertDictEqual(ref, test)

@@ -26,7 +26,7 @@ def do_simulation_step(system):
     if len(process_collector) == 0:
         system.is_finished = True
         return None, 0
-    chosen_process, time = kmc_algorithm(process_collector, system)
+    chosen_process, time = kmc_algorithm(process_collector)
 
     system.update(chosen_process)
 
@@ -57,7 +57,7 @@ def system_test_info(system):
             print('Donor: {} / Acceptor: {}'.format(i_donor, i_acceptor))
 
             position_d = proc.initial[0].get_center().get_coordinates()
-            r = proc.get_rate_constant(system.conditions, system.supercell)
+            r = proc.get_rate_constant()
 
             # if isinstance(proc, (GoldenRule, DirectRate)):
             if len(proc.initial) == 2:

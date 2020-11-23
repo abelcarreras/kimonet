@@ -397,7 +397,7 @@ class TrajectoryGraph:
 
             # print('->', [np.linalg.norm(v, axis=0) for v in vector])
             # print('->', t)
-            plt.plot(self.graph.nodes[node]['time'], [np.linalg.norm(v, axis=0) for v in vector], '-o')
+            # plt.plot(self.graph.nodes[node]['time'], [np.linalg.norm(v, axis=0) for v in vector], '-o')
 
             coordinates += vector
 

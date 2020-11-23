@@ -165,13 +165,11 @@ class BaseProcess:
         :return:
         """
 
-        # print(self.initial, self.final)
         if self._transition_connect is None:
             self._transition_connect = {}
             inital_states = [s for s in self._initial if s.label != _GS_.label]
             final_states = [s for s in self._final_test if s.label != _GS_.label]
             if len(inital_states) == 1:
-                # print('--', final_states)
                 self._transition_connect[inital_states[0]] = []
                 for fstate in final_states:
                     self._transition_connect[inital_states[0]].append(fstate)
@@ -247,10 +245,9 @@ class GoldenRule(BaseProcess):
         return overlap_data[info]
 
     def get_electronic_coupling(self):
-        # conditions will be deprecated
         return self._coupling_function(self.initial, self.final, **self.arguments)
 
-    def get_rate_constant(self, conditions, *args):
+    def get_rate_constant(self):
         e_coupling = self.get_electronic_coupling()
         # spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
 
@@ -271,7 +268,7 @@ class DirectRate(BaseProcess):
         self.rate_function = rate_constant_function
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
-    def get_rate_constant(self, conditions, *args):
+    def get_rate_constant(self):
         return self.rate_function(self.initial, self.final, **self.arguments)
 
 
@@ -287,5 +284,5 @@ class DecayRate(BaseProcess):
         BaseProcess.__init__(self, [initial_states], [final_states], description, arguments)
         self.rate_function = decay_rate_function
 
-    def get_rate_constant(self, *args):
+    def get_rate_constant(self):
         return self.rate_function(self.initial, self.final, **self.arguments)

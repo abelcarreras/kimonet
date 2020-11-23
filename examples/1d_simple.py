@@ -4,24 +4,18 @@ from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system import System
 from kimonet.system.state import State
-from kimonet import system_test_info, calculate_kmc
+from kimonet import system_test_info, calculate_kmc, calculate_kmc_parallel
+from kimonet.system.state import ground_state as gs
 import numpy as np
 
 
 # custom transfer functions
-def transfer_rate(initial, final, conditions, supercell):
+def transfer_rate(initial, final, custom_constant=1):
 
-    print(supercell)
-    cell_increment = np.array(final[0].get_center().cell_state) - np.array(initial[1].get_center().cell_state)
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
+    distance = np.linalg.norm(r_vector)
 
-
-    distance = np.linalg.norm(intermolecular_vector(initial[0].get_center(),
-                                                    initial[1].get_center(),
-                                                    supercell,
-                                                    cell_increment))
-    constant = conditions['custom_constant']
-
-    return constant/distance**2
+    return custom_constant/distance**2
 
 
 # custom decay functions
@@ -33,9 +27,7 @@ def decay_rate(initial, final):
 
 
 # states list
-from kimonet.system.state import ground_state as gs
-# gs = State(label='gs', energy=0.0, multiplicity=1)
-s1 = State(label='s1', energy=1.0, multiplicity=1, size=2)
+s1 = State(label='s1', energy=1.0, multiplicity=1, size=1)
 s2 = State(label='s2', energy=1.5, multiplicity=1)
 
 # setup molecules
@@ -63,38 +55,34 @@ system = System(molecules=[molecule1, molecule2, molecule3],
 system.add_excitation_index(s1, 1)
 system.add_excitation_index(s2, 2)
 
-print('**NO_list_ini: ', [mol for mol in system.molecules])
 
 # set additional system parameters
-system.transfer_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
-                                     rate_constant_function=transfer_rate,
-                                     description='custom'),
-                          DirectRate(initial_states=(s2, gs), final_states=(gs, s2),
-                                     rate_constant_function=transfer_rate,
-                                     description='custom'),
-                          ]
-
-system.decay_scheme = [DecayRate(initial_states=s1, final_states=gs,  # TO SYSTEM
-                                 decay_rate_function=decay_rate,
-                                 description='custom decay rate'),
-                       DecayRate(initial_states=s2, final_states=gs,  # TO SYSTEM
-                                 decay_rate_function=decay_rate,
-                                 description='custom decay rate')
-                       ]
+system.process_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s1),
+                                    rate_constant_function=transfer_rate,
+                                    description='custom'),
+                         DirectRate(initial_states=(s2, gs), final_states=(gs, s2),
+                                    rate_constant_function=transfer_rate,
+                                    description='custom'),
+                         DecayRate(initial_states=(s1), final_states=(gs),  # TO SYSTEM
+                                   decay_rate_function=decay_rate,
+                                   description='custom decay rate'),
+                         DecayRate(initial_states=(s2), final_states=(gs),  # TO SYSTEM
+                                   decay_rate_function=decay_rate,
+                                   description='custom decay rate')
+                         ]
 
 system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
 # some system analyze functions
-system_test_info(system)
-visualize_system(system)
+#system_test_info(system)
+#visualize_system(system)
 
 # do the kinetic Monte Carlo simulation
 parallel_run = False
 if parallel_run:
-    from kimonet import calculate_kmc_parallel
     trajectories = calculate_kmc_parallel(system,
-                                          processors=10,
-                                          num_trajectories=1000,    # number of trajectories that will be simulated
+                                          processors=6,
+                                          num_trajectories=100,    # number of trajectories that will be simulated
                                           max_steps=100000,         # maximum number of steps for trajectory allowed
                                           silent=False)
 else:
