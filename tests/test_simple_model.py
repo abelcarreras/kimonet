@@ -56,8 +56,7 @@ class TestKimonet(unittest.TestCase):
                       'refractive_index': 1,            # refractive index of the material (adimensional)
                       'cutoff_radius': 3.1}             # maximum interaction distance (Angstroms)
 
-        self.system = regular_system(conditions=conditions,
-                                     molecule=self.molecule,
+        self.system = regular_system(molecule=self.molecule,
                                      lattice={'size': [3, 3], 'parameters': self.parameters},  # Angstroms
                                      orientation=[0, 0, 0])
 

@@ -47,7 +47,6 @@ molecule3.name = 'TypeC'
 
 # setup system
 system = System(molecules=[molecule1, molecule2, molecule3],
-                conditions={'custom_constant': 1},
                 supercell=[[3]])
 
 # set initial exciton

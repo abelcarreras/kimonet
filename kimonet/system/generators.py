@@ -3,8 +3,7 @@ import itertools
 from kimonet.system import System
 
 
-def regular_ordered_system(conditions,
-                           molecule,
+def regular_ordered_system(molecule,
                            lattice=None,
                            orientation=None,
                            ):
@@ -23,11 +22,10 @@ def regular_ordered_system(conditions,
 
     supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
 
-    return System(molecules, conditions, supercell)
+    return System(molecules, supercell)
 
 
-def regular_system(conditions,
-                   molecule,
+def regular_system(molecule,
                    lattice=None,
                    orientation=None,
                    ):
@@ -49,11 +47,10 @@ def regular_system(conditions,
 
     supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
 
-    return System(molecules, conditions, supercell)
+    return System(molecules, supercell)
 
 
-def crystal_system(conditions,
-                   molecules,
+def crystal_system(molecules,
                    scaled_site_coordinates,
                    dimensions=None,
                    unitcell=None,
@@ -92,4 +89,4 @@ def crystal_system(conditions,
 
     supercell = np.dot(unitcell.T, np.diag(dimensions)).T
 
-    return System(molecules_list, conditions, supercell)
+    return System(molecules_list, supercell)

@@ -56,7 +56,6 @@ class Test1DFast(unittest.TestCase):
 
         # setup system
         self.system = System(molecules=[molecule1, molecule2, molecule3],
-                             conditions={'custom_constant': 1},
                              supercell=[[3]])
 
         # set initial exciton

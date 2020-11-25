@@ -56,7 +56,7 @@ def system_test_info(system):
             print('Description:', proc.description)
             print('Donor: {} / Acceptor: {}'.format(i_donor, i_acceptor))
 
-            position_d = proc.initial[0].get_center().get_coordinates()
+#            position_d = proc.initial[0].get_center().get_coordinates()
             r = proc.get_rate_constant()
 
             # if isinstance(proc, (GoldenRule, DirectRate)):

@@ -6,17 +6,16 @@ from kimonet.utils import distance_vector_periodic
 from kimonet.system.state import ground_state as _GS_
 from kimonet.utils.combinations import get_molecules_centered_in_mol
 
+
 class System(object):
     def __init__(self,
                  molecules,
-                 conditions,
                  supercell,
                  transfers=None,
                  decays=None,
                  cutoff_radius=10):
 
         self.molecules = molecules
-        self.conditions = conditions
         self.supercell = supercell
         self.neighbors = {}
         self.is_finished = False
@@ -379,7 +378,6 @@ if __name__ == '__main__':
 
     # setup system
     system = System(molecules=[molecule1, molecule2, molecule3],
-                    conditions={'custom_constant': 1},
                     supercell=[[3]])
 
     system.add_excitation_index(s1, 2)

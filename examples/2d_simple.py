@@ -34,8 +34,7 @@ molecule = Molecule()
 conditions = {'refractive_index': 1}
 
 # define system as a crystal
-system = crystal_system(conditions=conditions,
-                        molecules=[molecule],  # molecule to use as reference
+system = crystal_system(molecules=[molecule],  # molecule to use as reference
                         scaled_site_coordinates=[[0.0, 0.0]],
                         unitcell=[[5.0, 1.0],
                                   [1.0, 5.0]],
