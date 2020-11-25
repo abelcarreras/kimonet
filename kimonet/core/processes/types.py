@@ -31,7 +31,7 @@ def ordered_states(state_list):
     return tuple(ordered_list)
 
 
-class BaseProcess:
+class BaseProcess(object):
     def __init__(self,
                  initial_states,
                  final_states,

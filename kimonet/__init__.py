@@ -60,6 +60,24 @@ def _run_trajectory(index, system, max_steps, silent):
     return trajectory
 
 
+
+def _run_trajectory_intermediate(args):
+    system, max_steps, silent = args[1]
+    index = args[0]
+    return _run_trajectory(index, system, max_steps, silent)
+
+
+def calculate_kmc_parallel_py2(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
+    import itertools
+    from multiprocessing import Pool #, freeze_support
+
+    pool = Pool(processes=processors)
+    a_args = list(range(num_trajectories))
+    second_arg = [system, max_steps, silent]
+    trajectories = pool.map(_run_trajectory_intermediate, itertools.izip(a_args, itertools.repeat(second_arg)))
+    return trajectories
+
+
 def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
     # This function only works in Python3
     import concurrent.futures as futures

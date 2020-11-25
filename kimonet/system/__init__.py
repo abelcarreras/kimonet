@@ -6,7 +6,7 @@ from kimonet.utils import distance_vector_periodic
 from kimonet.system.state import ground_state as _GS_
 from kimonet.utils.combinations import get_molecules_centered_in_mol
 
-class System:
+class System(object):
     def __init__(self,
                  molecules,
                  conditions,
@@ -59,7 +59,6 @@ class System:
         for decay in decays:
             decay.supercell = self.supercell
         self._decay_scheme = decays
-
 
     @property
     def process_scheme(self):

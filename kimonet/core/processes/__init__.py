@@ -67,7 +67,7 @@ def get_decay_rates(state, system):
         if process.initial[0].label == state.label:
 
             elements_list = state.get_molecules()
-            group_list = [state.size for state in process.final_test]
+            group_list = [s.size for s in process.final_test]
 
             configurations = combinations_group(elements_list, group_list, supercell=process.supercell)
 

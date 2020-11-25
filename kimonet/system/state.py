@@ -2,7 +2,7 @@ import copy
 import numpy as np
 
 
-class State:
+class State(object):
     def __init__(self,
                  label,
                  energy,

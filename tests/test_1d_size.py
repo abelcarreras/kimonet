@@ -31,9 +31,9 @@ def transfer_rate(initial, final, custom_constant=1):
 
 # custom decay function
 def decay_rate(initial, final):
-    rates = {'TypeA': 1 / 100,
-             'TypeB': 1 / 50,
-             'TypeC': 1 / 25}
+    rates = {'TypeA': 1. / 100,
+             'TypeB': 1. / 50,
+             'TypeC': 1. / 25}
     return rates[initial[0].get_center().name]
 
 

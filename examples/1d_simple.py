@@ -1,10 +1,9 @@
-from kimonet.core.processes.couplings import intermolecular_vector
 from kimonet.core.processes import DecayRate, DirectRate
 from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system import System
 from kimonet.system.state import State
-from kimonet import system_test_info, calculate_kmc, calculate_kmc_parallel
+from kimonet import system_test_info, calculate_kmc, calculate_kmc_parallel_py2, calculate_kmc_parallel
 from kimonet.system.state import ground_state as gs
 import numpy as np
 
@@ -20,9 +19,9 @@ def transfer_rate(initial, final, custom_constant=1):
 
 # custom decay functions
 def decay_rate(initial, final):
-    rates = {'TypeA': 1 / 100,
-             'TypeB': 1 / 50,
-             'TypeC': 1 / 25}
+    rates = {'TypeA': 1. / 100,
+             'TypeB': 1. / 50,
+             'TypeC': 1. / 25}
     return rates[initial[0].get_center().name]
 
 
@@ -74,20 +73,21 @@ system.process_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s
 system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
 # some system analyze functions
-#system_test_info(system)
-#visualize_system(system)
+# system_test_info(system)
+# visualize_system(system)
 
 # do the kinetic Monte Carlo simulation
 parallel_run = False
 if parallel_run:
-    trajectories = calculate_kmc_parallel(system,
+    # Only Python 2.7
+    trajectories = calculate_kmc_parallel_py2(system,
                                           processors=6,
-                                          num_trajectories=100,    # number of trajectories that will be simulated
+                                          num_trajectories=1000,    # number of trajectories that will be simulated
                                           max_steps=100000,         # maximum number of steps for trajectory allowed
                                           silent=False)
 else:
     trajectories = calculate_kmc(system,
-                                 num_trajectories=100,    # number of trajectories that will be simulated
+                                 num_trajectories=10,    # number of trajectories that will be simulated
                                  max_steps=100000,         # maximum number of steps for trajectory allowed
                                  silent=False)
 

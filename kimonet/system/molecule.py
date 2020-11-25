@@ -7,7 +7,7 @@ from kimonet.system.state import ground_state as _GS_
 #from kimonet.core.processes.types import Transition
 
 
-class Molecule:
+class Molecule(object):
 
     def __init__(self,
                  name=None,
