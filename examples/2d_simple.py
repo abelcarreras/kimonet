@@ -2,13 +2,13 @@ from kimonet.system.generators import regular_system, crystal_system
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
 from kimonet import system_test_info
-from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, forster_coupling_extended
+from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis import plot_polar_plot
-from kimonet import calculate_kmc, calculate_kmc_parallel
+from kimonet import calculate_kmc, calculate_kmc_parallel, calculate_kmc_parallel_py2
 from kimonet.system.state import State
 from kimonet.system.state import ground_state as gs
 from kimonet.core.processes.transitions import Transition
@@ -28,23 +28,7 @@ marcus = MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
                      temperature=300)  # Kelvin
 
 
-# list of transfer functions by state
-transfer_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
-                              electronic_coupling_function=forster_coupling,
-                              arguments={'transition_moment': transition_moment},
-                              description='Forster',
-                              vibrations=marcus
-                              )
-                   ]
-# list of decay functions by state
-decay_scheme = [DecayRate(initial_states=s1, final_states=gs,
-                          decay_rate_function=einstein_radiative_decay,
-                          arguments={'transition_moment': transition_moment},
-                          description='singlet_radiative_decay')
-                ]
-
 molecule = Molecule()
-
 
 # physical conditions of the system
 conditions = {'refractive_index': 1}
@@ -63,8 +47,19 @@ system.add_excitation_index(s1, 0)
 system.add_excitation_index(s1, 1)
 
 # set additional system parameters
-system.transfer_scheme = transfer_scheme
-system.decay_scheme = decay_scheme
+system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
+                                    electronic_coupling_function=forster_coupling,
+                                    description='Forster coupling',
+                                    arguments={'ref_index': 1,
+                                               'transition_moment': transition_moment},
+                                    vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
+                                                                                    (s1, gs): 0.07})
+                                    ),
+                        DecayRate(initial_states=s1, final_states=gs,
+                                  decay_rate_function=einstein_radiative_decay,
+                                  arguments={'transition_moment': transition_moment},
+                                  description='custom decay rate')
+                        ]
 
 system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
 
