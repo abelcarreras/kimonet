@@ -63,9 +63,9 @@ class Test1DFast(unittest.TestCase):
 
         # set initial exciton
         # self.system.add_excitation_index(tt, 1)
-        self.system.add_excitation_random(s1, 2)
-        #self.system.add_excitation_index(s1, 0)
-        #self.system.add_excitation_index(s1, 1)
+        # self.system.add_excitation_random(s1, 2)
+        self.system.add_excitation_index(s1, 0)
+        self.system.add_excitation_index(s1, 1)
 
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
