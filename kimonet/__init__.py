@@ -1,6 +1,6 @@
 __version__ = '0.1'
 from kimonet.core import do_simulation_step, system_test_info
-from kimonet.analysis import Trajectory
+from kimonet.analysis import Trajectory, visualize_system
 from warnings import warn
 import numpy as np
 import time
@@ -25,10 +25,15 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
 
             trajectory.add_step(change_step, step_time)
 
+            #print('===============================')
+            #system_test_info(system_copy)
+            #visualize_system(system_copy)
+
             if i == max_steps-1:
                 warn('Maximum number of steps reached!!')
 
         # trajectory.plot_2d('s1').show()
+        # trajectory.plot_2d('t1').show()
         # trajectory.plot_distances('s1').show()
         # trajectory.plot_distances('s2').show()
         # trajectory.plot_graph().show()

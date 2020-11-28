@@ -54,7 +54,7 @@ class BaseProcess(object):
         self.arguments = arguments if arguments is not None else {}
         self._supercell = None
         self._transition_connect = None
-        self._tansport_connect = None
+        self._transport_connect = None
         self._is_symmetry = None
 
         # Check input coherence
@@ -87,17 +87,17 @@ class BaseProcess(object):
     @initial.setter
     def initial(self, state_list):
         self._transition_connect = None
-        self._tansport_connect = None
+        self._transport_connect = None
         self._initial = state_list
 
     @property
     def final_test(self):
-        self._transition_connect = None
-        self._tansport_connect = None
         return self._final_test
 
     @final_test.setter
     def final_test(self, state_list):
+        self._transition_connect = None
+        self._transport_connect = None
         self._final_test = state_list
 
     @property
@@ -146,17 +146,17 @@ class BaseProcess(object):
         that are considered to be transport (same state moving)
         :return:
         """
-        if self._tansport_connect is None:
-            self._tansport_connect = {}
+        if self._transport_connect is None:
+            self._transport_connect = {}
             for istate in self._initial:
                 for fstate in self._final_test:
                     if istate.label == fstate.label and istate.label != _GS_.label:
-                        if istate in self._tansport_connect:
-                            self._tansport_connect[istate].append(fstate)
+                        if istate in self._transport_connect:
+                            self._transport_connect[istate].append(fstate)
                         else:
-                            self._tansport_connect[istate] = [fstate]
+                            self._transport_connect[istate] = [fstate]
 
-        return self._tansport_connect
+        return self._transport_connect
 
     def get_transition_connections(self):
         """
@@ -179,7 +179,7 @@ class BaseProcess(object):
             else:
                 for istate in self._initial:
                     self._transition_connect[istate] = []
-                    for fstate in self.final_test:
+                    for fstate in final_states:
                         self._transition_connect[istate].append(fstate)
 
         return self._transition_connect
@@ -250,6 +250,22 @@ class DirectRate(BaseProcess):
 
     def get_rate_constant(self):
         return self.rate_function(self.initial, self.final, **self.arguments)
+
+
+class SimpleRate(BaseProcess):
+    def __init__(self,
+                 initial_states,
+                 final_states,
+                 rate_constant,
+                 description='',
+                 arguments=None
+                 ):
+
+        self._rate_constant = rate_constant
+        BaseProcess.__init__(self, initial_states, final_states, description, arguments)
+
+    def get_rate_constant(self):
+        return self._rate_constant
 
 
 class DecayRate(BaseProcess):

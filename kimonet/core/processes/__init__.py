@@ -1,5 +1,4 @@
 from kimonet.core.processes.fcwd import general_fcwd
-from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from copy import deepcopy, copy
 from kimonet.system.state import ground_state as _GS_
 from kimonet.utils.combinations import combinations_group
@@ -67,9 +66,9 @@ def get_decay_rates(state, system):
         if process.initial[0].label == state.label:
 
             elements_list = state.get_molecules()
-            group_list = [s.size for s in process.final_test]
+            # group_list = [s.size for s in process.final_test]
 
-            configurations = combinations_group(elements_list, group_list, supercell=process.supercell)
+            configurations = combinations_group(elements_list, process.final_test, supercell=process.supercell)
 
             for configuration in configurations:
 
@@ -112,11 +111,6 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
         if (process.initial[0].label, process.initial[1].label) == (donor_state.label, acceptor_state.label):
 
-            # Getting all possible configurations for the final states
-            elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
-            elements_list = [item for sublist in elements_list for item in sublist]
-            group_list = [state.size for state in process.final_test]
-
             def is_same_p_configuration(p_configuration_1, p_configuration_2):
                 if len(p_configuration_1) != len(p_configuration_2):
                     return False
@@ -128,7 +122,12 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
             include_self = not is_same_p_configuration(process.initial, process.final_test)
 
-            configurations = combinations_group(elements_list, group_list, supercell=process.supercell, include_self=include_self)
+            # Getting all possible configurations for the final states
+            elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
+            elements_list = [item for sublist in elements_list for item in sublist]
+            # group_list = [state.size for state in process.final_test]
+
+            configurations = combinations_group(elements_list, process.final_test, supercell=process.supercell, include_self=include_self)
 
             for configuration in configurations:
 

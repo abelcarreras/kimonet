@@ -5,6 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from kimonet.analysis.trajectory_graph import TrajectoryGraph as Trajectory
 from kimonet.analysis.trajectory_analysis import TrajectoryAnalysis
+from kimonet.system.state import ground_state as _GS_
 
 
 def visualize_system(system, dipole=None):
@@ -26,12 +27,10 @@ def visualize_system(system, dipole=None):
     # plt.xlim([0, np.dot([1, 0], system.supercell[0])])
     # plt.ylim([0, np.dot([0, 1], system.supercell[1])])
 
+    list_state_labels = np.unique([s.label for s in system.get_states()] + [_GS_.label])
+    color_list = ['red', 'blue', 'green', 'orange', 'grey']
 
-    # define color by state
-    colors = {'gs': 'red',
-              's1': 'blue',
-              's2': 'green',
-              't1': 'orange'}
+    colors = {l: np.roll(color_list, -i)[0] for i, l in enumerate(list_state_labels)}
 
     for i, molecule in enumerate(system.molecules):
         c = molecule.get_coordinates()

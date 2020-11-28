@@ -7,7 +7,7 @@ from kimonet.system.state import State
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
-from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
+from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.system.state import ground_state as gs
 from kimonet.core.processes.transitions import Transition

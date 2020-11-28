@@ -266,7 +266,8 @@ class System(object):
 
         gs_list = [s.get_center() for s in self.get_ground_states()]
         mol_list = get_molecules_centered_in_mol(self.molecules[index], gs_list, self.supercell,
-                                                 size=state.size, connected_distance=2)
+                                                 size=state.size,
+                                                 connected_distance=state.connected_distance)
         if mol_list is None:
             raise Exception('Not enough space is system')
 
@@ -299,9 +300,9 @@ class System(object):
                 mol.set_state(exciton)
 
             self._states.append(exciton)
- #       else:
- #           exciton.cell_state *= 0
- #           exciton.reset_molecules()
+        else:
+            exciton.cell_state *= 0
+            exciton.reset_molecules()
 
         self._reset_data()
 
@@ -311,13 +312,14 @@ class System(object):
             for nc in range(max_cycles):
 
                 gs_list = [s.get_center() for s in self.get_ground_states()]
-                choice_state = np.random.choice(gs_list, 1)
+                choice_molecule = np.random.choice(gs_list, 1)[0]
 
                 exciton = exciton_ref.copy()
                 exciton.supercell = self.supercell
 
-                mol_list = get_molecules_centered_in_mol(choice_state, gs_list, self.supercell,
-                                                         size=exciton.size, connected_distance=2)
+                mol_list = get_molecules_centered_in_mol(choice_molecule, gs_list, self.supercell,
+                                                         size=exciton.size,
+                                                         connected_distance=exciton_ref.connected_distance)
 
                 if mol_list is None:
                     if nc == max_cycles - 1:

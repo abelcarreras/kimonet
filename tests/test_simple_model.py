@@ -5,7 +5,7 @@ from kimonet.system.state import State
 from kimonet import do_simulation_step
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
-from kimonet.core.processes import GoldenRule, DecayRate
+from kimonet.core.processes.types import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
 
 import unittest

@@ -39,6 +39,18 @@ def is_connected(molecules_list, supercell, connected_distance=1):
     return True
 
 
+def is_connected_states(molecules_list, supercell, final_states):
+
+    # check if connected
+    for i, group in enumerate(molecules_list):
+        connected_distance = final_states[i].connected_distance
+        d = distance_matrix(group, supercell, max_distance=connected_distance)
+        if len(d) > 1 and not np.all(connected_distance >= np.min(np.ma.masked_where(d == 0, d), axis=1)):
+            return False
+
+    return True
+
+
 def partition(elements_list, group_list):
 
     partition = []
@@ -50,10 +62,11 @@ def partition(elements_list, group_list):
     return partition
 
 
-def combinations_group(elements_list_o, group_list, supercell=None, include_self=True):
-    elements_list = tuple(range(len(elements_list_o)))
-    group_list = tuple(group_list)
+def combinations_group(elements_list_o, process_final_test, supercell=None, include_self=True, ref_states=None):
 
+    group_list = tuple([s.size for s in process_final_test])
+
+    elements_list = tuple(range(len(elements_list_o)))
     combinations_list = []
 
     if (elements_list, group_list) not in combinations_data:
@@ -79,7 +92,7 @@ def combinations_group(elements_list_o, group_list, supercell=None, include_self
     combinations_list = [[[elements_list_o[l] for l in state] for state in conf] for conf in combinations_list]
     if supercell is not None:
         for c in combinations_list:
-            if not is_connected(c, supercell, connected_distance=1):
+            if not is_connected_states(c, supercell, process_final_test):
                 combinations_list.remove(c)
 
     if not include_self:
@@ -88,7 +101,7 @@ def combinations_group(elements_list_o, group_list, supercell=None, include_self
     return combinations_list
 
 
-def get_molecules_centered_in_mol(central_mol, molecules_list, supercell, size=1, connected_distance=1):
+def get_molecules_centered_in_mol(central_mol, molecules_list, supercell, size=1, connected_distance=2):
     for c in itertools.combinations(molecules_list, size):
         if central_mol in c and is_connected([c], supercell, connected_distance=connected_distance):
             return list(c)

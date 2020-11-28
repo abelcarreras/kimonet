@@ -1,6 +1,6 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes
-from kimonet.core.processes import GoldenRule, DirectRate, DecayRate
+from kimonet.core.processes.types import GoldenRule, DirectRate, DecayRate
 from kimonet.utils import distance_vector_periodic
 import numpy as np
 

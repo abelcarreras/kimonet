@@ -1,4 +1,3 @@
-from kimonet.core.processes import DecayRate, DirectRate
 from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system import System
@@ -6,7 +5,7 @@ from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
-from kimonet.core.processes import GoldenRule, DecayRate
+from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel
 from kimonet.system.state import ground_state as gs
 from kimonet.core.processes.transitions import Transition
@@ -124,11 +123,11 @@ class Test1DFast(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': -0.0002,
-               'lifetime': 14.1447,
-               'diffusion length': 0.1549,
-               'diffusion tensor': [[-0.0002]],
-               'diffusion length tensor': [[0.1549]]
+        ref = {'diffusion coefficient': 0.0282,
+               'lifetime': 14.8367,
+               'diffusion length': 0.4785,
+               'diffusion tensor': [[0.0282]],
+               'diffusion length tensor': [[0.4785]]
                }
 
         self.assertDictEqual(ref, test)

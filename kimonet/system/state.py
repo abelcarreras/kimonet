@@ -8,11 +8,13 @@ class State(object):
                  energy,
                  multiplicity=1,
                  size=1,
-                 molecules_list=None):
+                 molecules_list=None,
+                 connected_distance=1):
         self._label = label
         self._energy = energy
         self._multiplicity = multiplicity
         self._size = size
+        self._connected_distance = connected_distance
         self._molecules_set = molecules_list if molecules_list is not None else []
         self._cell_state = None
         self.supercell = None
@@ -100,6 +102,10 @@ class State(object):
     @property
     def size(self):
         return self._size
+
+    @property
+    def connected_distance(self):
+        return self._connected_distance
 
     @property
     def cell_state(self):

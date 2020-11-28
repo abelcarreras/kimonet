@@ -110,7 +110,6 @@ class TrajectoryGraph:
         #if self.system.molecules[new_on_molecule].set_state(_GS_):
         #    print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
 
-
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
                             coordinates=[list(new_on_state.get_coordinates_absolute())],
@@ -445,7 +444,7 @@ class TrajectoryGraph:
         vector, t = self.get_distances_vs_times(state)
 
         # print(t)
-        plt.title('diffusion distances ({})'.format(state))
+        plt.title('diffusion distances ({})'.format(state if state is not None else 'All'))
         plt.plot(t, vector, '.')
         plt.xlabel('Time (ns)')
         plt.ylabel('Distance (Angs)')
@@ -547,8 +546,9 @@ class TrajectoryGraph2(TrajectoryGraph):
                                              mode='w+', shape=(1,)),
                                    requirements=['O'])
 
-            mem_array[:] = (state.get_center().get_coordinates(),
-                            state.get_center().cell_state,
+            mem_array[:] = (
+                            #state.get_center().get_coordinates(),
+                            #state.get_center().cell_state,
                             0.0,
                             system.get_molecule_index(state.get_center()))
 
