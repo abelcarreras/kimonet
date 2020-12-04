@@ -261,10 +261,10 @@ class TrajectoryGraph:
     def get_diffusion(self, state):
 
         vector, t = self._vector_list(state)
-        n_dim, n_length = vector.shape
-
         if not np.array(t).any():
             return 0
+
+        n_dim, n_length = vector.shape
 
         # vector2 = np.linalg.norm(vector, axis=0)**2  # emulate dot product in axis 0
         vector2 = np.diag(np.dot(vector.T, vector))
@@ -279,6 +279,10 @@ class TrajectoryGraph:
     def get_diffusion_tensor(self, state):
 
         vector, t = self._vector_list(state)
+
+        if not np.array(t).any():
+            return None
+
         n_dim, n_length = vector.shape
 
         if not np.array(t).any():

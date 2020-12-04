@@ -83,7 +83,7 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
         theta.append(i)
 
     if max is None:
-        max = np.max(r) * 1.2
+        max = np.max(np.nan_to_num(r)) * 1.2
 
     labels = {'cartesian': ['x', 'y', 'z'],
               'crystal': ['a', 'b', 'c']}

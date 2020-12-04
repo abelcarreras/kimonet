@@ -50,7 +50,8 @@ class TrajectoryAnalysis:
         :param state: electronic state to analyze
         :return:
         """
-        tensor = np.nanmean([traj.get_diffusion_tensor(state) for traj in self.trajectories], axis=0)
+        tensor = np.nanmean([traj.get_diffusion_tensor(state) for traj in self.trajectories
+                             if traj.get_diffusion_tensor(state) is not None], axis=0)
 
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
