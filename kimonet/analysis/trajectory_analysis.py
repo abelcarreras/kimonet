@@ -55,8 +55,7 @@ class TrajectoryAnalysis:
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
             mat_inv = np.linalg.inv(trans_mat)
-
-            tensor = np.dot(mat_inv.T, np.dot(tensor, mat_inv))
+            tensor = np.dot(mat_inv.T, tensor)
 
         return tensor
 
@@ -77,8 +76,7 @@ class TrajectoryAnalysis:
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
             mat_inv = np.linalg.inv(trans_mat)
-
-            tensor = np.dot(mat_inv.T, np.dot(tensor, mat_inv))
+            tensor = np.dot(mat_inv.T, tensor)
 
         return tensor
 
@@ -145,7 +143,7 @@ class TrajectoryAnalysis:
             plt = traj.plot_distances(state)
         return plt
 
-    def plot_excitations(self, state=None):
+    def plot_exciton_density(self, state=None):
 
         time_max = np.max([traj.get_times()[-1] for traj in self.trajectories]) * 1.1
         t_range = np.linspace(0, time_max, 100)
@@ -160,7 +158,7 @@ class TrajectoryAnalysis:
         plt.ylim(bottom=0, top=np.max(ne_interp))
         plt.xlim(left=0, right=time_max)
         plt.xlabel('time (ns)')
-        plt.ylabel('# of excitons')
+        plt.ylabel('# of excitons in supercell')
         plt.plot(t_range, np.average(ne_interp, axis=0), label='Total' if state is None else state)
         plt.legend()
         return plt
@@ -195,7 +193,6 @@ class TrajectoryAnalysisParallel(TrajectoryAnalysis):
         import concurrent.futures as futures
         self._executor = futures.ProcessPoolExecutor(max_workers=processors)
         # self._executor = futures.ThreadPoolExecutor(max_workers=processors)
-
 
     def diffusion_coefficient(self, state=None):
         """

@@ -99,7 +99,7 @@ for state in analysis.get_states():
                     title='Diffusion length square', crystal_labels=True, plane=[0, 1])
 
 
-analysis.plot_excitations('s1').show()
+analysis.plot_exciton_density('s1').show()
 analysis.plot_2d('s1').show()
 analysis.plot_distances('s1').show()
 analysis.plot_histogram('s1').show()

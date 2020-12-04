@@ -49,7 +49,7 @@ def system_test_info(system):
 
             i_donor = system.get_molecule_index(proc.initial[0].get_center())
             try:
-                i_acceptor = system.get_molecule_index(proc.acceptor)
+                i_acceptor = system.get_molecule_index(proc.initial[1].get_center())
             except Exception:
                 i_acceptor = i_donor
 

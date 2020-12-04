@@ -103,6 +103,6 @@ print(analysis.diffusion_coeff_tensor('s1'))
 print('diffusion length square tensor (Angs)')
 print(analysis.diffusion_length_square_tensor('s1'))
 
-analysis.plot_excitations('s1').show()
+analysis.plot_exciton_density('s1').show()
 analysis.plot_distances('s1').show()
 analysis.plot_histogram('s1', normalized=True, bins=20).show()

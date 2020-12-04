@@ -75,24 +75,15 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
 
     tensor = np.array(tensor_full)[np.array(plane)].T[np.array(plane)].T
 
-    if max is None:
-        max = np.max(tensor) * 1.2
-
     r = []
     theta = []
     for i in np.arange(0, np.pi*2, 0.01):
-        x = np.cos(i)
-        y = np.sin(i)
-
-        rmat = np.array([np.cos(i), np.sin(i)])
-
-        np.linalg.norm(np.dot(rmat, tensor))
-
-        # print(np.linalg.norm([a,b]), np.linalg.norm(tensor[0]*x + tensor[1]*y))
-        r.append(np.linalg.norm(np.dot(tensor, rmat)))
-
-        # r.append(np.linalg.norm(tensor[0]*x + tensor[1]*y))
+        unit_vector = np.array([np.cos(i), np.sin(i)])
+        r.append(np.sqrt(np.dot(unit_vector, np.dot(tensor, unit_vector))))  # <n|D|n>
         theta.append(i)
+
+    if max is None:
+        max = np.max(r) * 1.2
 
     labels = {'cartesian': ['x', 'y', 'z'],
               'crystal': ['a', 'b', 'c']}
