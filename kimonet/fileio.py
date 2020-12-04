@@ -29,6 +29,8 @@ def load_trajectory_list(filename):
     for dataset in f:
         graph = pickle.loads(f[dataset]['graph'][()].tostring())
         node_count = f[dataset]['node_count'][()]
+        times = f[dataset]['times'][()]
+        ndim = f[dataset]['n_dim'][()]
         system = pickle.loads(f[dataset]['system'][()].tostring())
         states = pickle.loads(f[dataset]['states'][()].tostring())
         current_excitons = pickle.loads(f[dataset]['current_excitons'][()].tostring())
@@ -40,6 +42,8 @@ def load_trajectory_list(filename):
         trajectory.current_excitons = current_excitons
         trajectory.supercell = np.array(system.supercell)
         trajectory.n_excitons = len(system.get_states())
+        trajectory.times = times
+        trajectory.n_dim = ndim
 
         trajectory_list.append(trajectory)
 
