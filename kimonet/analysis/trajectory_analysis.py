@@ -56,7 +56,9 @@ class TrajectoryAnalysis:
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
             mat_inv = np.linalg.inv(trans_mat)
-            tensor = np.dot(mat_inv.T, tensor)
+            # tensor = np.dot(mat_inv.T, tensor)
+            tensor = np.dot(np.dot(mat_inv.T, tensor), mat_inv)
+
 
         return tensor
 
@@ -77,7 +79,9 @@ class TrajectoryAnalysis:
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
             mat_inv = np.linalg.inv(trans_mat)
-            tensor = np.dot(mat_inv.T, tensor)
+            # tensor = np.dot(mat_inv.T, tensor)
+            tensor = np.dot(np.dot(mat_inv.T, tensor), mat_inv)
+
 
         return tensor
 
