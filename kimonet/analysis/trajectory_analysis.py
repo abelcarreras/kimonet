@@ -74,14 +74,13 @@ class TrajectoryAnalysis:
         dl_tensor_list = [traj.get_diffusion_length_square_tensor(state) for traj in self.trajectories
                           if not np.isnan(traj.get_diffusion_length_square_tensor(state)).any()]
 
-        tensor = np.abs(np.average(dl_tensor_list, axis=0))
+        tensor = np.average(dl_tensor_list, axis=0)
 
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
             mat_inv = np.linalg.inv(trans_mat)
             # tensor = np.dot(mat_inv.T, tensor)
             tensor = np.dot(np.dot(mat_inv.T, tensor), mat_inv)
-
 
         return tensor
 

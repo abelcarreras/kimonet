@@ -32,12 +32,13 @@ class MarcusModel:
 
     def get_vib_spectrum(self, target_state, origin_state):
 
-        #elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+        # elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
         elec_trans_ene = target_state.energy - origin_state.energy
+        transition = Transition(target_state, origin_state, symmetric=False)
 
         temp = self.temperature  # temperature (K)
 
-        reorg_ene = np.sum(self.reorganization_energies[Transition(target_state, origin_state, symmetric=False)])
+        reorg_ene = np.sum(self.reorganization_energies[transition])
 
         sign = np.sign(elec_trans_ene)
 
@@ -82,9 +83,12 @@ class LevichJortnerModel:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition):
+    def get_vib_spectrum(self, target_state, origin_state):
 
-        elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+        elec_trans_ene = target_state.energy - origin_state.energy
+        transition = Transition(target_state, origin_state, symmetric=False)
+
+        #elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
 
         temp = self.temperature  # temperature (K)
         ext_reorg_ene = self.external_reorganization_energies[transition]
@@ -142,7 +146,9 @@ class EmpiricalModel:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition):
+    def get_vib_spectrum(self, target_state, origin_state):
+        transition = Transition(target_state, origin_state, symmetric=False)
+
         # Temperature is not actually used. This is to keep common interface
         return self.empirical_function[transition]
 
@@ -171,7 +177,7 @@ class GaussianModel:
                      str(self.deviations),
                      str(self.reorganization_energies)))
 
-    def get_vib_spectrum(self, transition):
+    def get_vib_spectrum(self, target_state, origin_state):
 
         """
         :param donor: energy diference between states
@@ -179,7 +185,10 @@ class GaussianModel:
         :return: Franck-Condon-weighted density of states in gaussian aproximation
         """
 
-        elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+        elec_trans_ene = target_state.energy - origin_state.energy
+        transition = Transition(target_state, origin_state, symmetric=False)
+
+        #elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
         reorg_ene = np.sum(self.reorganization_energies[transition])
 
         deviation = self.deviations[transition]     # atomic units
@@ -204,8 +213,12 @@ class NoVibration:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, transition):
-        elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
+    def get_vib_spectrum(self, target_state, origin_state):
+
+        elec_trans_ene = target_state.energy - origin_state.energy
+        transition = Transition(target_state, origin_state, symmetric=False)
+
+        # elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
 
         def vib_spectrum(e):
             if elec_trans_ene == e:

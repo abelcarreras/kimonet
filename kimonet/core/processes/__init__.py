@@ -1,5 +1,4 @@
-from kimonet.core.processes.fcwd import general_fcwd
-from copy import deepcopy, copy
+from copy import deepcopy
 from kimonet.system.state import ground_state as _GS_
 from kimonet.utils.combinations import combinations_group
 import numpy as np

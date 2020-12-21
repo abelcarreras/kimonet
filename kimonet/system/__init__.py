@@ -1,7 +1,6 @@
 import numpy as np
 import itertools
 import copy
-from scipy.spatial import distance
 from kimonet.utils import distance_vector_periodic
 from kimonet.system.state import ground_state as _GS_
 from kimonet.utils.combinations import get_molecules_centered_in_mol

@@ -79,7 +79,7 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
     theta = []
     for i in np.arange(0, np.pi*2, 0.01):
         unit_vector = np.array([np.cos(i), np.sin(i)])
-        r.append(np.sqrt(np.dot(unit_vector, np.dot(tensor, unit_vector))))  # <n|D|n>
+        r.append(np.dot(unit_vector, np.dot(tensor, unit_vector)))  # <n|D|n>
         theta.append(i)
 
     if max is None:

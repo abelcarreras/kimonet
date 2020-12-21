@@ -9,6 +9,7 @@ import math
 overlap_data = {}
 
 
+# deprecated
 def general_fcwd(donor, acceptor, process, conditions):
     """
     :param donor:
