@@ -246,9 +246,9 @@ class TrajectoryGraph:
         node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == state]
 
         vector = []
-        t = []
+        times = []
         for node in node_list:
-            t += self.graph.nodes[node]['time']
+            times += self.graph.nodes[node]['time']
             # print('node**', node)
 
             initial = np.array(self.graph.nodes[node]['coordinates'][0])
@@ -256,7 +256,28 @@ class TrajectoryGraph:
                 vector.append(np.array(coordinate) - initial)
 
         vector = np.array(vector).T
-        return vector, t
+        return vector, times
+
+    def get_vector_list(self, state):
+
+        if state is None:
+            state_list = self.get_states()
+        else:
+            state_list = [state]
+
+        vector = []
+        times = []
+        for s in state_list:
+            v, ti = self._vector_list(s)
+            vector += list(v.T)
+            times += list(ti)
+
+        vector = np.array(vector).T
+
+        return vector, times
+
+    def get_n_points(self, state=None):
+        return len(self._vector_list(state)[1])
 
     def get_diffusion(self, state):
 
@@ -283,7 +304,7 @@ class TrajectoryGraph:
         if not np.array(t).any():
             return None
 
-        n_dim, n_length = vector.shape
+        # n_dim, n_length = vector.shape
 
         if not np.array(t).any():
             return np.zeros((self.n_dim, self.n_dim))
@@ -298,7 +319,7 @@ class TrajectoryGraph:
                 tensor_y.append(slope)
             tensor_x.append(tensor_y)
 
-        return np.array(tensor_x)/(2*n_dim)
+        return np.array(tensor_x)/2 #/(2*n_dim)
 
     def get_number_of_cumulative_excitons(self, state=None):
         time = []
