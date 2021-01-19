@@ -265,37 +265,57 @@ class TrajectoryGraph:
         else:
             state_list = [state]
 
-        vector = []
-        times = []
+        vector = [[0.0, 0.0]]
+        times = [0.0]
         for s in state_list:
             v, ti = self._vector_list(s)
-            vector += list(v.T)
-            times += list(ti)
+            vector += list(v.T[1:])
+            times += list(ti[1:])
 
         vector = np.array(vector).T
 
         return vector, times
 
     def get_n_points(self, state=None):
-        return len(self._vector_list(state)[1])
+        return len(self.get_vector_list(state)[1])
+
+    def get_n_segments(self, state=None):
+
+        if state is None:
+            state_list = self.get_states()
+        else:
+            state_list = [state]
+
+        n_segments = 0
+        for s in state_list:
+            node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == s]
+            n_segments += len(node_list)
+        return n_segments
 
     def get_diffusion(self, state):
+        """
+        Return the average diffusion coefficient defined as:
+
+        DiffCoeff = 1/(2*z) * <DiffLen^2>/<time>
+
+        :return: the diffusion coefficient
+        """
 
         vector, t = self._vector_list(state)
         if not np.array(t).any():
             return 0
 
-        n_dim, n_length = vector.shape
+        #n_dim, n_length = vector.shape
 
-        # vector2 = np.linalg.norm(vector, axis=0)**2  # emulate dot product in axis 0
-        vector2 = np.diag(np.dot(vector.T, vector))
+        vector2 = np.linalg.norm(vector, axis=0)**2  # emulate dot product in axis 0
+        #vector2 = np.diag(np.dot(vector.T, vector))
 
         # plt.plot(t, vector2, 'o')
         # plt.show()
         with np.errstate(invalid='ignore'):
             slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
 
-        return slope/(2*n_dim)
+        return slope/(2 * self.get_dimension())
 
     def get_diffusion_tensor(self, state):
 
@@ -319,7 +339,7 @@ class TrajectoryGraph:
                 tensor_y.append(slope)
             tensor_x.append(tensor_y)
 
-        return np.array(tensor_x)/2 #/(2*n_dim)
+        return np.array(tensor_x)/2
 
     def get_number_of_cumulative_excitons(self, state=None):
         time = []
@@ -541,7 +561,8 @@ class TrajectoryGraph:
         if len(tensor) == 0:
             return np.nan
 
-        return np.average(tensor, axis=0)
+        #print('test', np.average(tensor, axis=0), np.average(tensor, axis=0)*2)
+        return np.average(tensor, axis=0)*self.get_dimension()
 
 
 class TrajectoryGraph2(TrajectoryGraph):
