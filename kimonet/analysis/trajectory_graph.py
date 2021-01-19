@@ -258,6 +258,22 @@ class TrajectoryGraph:
         vector = np.array(vector).T
         return vector, times
 
+    def _vector_list2(self, state):
+        node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == state]
+
+        vector = []
+        times = []
+        for node in node_list:
+            times.append(self.graph.nodes[node]['time'])
+            # print('node**', node)
+
+            initial = np.array(self.graph.nodes[node]['coordinates'][0])
+            vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']]).T)
+        vector = np.array(vector)
+        # print('times', times)
+        return vector, times
+
+
     def get_vector_list(self, state):
 
         if state is None:
@@ -276,8 +292,25 @@ class TrajectoryGraph:
 
         return vector, times
 
-    def get_n_points(self, state=None):
-        return len(self.get_vector_list(state)[1])
+    def get_distances_square(self, state=None):
+
+        if state is None:
+            state_list = self.get_states()
+        else:
+            state_list = [state]
+
+        vector = []
+        times = []
+
+        for s in state_list:
+            v, ti = self._vector_list(s)
+            #vector += np.diag(np.dot(v.T, v)).tolist()
+            #print(np.array(v).shape)
+            vector += list(np.linalg.norm(v, axis=0) ** 2)  # emulate dot product in axis 0
+
+            times += list(ti)
+
+        return vector, times
 
     def get_n_segments(self, state=None):
 
@@ -292,7 +325,7 @@ class TrajectoryGraph:
             n_segments += len(node_list)
         return n_segments
 
-    def get_diffusion(self, state):
+    def get_diffusion_old(self, state):
         """
         Return the average diffusion coefficient defined as:
 
@@ -317,7 +350,38 @@ class TrajectoryGraph:
 
         return slope/(2 * self.get_dimension())
 
-    def get_diffusion_tensor(self, state):
+    def get_diffusion(self, state):
+        """
+        Return the average diffusion coefficient defined as:
+
+        DiffCoeff = 1/(2*z) * <DiffLen^2>/<time>
+
+        :return: the diffusion coefficient
+        """
+
+        vector, times = self._vector_list2(state)
+
+        slope_list = []
+        for v, t in zip(vector, times):
+            if not np.array(t).any():
+                return 0
+
+            #n_dim, n_length = vector.shape
+
+            vector2 = np.linalg.norm(v, axis=0)**2  # emulate dot product in axis 0
+            #vector2 = np.diag(np.dot(vector.T, vector))
+
+            # plt.plot(t, vector2, 'o')
+            # plt.show()
+            with np.errstate(invalid='ignore'):
+                slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
+
+            slope_list.append(slope)
+        print(slope_list)
+        return np.nanmean(slope_list)/(2 * self.get_dimension())
+
+
+    def get_diffusion_tensor_old(self, state):
 
         vector, t = self._vector_list(state)
 
@@ -340,6 +404,33 @@ class TrajectoryGraph:
             tensor_x.append(tensor_y)
 
         return np.array(tensor_x)/2
+
+    def get_diffusion_tensor(self, state):
+
+        vector_list, times = self._vector_list2(state)
+
+        tensor_x_list = []
+        for vector, t in zip(vector_list, times):
+            if not np.array(t).any():
+                return None
+
+            if not np.array(t).any():
+                return np.zeros((self.n_dim, self.n_dim))
+
+            tensor_x = []
+            for v1 in vector:
+                tensor_y = []
+                for v2 in vector:
+                    vector2 = v1 * v2
+                    with np.errstate(invalid='ignore'):
+                        slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
+                    tensor_y.append(slope)
+                tensor_x.append(tensor_y)
+
+            tensor_x_list.append(np.array(tensor_x))
+
+        return np.average(tensor_x_list, axis=0)/2
+
 
     def get_number_of_cumulative_excitons(self, state=None):
         time = []

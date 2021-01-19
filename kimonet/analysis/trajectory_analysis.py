@@ -44,12 +44,6 @@ class TrajectoryAnalysis:
     def get_lifetime_ratio(self, state):
         return np.average([traj.get_lifetime_ratio(state) for traj in self.trajectories])
 
-    def get_points_ration(self, state=None):
-        if state not in self._points_ratio:
-            sum_t = np.nansum([traj.get_n_points(state) for traj in self.trajectories])
-            self._points_ratio[state] = [traj.get_n_points(state)/float(sum_t) for traj in self.trajectories]
-        return self._points_ratio[state]
-
     def get_segment_ration(self, state=None):
         if state not in self._segment_ratio:
             sum_t = np.nansum([traj.get_n_segments(state) for traj in self.trajectories])
@@ -70,7 +64,7 @@ class TrajectoryAnalysis:
         #                     if traj.get_diffusion_tensor(state) is not None], axis=0)
 
         tensor_list = [traj.get_diffusion_tensor(state)*s for traj, s in
-                       zip(self.trajectories, self.get_points_ration(state))
+                       zip(self.trajectories, self.get_segment_ration(state))
                        if not np.isnan(traj.get_diffusion_tensor(state)).any()]
         tensor = np.sum(tensor_list, axis=0)
 
@@ -99,7 +93,7 @@ class TrajectoryAnalysis:
                           if not np.isnan(traj.get_diffusion_length_square_tensor(state)).any()]
 
         #diffusion_list = [traj.get_diffusion(s) * s for traj, s in
-        #                  zip(self.trajectories, self.get_points_ration(state))]
+        #                  zip(self.trajectories, self.get_segment_ration(state))]
 
         # tensor = np.average(dl_tensor_list, axis=0)
         tensor = np.sum(dl_tensor_list, axis=0)
@@ -123,17 +117,17 @@ class TrajectoryAnalysis:
 
         sum_diff = 0
         if state is None:
-            for s in self.get_states():
-                diffusion_list = [traj.get_diffusion(s)*s for traj, s in zip(self.trajectories, self.get_points_ration(state))]
+            for istate in self.get_states():
+                diffusion_list = [traj.get_diffusion(s)*s for traj, s in zip(self.trajectories, self.get_segment_ration(istate))]
                 if not np.isnan(diffusion_list).all():
-                    sum_diff += np.nansum(diffusion_list) * self.get_lifetime_ratio(s)
+                    sum_diff += np.nansum(diffusion_list) #* self.get_lifetime_ratio(s)
                     # sum_diff += np.nanmean(diffusion_list) * self.get_lifetime_ratio(s)
             return sum_diff
 
-        return np.nansum([traj.get_diffusion(state)*s for traj, s in zip(self.trajectories, self.get_points_ration(state))])
+        return np.nansum([traj.get_diffusion(state)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))])
         # return np.nanmean([traj.get_diffusion(state) for traj in self.trajectories])
 
-    def diffusion_coefficient2(self, state=None):
+    def diffusion_coefficient_old(self, state=None):
         """
         Return the average diffusion coefficient defined as:
 
@@ -142,24 +136,18 @@ class TrajectoryAnalysis:
         :return:
         """
 
-        vector = []
+        distances2 = []
         times = []
         for traj in self.trajectories:
-            v, ti = traj.get_vector_list(state)
-            vector += list(v.T)
-            times += list(ti)
-
-        vector = np.array(vector).T
-        print(vector.shape)
-
-        n_dim, n_length = vector.shape
-
-        vector2 = np.diag(np.dot(vector.T, vector))
+            v, ti = traj.get_distances_square(state)
+            distances2 += v
+            times += ti
 
         with np.errstate(invalid='ignore'):
-            slope, intercept, r_value, p_value, std_err = stats.linregress(times, vector2)
+            slope, intercept, r_value, p_value, std_err = stats.linregress(times, distances2)
 
-        return slope/(2*n_dim)
+        #print('dim:', self.n_dim)
+        return slope/(2*self.n_dim)
 
     def lifetime(self, state=None):
 
@@ -191,12 +179,13 @@ class TrajectoryAnalysis:
                 d_length_list = [traj.get_diffusion_length_square(s)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))]
                 # d_length_list = [traj.get_diffusion_length_square(s) for traj in self.trajectories]
                 if not np.isnan(d_length_list).all():
-                    sum_diff += np.nansum(d_length_list) * self.get_lifetime_ratio(s)
+                    print(self.get_lifetime_ratio(s))
+                    sum_diff += np.nansum(d_length_list) #* self.get_lifetime_ratio(s)
                     #sum_diff += np.nanmean(d_length_list) * self.get_lifetime_ratio(s)
 
             return np.sqrt(sum_diff)
 
-        # length2 = np.nanmean([traj.get_diffusion_length_square(state) for traj in self.trajectories])
+        #length2 = np.nanmean([traj.get_diffusion_length_square(state) for traj in self.trajectories])
         length2 =  np.nansum([traj.get_diffusion_length_square(state)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))])
 
         return np.sqrt(length2)
