@@ -127,28 +127,6 @@ class TrajectoryAnalysis:
         return np.nansum([traj.get_diffusion(state)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))])
         # return np.nanmean([traj.get_diffusion(state) for traj in self.trajectories])
 
-    def diffusion_coefficient_old(self, state=None):
-        """
-        Return the average diffusion coefficient defined as:
-
-        DiffCoeff = 1/(2*z) * <DiffLen^2>/<time>
-
-        :return:
-        """
-
-        distances2 = []
-        times = []
-        for traj in self.trajectories:
-            v, ti = traj.get_distances_square(state)
-            distances2 += v
-            times += ti
-
-        with np.errstate(invalid='ignore'):
-            slope, intercept, r_value, p_value, std_err = stats.linregress(times, distances2)
-
-        #print('dim:', self.n_dim)
-        return slope/(2*self.n_dim)
-
     def lifetime(self, state=None):
 
         sum_diff = 0
