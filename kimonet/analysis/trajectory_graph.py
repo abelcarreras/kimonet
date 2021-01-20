@@ -309,8 +309,6 @@ class TrajectoryGraph:
             if not np.array(t).any():
                 return 0
 
-            #n_dim, n_length = vector.shape
-
             vector2 = np.linalg.norm(v, axis=0)**2  # emulate dot product in axis 0
             #vector2 = np.diag(np.dot(vector.T, vector))
 
@@ -321,7 +319,10 @@ class TrajectoryGraph:
 
             slope_list.append(slope)
 
-        self._diff_coefficient[state] = np.nanmean(slope_list)/(2 * self.get_dimension())
+        if len(slope_list) == 0:
+            self._diff_coefficient[state] = np.nan
+        else:
+            self._diff_coefficient[state] = np.nanmean(slope_list)/(2 * self.get_dimension())
 
         return self._diff_coefficient[state]
 
