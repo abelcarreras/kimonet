@@ -272,8 +272,7 @@ class TrajectoryGraph:
             times.append(self.graph.nodes[node]['time'])
 
             initial = np.array(self.graph.nodes[node]['coordinates'][0])
-            vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']]).T)
-        vector = np.array(vector)
+            vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']]).T.tolist())
 
         self._vector_list_info[state] = [vector, times]
         return self._vector_list_info[state]
@@ -345,7 +344,7 @@ class TrajectoryGraph:
             for v1 in vector:
                 tensor_y = []
                 for v2 in vector:
-                    vector2 = v1 * v2
+                    vector2 = np.multiply(v1, v2)
                     with np.errstate(invalid='ignore'):
                         slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
                     tensor_y.append(slope)
