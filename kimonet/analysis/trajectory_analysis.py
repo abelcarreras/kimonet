@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
 
 
 def normalize_cell(supercell):
@@ -42,7 +41,7 @@ class TrajectoryAnalysis:
         return self.states
 
     def get_lifetime_ratio(self, state):
-        return np.average([traj.get_lifetime_ratio(state) for traj in self.trajectories])
+        return np.average([traj.get_time_ratio(state) for traj in self.trajectories])
 
     def get_segment_ration(self, state=None):
         if state not in self._segment_ratio:
@@ -64,13 +63,15 @@ class TrajectoryAnalysis:
         :param state: electronic state to analyze
         :return:
         """
-        #tensor = np.nanmean([traj.get_diffusion_tensor(state) for traj in self.trajectories
-        #                     if traj.get_diffusion_tensor(state) is not None], axis=0)
 
-        tensor_list = [traj.get_diffusion_tensor(state)*s for traj, s in
-                       zip(self.trajectories, self.get_segment_ration(state))
-                       if not np.isnan(traj.get_diffusion_tensor(state)).any()]
-        tensor = np.sum(tensor_list, axis=0)
+        total_traj = np.sum([traj.get_n_subtrajectories(state) for traj in self.trajectories])
+        if total_traj == 0:
+            return None
+
+        tensor_list = [traj.get_diffusion_tensor(state)*traj.get_n_subtrajectories(state) for traj in
+                       self.trajectories if traj.get_diffusion_tensor(state) is not None]
+
+        tensor = np.sum(tensor_list, axis=0)/total_traj
 
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
@@ -89,18 +90,15 @@ class TrajectoryAnalysis:
         :param state: electronic state to analyze
         :return:
         """
-        #dl_tensor_list = [traj.get_diffusion_length_square_tensor(state) for traj in self.trajectories
-        #                  if not np.isnan(traj.get_diffusion_length_square_tensor(state)).any()]
 
-        dl_tensor_list = [traj.get_diffusion_length_square_tensor(state)*s for traj, s in
-                          zip(self.trajectories, self.get_segment_ration(state))
-                          if not np.isnan(traj.get_diffusion_length_square_tensor(state)).any()]
+        total_traj = np.sum([traj.get_n_subtrajectories(state) for traj in self.trajectories])
+        if total_traj == 0:
+            return None
 
-        #diffusion_list = [traj.get_diffusion(s) * s for traj, s in
-        #                  zip(self.trajectories, self.get_segment_ration(state))]
+        tensor_list = [traj.get_diffusion_length_square_tensor(state)*traj.get_n_subtrajectories(state)
+                       for traj in self.trajectories if traj.get_diffusion_length_square_tensor(state) is not None]
 
-        # tensor = np.average(dl_tensor_list, axis=0)
-        tensor = np.sum(dl_tensor_list, axis=0)
+        tensor = np.sum(tensor_list, axis=0)/total_traj
 
         if unit_cell is not None:
             trans_mat = normalize_cell(unit_cell)
@@ -110,7 +108,7 @@ class TrajectoryAnalysis:
 
         return tensor
 
-    def diffusion_coefficient(self, state=None):
+    def diffusion_coefficient_old(self, state=None):
         """
         Return the average diffusion coefficient defined as:
 
@@ -139,7 +137,23 @@ class TrajectoryAnalysis:
         return np.nansum([traj.get_diffusion(state)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))])
         # return np.nanmean([traj.get_diffusion(state) for traj in self.trajectories])
 
-    def lifetime(self, state=None):
+    def diffusion_coefficient(self, state=None):
+        """
+        Return the average diffusion coefficient defined as:
+
+        DiffCoeff = 1/(2*z) * <DiffLen^2>/<time>
+
+        :return:
+        """
+
+        total_traj = np.sum([traj.get_n_subtrajectories(state) for traj in self.trajectories])
+        if total_traj == 0:
+            return None
+
+        return np.sum([traj.get_diffusion(state)*traj.get_n_subtrajectories(state) for traj in self.trajectories if
+                       traj.get_diffusion(state) is not None])/total_traj
+
+    def lifetime_old(self, state=None):
 
         if state is None:
             sum_diff = 0
@@ -162,6 +176,15 @@ class TrajectoryAnalysis:
         return np.nansum([traj.get_lifetime(state)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))])
         # return np.average([traj.get_lifetime(state) for traj in self.trajectories])
 
+    def lifetime(self, state=None):
+
+        total_traj = np.sum([traj.get_n_subtrajectories(state) for traj in self.trajectories])
+        if total_traj == 0:
+            return None
+
+        return np.sum([traj.get_lifetime(state)*traj.get_n_subtrajectories(state) for traj in self.trajectories if
+                       traj.get_lifetime(state) is not None])/total_traj
+
     def diffusion_length(self, state=None):
         """
         Return the average diffusion coefficient defined as:
@@ -171,26 +194,12 @@ class TrajectoryAnalysis:
         :return:
         """
 
-        if state is None:
-            sum_diff = 0
-            sum_n_subtraj = 0
-            for istate in self.get_states():
-                n_subtraj = len(self.get_segment_ration(istate))
-                d_length_list = [traj.get_diffusion_length_square(istate)*s for traj, s in zip(self.trajectories, self.get_segment_ration(istate))
-                                 if istate in traj.get_states()]
-                # d_length_list = [traj.get_diffusion_length_square(s) for traj in self.trajectories]
-                if not np.isnan(d_length_list).all():
-                    sum_diff += np.nansum(d_length_list) * n_subtraj #* self.get_lifetime_ratio(s)
-                    #sum_diff += np.nanmean(d_length_list) * self.get_lifetime_ratio(s)
-                    sum_n_subtraj += n_subtraj
-
-            return np.sqrt(sum_diff/sum_n_subtraj)
-
-        # length2 = np.nanmean([traj.get_diffusion_length_square(state) for traj in self.trajectories])
-        length2 =  np.nansum([traj.get_diffusion_length_square(state)*s for traj, s in zip(self.trajectories, self.get_segment_ration(state))])
-
-        if self.get_segment_ration(state) is None:
+        total_traj = np.sum([traj.get_n_subtrajectories(state) for traj in self.trajectories])
+        if total_traj == 0:
             return None
+
+        length2 = np.sum([traj.get_diffusion_length_square(state)*traj.get_n_subtrajectories(state) for traj in self.trajectories
+                          if traj.get_diffusion_length_square(state) is not None])/total_traj
 
         return np.sqrt(length2)
 
@@ -208,13 +217,13 @@ class TrajectoryAnalysis:
 
     def plot_exciton_density(self, state=None):
 
-        time_max = np.max([traj.get_times()[-1] for traj in self.trajectories]) * 1.1
+        time_max = np.max([traj.times[-1] for traj in self.trajectories]) * 1.1
         t_range = np.linspace(0, time_max, 100)
 
         ne_interp = []
         for traj in self.trajectories:
             ne = traj.get_number_of_excitons(state)
-            t = traj.get_times()
+            t = traj.times
             ne_interp.append(np.interp(t_range, t, ne, right=0))
 
         plt.title('Averaged exciton number ({})'.format('' if state is None else state))
