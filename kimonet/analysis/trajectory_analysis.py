@@ -217,13 +217,13 @@ class TrajectoryAnalysis:
 
     def plot_exciton_density(self, state=None):
 
-        time_max = np.max([traj.times[-1] for traj in self.trajectories]) * 1.1
+        time_max = np.max([traj.get_simulation_times()[-1] for traj in self.trajectories]) * 1.1
         t_range = np.linspace(0, time_max, 100)
 
         ne_interp = []
         for traj in self.trajectories:
             ne = traj.get_number_of_excitons(state)
-            t = traj.times
+            t = traj.get_simulation_times()
             ne_interp.append(np.interp(t_range, t, ne, right=0))
 
         plt.title('Averaged exciton number ({})'.format('' if state is None else state))

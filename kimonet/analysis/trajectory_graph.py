@@ -217,6 +217,18 @@ class TrajectoryGraph:
         # Reset data
         self._reset_calculation_data()
 
+    def _start_point_nodes(self):
+
+        #print()
+        #print('edges', list(self.graph.nodes))
+        start_points = []
+        #transposed_edges_list = list(zip(*self.graph.out_edges))
+        for node in self.graph.nodes:
+            if len(self.graph.in_edges(node)) == 0:
+                start_points.append(node)
+
+        return start_points
+
     def plot_graph(self):
 
         # cmap = cm.get_cmap('Spectral')
@@ -256,9 +268,12 @@ class TrajectoryGraph:
     def get_graph(self):
         return self.graph
 
+    def get_simulation_times(self):
+        return self.times
+
     def get_times(self, state=None):
         if state is None:
-            return [self.times]
+            return self._vector_list_none()[1]
         return self._vector_list(state)[1]
 
     def get_coordinates(self, state=None):
@@ -267,7 +282,8 @@ class TrajectoryGraph:
         return [np.array(ar).T.tolist() for ar in self._vector_list(state)[0]]
 
     def get_distances(self):
-        return np.linalg.norm(self.get_coordinates(), axis=1).tolist()
+        #return [np.linalg.norm(coor, axis=1).tolist() for coor in self.get_coordinates()]
+        return np.linalg.norm(self.get_coordinates(), axis=2).tolist()
 
     def _vector_list(self, state):
 
@@ -291,8 +307,35 @@ class TrajectoryGraph:
 
     def _vector_list_none(self):
 
+        vector_list = []
+        times_list = []
+        for node_list in self._trajectory_node_path():
+
+            vector = [[0.0] * self.get_dimension()]
+            times = [0]
+            t_ini = self.graph.nodes[0]['time'][0]
+            coor_ini = self.graph.nodes[0]['coordinates'][0]
+
+            for node in node_list:
+                #print('t_ini', t_ini)
+                times += list(np.array(self.graph.nodes[node]['time'][1:]) + t_ini)
+
+                initial = np.array(self.graph.nodes[node]['coordinates'][0])
+                #print('v ', [np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']])
+                vector += [np.array(coordinate) - initial + np.array(coor_ini) for coordinate in self.graph.nodes[node]['coordinates'][1:]]
+                t_ini = times[-1]
+                coor_ini = vector[-1]
+
+            vector = np.array(vector).T.tolist()
+
+            vector_list.append(vector)
+            times_list.append(times)
+
+        return vector_list, times_list
+
+    def _vector_list_none_old(self):
+
         node_list = [node for node in self.graph.nodes]
-        #print('node_list', node_list)
 
         vector = [[0.0]*self.get_dimension()]
         times = [0]
@@ -314,6 +357,22 @@ class TrajectoryGraph:
         #print('vector shape', np.array(vector).shape)
 
         return [vector], [times]
+
+    def _trajectory_node_path(self):
+
+        trajectory_path = []
+        for ini_node in self._start_point_nodes():
+            data_list = []
+            def _recursive(i):
+                for e in self.graph.out_edges:
+                    if e[0] == i:
+                        _recursive(e[1])
+                data_list.append(i)
+
+            _recursive(ini_node)
+            trajectory_path.append(data_list[::-1])
+
+        return trajectory_path
 
     def get_n_subtrajectories(self, state=None):
         return len(self.get_times(state))
@@ -351,13 +410,14 @@ class TrajectoryGraph:
             vector2 = np.linalg.norm(v, axis=1)**2  # emulate dot product in axis 0
             #vector2 = np.diag(np.dot(vector.T, vector))
 
-            # plt.plot(t, vector2, 'o')
+            # plt.plot(t, vector2, 'o', label=state)
             # plt.show()
             with np.errstate(invalid='ignore'):
                 slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
 
             slope_list.append(slope)
 
+        # plt.show()
         if len(slope_list) == 0:
             self._diff_coefficient[state] = None
         else:
@@ -553,6 +613,9 @@ class TrajectoryGraph:
 
         if len(self.get_times(state)) == 0:
             return None
+
+        if state is None:
+            return self.get_simulation_times()[-1]
 
         return np.mean([t[-1] for t in self.get_times(state)])
 
