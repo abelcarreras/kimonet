@@ -317,12 +317,17 @@ class TrajectoryGraph:
         vector = []
         times = []
         for node in node_list:
+
+            if len(self.graph.nodes[node]['time']) == 1:
+                continue
+
             times.append(self.graph.nodes[node]['time'])
             #times.append(self.graph.nodes[node]['time'][:-1])
 
             initial = np.array(self.graph.nodes[node]['coordinates'][0])
             vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']]).T.tolist())
             #vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates'][:-1]]).T.tolist())
+
 
         return [vector, times]
 
@@ -348,6 +353,9 @@ class TrajectoryGraph:
 
             vector = np.array(vector).T.tolist()
 
+            if len(times) == 1:
+                continue
+
             vector_list.append(vector)
             times_list.append(times)
 
@@ -357,15 +365,23 @@ class TrajectoryGraph:
 
         trajectory_path = []
         for ini_node in self._start_point_nodes():
-            data_list = []
-            def _recursive(i):
-                for e in self.graph.out_edges:
-                    if e[0] == i:
-                        _recursive(e[1])
-                data_list.append(i)
+            same_initial_list = []
 
-            _recursive(ini_node)
-            trajectory_path.append(data_list[::-1])
+            def _recursive(inode, internal_list):
+                end_of_trajectory = True
+                for e in self.graph.out_edges(inode):
+                    if e[0] == inode:
+                        end_of_trajectory = False
+                        internal_list = list(internal_list)
+                        internal_list.append(e[1])
+                        _recursive(e[1], tuple(internal_list))
+                        internal_list = internal_list[:-1]
+                if end_of_trajectory:
+                    internal_list = list(internal_list)
+                    same_initial_list.append(tuple(internal_list))
+
+            _recursive(ini_node, [ini_node])
+            trajectory_path += same_initial_list
 
         return trajectory_path
 
@@ -409,8 +425,8 @@ class TrajectoryGraph:
             vector2 = np.linalg.norm(v, axis=1)**2  # emulate dot product in axis 0
             #vector2 = np.diag(np.dot(vector.T, vector))
 
-            # plt.plot(t, vector2, 'o', label=state)
-            # plt.show()
+            #plt.plot(t, vector2, 'o', label=state)
+            #plt.show()
             with np.errstate(invalid='ignore'):
                 slope, intercept, r_value, p_value, std_err = stats.linregress(t, vector2)
 

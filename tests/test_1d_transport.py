@@ -118,11 +118,11 @@ class Test1DFast(unittest.TestCase):
                 'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('tt')), decimals=4).tolist()
                 }
 
-        ref = {'diffusion coefficient': 0.4634,
+        ref = {'diffusion coefficient': 0.4819,
                'lifetime': 28.3726,
-               'diffusion length': 4.4272,
-               'diffusion tensor': [[0.4634]],
-               'diffusion length tensor': [[4.4272]]
+               'diffusion length': 4.1018,
+               'diffusion tensor': [[0.4819]],
+               'diffusion length tensor': [[4.1018]]
                }
 
         self.assertDictEqual(ref, test)

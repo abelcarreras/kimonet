@@ -99,12 +99,26 @@ class Test1DFast(unittest.TestCase):
         system_test_info(self.system)
 
         trajectories = calculate_kmc(self.system,
-                                     num_trajectories=10,  # number of trajectories that will be simulated
-                                     max_steps=100,  # maximum number of steps for trajectory allowed
+                                     num_trajectories=50,  # number of trajectories that will be simulated
+                                     max_steps=18,  # maximum number of steps for trajectory allowed
                                      silent=True)
 
         # Results analysis
         analysis = TrajectoryAnalysis(trajectories)
+
+        for traj in trajectories:
+            print('diff:', traj.get_diffusion('s1'))
+            print('diff none:', traj.get_diffusion(None))
+            #print('path:', traj._trajectory_node_path())
+            #print('path:', trajectories[0]._trajectory_node_path_new())
+
+        #print('-> diff:', trajectories[8].get_diffusion('s1'))
+        #print('-> diff none:', trajectories[8].get_diffusion(None))
+        #print('path:', trajectories[8]._trajectory_node_path())
+
+        #trajectories[0].plot_graph().show()
+
+        #exit()
 
         print('diffusion coefficient: {:9.5f} Angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
         print('lifetime:              {:9.5f} ns'.format(analysis.lifetime('s1')))
@@ -124,11 +138,11 @@ class Test1DFast(unittest.TestCase):
 
         print(test)
 
-        ref = {'diffusion coefficient': 4.1673,
-               'lifetime':  2.5089,
-               'diffusion length': 5.0392,
-               'diffusion tensor': [[4.1673]],
-               'diffusion length tensor': [[5.0392]]
+        ref = {'diffusion coefficient': 3.5571,
+               'lifetime':  2.2493,
+               'diffusion length': 3.9478,
+               'diffusion tensor': [[3.5571]],
+               'diffusion length tensor': [[3.9478]]
                }
 
         self.assertDictEqual(ref, test)

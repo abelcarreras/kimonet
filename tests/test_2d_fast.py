@@ -34,7 +34,7 @@ class Test1DFast(unittest.TestCase):
                                      orientations=[[0.0, 0.0, np.pi / 2]])  # if element is None then random, if list then Rx Ry Rz
 
         # set initial exciton
-        self.system.add_excitation_center(s1)
+        self.system.add_excitation_index(s1, 1)
 
         # set additional system parameters
         self.system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
@@ -87,18 +87,18 @@ class Test1DFast(unittest.TestCase):
                 'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=4),
                 'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1', unit_cell=[[0.0, 0.5],
                                                                                                [0.2, 0.0]]), decimals=4).tolist(),
-                'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1', unit_cell=[[0.0, 0.5],
-                                                                                                                      [0.2, 0.0]])), decimals=6).tolist()
+                'diffusion length tensor': np.around(analysis.diffusion_length_square_tensor('s1', unit_cell=[[0.0, 0.5],
+                                                                                                              [0.2, 0.0]]), decimals=6).tolist()
                 }
         print(test)
 
-        ref = {'diffusion coefficient': 7.0191,
+        ref = {'diffusion coefficient': 5.8493,
                'lifetime': 81.2738,
-               'diffusion length': 45.2769,
-               'diffusion tensor': [[8.8997, -5.8377],
-                                    [-5.8377, 5.1384]],
-               'diffusion length tensor': [[35.701541, 27.081359],
-                                           [27.081359, 27.846005]]
+               'diffusion length': 39.6384,
+               'diffusion tensor': [[6.8677, -4.4232],
+                                    [-4.4232, 4.8309]],
+               'diffusion length tensor': [[1806.4, -995.2],
+                                           [-995.2, 1336.0]]
                }
 
         self.assertDictEqual(ref, test)

@@ -86,19 +86,19 @@ class Test1DFast(unittest.TestCase):
         test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient('s1'), decimals=4),
                 'lifetime': np.around(analysis.lifetime('s1'), decimals=4),
                 'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=4),
-                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1', unit_cell=[[0.0, 0.5],
-                                                                                               [0.2, 0.0]]), decimals=4).tolist(),
-                'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1', unit_cell=[[0.0, 0.5],
-                                                                                                                      [0.2, 0.0]])), decimals=4).tolist()
+                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1', unit_cell=[[5.0, 1.0],
+                                                                                               [1.0, 5.0]]), decimals=4).tolist(),
+                'diffusion length tensor': np.around(analysis.diffusion_length_square_tensor('s1', unit_cell=[[5.0, 1.0],
+                                                                                                              [1.0, 5.0]]), decimals=4).tolist()
                 }
 
-        ref = {'diffusion coefficient': 3.0024,
+        ref = {'diffusion coefficient': 3.2155,
                'lifetime': 60.7097,
                'diffusion length': 31.0016,
-               'diffusion tensor': [[3.3135, 0.3028],
-                                    [0.3028, 2.6914]],
-               'diffusion length tensor': [[23.2884, 9.9925],
-                                           [9.9925, 20.4634]]
+               'diffusion tensor': [[ 3.2594, -1.1075],
+                                    [-1.1075,  4.0235]],
+               'diffusion length tensor': [[1084.2, -668.2],
+                                           [-668.2, 1352.0]]
                }
 
         self.assertDictEqual(ref, test)

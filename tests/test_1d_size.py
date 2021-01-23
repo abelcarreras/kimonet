@@ -123,11 +123,11 @@ class Test1DFast(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 0.0282,
-               'lifetime': 14.8367,
-               'diffusion length': 0.4785,
-               'diffusion tensor': [[0.0282]],
-               'diffusion length tensor': [[0.4785]]
+        ref = {'diffusion coefficient': 0.0767,
+               'lifetime': 14.191,
+               'diffusion length': 0.68590,
+               'diffusion tensor': [[0.0767]],
+               'diffusion length tensor': [[0.68590]]
                }
 
         self.assertDictEqual(ref, test)
