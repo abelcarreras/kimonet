@@ -235,12 +235,9 @@ class GoldenRule(BaseProcess):
         def overlap(x):
             return donor_vib_dos(x) * acceptor_vib_dos(x)
 
-        if isinstance(donor_vib_dos, (int, float, complex)) and isinstance(acceptor_vib_dos, (int, float, complex)):
-            overlap_data[info] =  1 if donor_vib_dos - acceptor_vib_dos == 0 else 0
-        elif isinstance(donor_vib_dos, (int, float, complex)) and not isinstance(acceptor_vib_dos, (int, float, complex)):
-            overlap_data[info] = acceptor_vib_dos(donor_vib_dos)
-        elif isinstance(acceptor_vib_dos, (int, float, complex)) and not isinstance(donor_vib_dos, (int, float, complex)):
-            overlap_data[info] = donor_vib_dos(acceptor_vib_dos)
+        if isinstance(self.vibrations, NoVibration):
+            # Treat donor_vib_dos & acceptor_vib_dos as delta functions
+            overlap_data[info] = 1.0 if donor_vib_dos - acceptor_vib_dos == 0 else 0.0
         else:
             overlap_data[info] = quad(overlap, 0, np.inf, epsabs=1e-5, limit=1000)[0]
 
@@ -357,8 +354,8 @@ class InterSystemCrossing(BaseProcess):
 
         vib_dos = self.vibrations.get_vib_spectrum(*transition)
 
-        if isinstance(vib_dos, (int, float, complex)):
-            return 1 if vib_dos == 0 else 0
+        if isinstance(self.vibrations, NoVibration):
+            return 1.0 if vib_dos == 0 else 0.0
 
         return vib_dos(0)
 
