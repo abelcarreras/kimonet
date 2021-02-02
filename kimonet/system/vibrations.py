@@ -216,17 +216,20 @@ class NoVibration:
     def get_vib_spectrum(self, target_state, origin_state):
 
         elec_trans_ene = target_state.energy - origin_state.energy
-        transition = Transition(target_state, origin_state, symmetric=False)
+
+        return elec_trans_ene
+
+        #transition = Transition(target_state, origin_state, symmetric=False)
 
         # elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
 
-        def vib_spectrum(e):
-            if elec_trans_ene == e:
-                return 1
-            else:
-                return 0
-
-        return vib_spectrum
+        #def vib_spectrum(e):
+        #    if elec_trans_ene == e:
+        #        return 1
+        #    else:
+        #        return 0
+        #
+        #return vib_spectrum
 
 
 # Analysis functions

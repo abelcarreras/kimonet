@@ -10,6 +10,7 @@ class State(object):
                  size=1,
                  molecules_list=None,
                  connected_distance=1):
+
         self._label = label
         self._energy = energy
         self._multiplicity = multiplicity
@@ -116,6 +117,9 @@ class State(object):
     def cell_state(self, c_state):
         self._cell_state = np.array(c_state)
 
+    @property
+    def vdw_radius(self):
+        return np.average([mol.get_vdw_radius() for mol in self.get_molecules()])
 
 ground_state = State(label='gs', energy=0.0, multiplicity=1)
 

@@ -31,7 +31,7 @@ class Molecule(object):
         self._coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self._cell_state = np.zeros_like(coordinates, dtype=int)
-        self.vdw_radius = vdw_radius
+        self._vdw_radius = vdw_radius
         self.name = name
 
         state.remove_molecules()
@@ -51,7 +51,7 @@ class Molecule(object):
         return hash(self) == hash(other)
 
     def get_vdw_radius(self):
-        return self.vdw_radius
+        return self._vdw_radius
 
     def get_dim(self):
         return len(self._coordinates)

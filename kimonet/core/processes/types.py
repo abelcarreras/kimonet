@@ -1,12 +1,9 @@
-#from kimonet.core.processes.fcwd import general_fcwd
-from kimonet.utils.units import HBAR_PLANCK
+from kimonet.utils.units import HBAR_PLANCK, BOLTZMANN_CONSTANT
 import numpy as np
 from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
 from copy import deepcopy
 from kimonet.system.state import ground_state as _GS_
-from kimonet.utils.combinations import combinations_group
-
 
 overlap_data = {}
 
@@ -56,6 +53,7 @@ class BaseProcess(object):
         self._transition_connect = None
         self._transport_connect = None
         self._is_symmetry = None
+        self._cell_increment = None
 
         # Check input coherence
         total_size_initial = np.sum([state.size for state in initial_states])
@@ -79,6 +77,23 @@ class BaseProcess(object):
                     mol.set_state(state)
 
         return self._final
+
+    @property
+    def initial_absolute(self):
+        if self._cell_increment is None:
+            return self.initial
+
+        initial_copy = deepcopy(self.initial)
+        for state in initial_copy[1:]:
+            for mol in state.get_molecules():
+                mol.cell_state = self.cell_states[mol]
+                mol.set_state(state)
+
+        initial_copy[1].cell_state = np.array(initial_copy[0].cell_state) - np.array(self._cell_increment)
+        return initial_copy
+
+    def set_cell_increment(self, cell_increment):
+        self._cell_increment = cell_increment
 
     @property
     def initial(self):
@@ -220,7 +235,14 @@ class GoldenRule(BaseProcess):
         def overlap(x):
             return donor_vib_dos(x) * acceptor_vib_dos(x)
 
-        overlap_data[info] = quad(overlap, 0, np.inf, epsabs=1e-5, limit=1000)[0]
+        if isinstance(donor_vib_dos, (int, float, complex)) and isinstance(acceptor_vib_dos, (int, float, complex)):
+            overlap_data[info] =  1 if donor_vib_dos - acceptor_vib_dos == 0 else 0
+        elif isinstance(donor_vib_dos, (int, float, complex)) and not isinstance(acceptor_vib_dos, (int, float, complex)):
+            overlap_data[info] = acceptor_vib_dos(donor_vib_dos)
+        elif isinstance(acceptor_vib_dos, (int, float, complex)) and not isinstance(donor_vib_dos, (int, float, complex)):
+            overlap_data[info] = donor_vib_dos(acceptor_vib_dos)
+        else:
+            overlap_data[info] = quad(overlap, 0, np.inf, epsabs=1e-5, limit=1000)[0]
 
         return overlap_data[info]
 
@@ -268,16 +290,89 @@ class SimpleRate(BaseProcess):
         return self._rate_constant
 
 
-class DecayRate(BaseProcess):
+class SimpleRateBounded(BaseProcess):
     def __init__(self,
                  initial_states,
                  final_states,
+                 rate_constant,
+                 range_distance,
+                 step_param=1.0,
+                 description='',
+                 arguments=None
+                 ):
+        """
+        :param initial_states:
+        :param final_states:
+        :param rate_constant:
+        :param range_distance: max
+        :param step_param: derivative of sigmoid function at range_distance
+        :param description:
+        :param arguments:
+        """
+
+        self._range_distance = range_distance
+        self._rate_constant = rate_constant
+        self._step_param = step_param
+        BaseProcess.__init__(self, initial_states, final_states, description, arguments)
+
+    def get_rate_constant(self):
+        r_vector = np.array(self.initial_absolute[0].get_coordinates_absolute()) - \
+                   np.array(self.initial_absolute[1].get_coordinates_absolute())
+        distance = np.linalg.norm(r_vector)
+
+        def sigmoid_function(x, distance, step_param=1.0):
+            return 1.0 / (1.0 + np.exp(1.0 * step_param * 4 * (x - distance)))
+
+        return self._rate_constant * sigmoid_function(distance, self._range_distance, step_param=self._step_param)
+
+
+class InterSystemCrossing(BaseProcess):
+    def __init__(self,
+                 initial_state,
+                 final_state,
+                 vibrations=NoVibration(),
+                 isc_constant_1=0,
+                 isc_constant_2=1.0,
+                 description='',
+                 arguments=None
+                 ):
+
+        self._isc_constant_1 = isc_constant_1
+        self._isc_constant_2 = isc_constant_2
+        self._vibrations = vibrations
+
+        BaseProcess.__init__(self, [initial_state], [final_state], description, arguments)
+
+    def get_rate_constant(self):
+        delta_g = self.final_test[0].energy - self.initial[0].energy
+
+        return self._isc_constant_1 + self._isc_constant_2 * self.get_fcwd()
+
+    @property
+    def vibrations(self):
+        return self._vibrations
+
+    def get_fcwd(self):
+        transition = (self.final[0], self.initial[0])
+
+        vib_dos = self.vibrations.get_vib_spectrum(*transition)
+
+        if isinstance(vib_dos, (int, float, complex)):
+            return 1 if vib_dos == 0 else 0
+
+        return vib_dos(0)
+
+
+class DecayRate(BaseProcess):
+    def __init__(self,
+                 initial_state,
+                 final_state,
                  decay_rate_function,
                  description='',
                  arguments=None
                  ):
 
-        BaseProcess.__init__(self, [initial_states], [final_states], description, arguments)
+        BaseProcess.__init__(self, [initial_state], [final_state], description, arguments)
         self.rate_function = decay_rate_function
 
     def get_rate_constant(self):

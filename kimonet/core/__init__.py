@@ -1,10 +1,7 @@
 from kimonet.core.kmc import kmc_algorithm
 from kimonet.core.processes import get_processes
 from kimonet.core.processes.types import GoldenRule, DirectRate, DecayRate
-from kimonet.utils import distance_vector_periodic
 import numpy as np
-
-import warnings
 
 
 def do_simulation_step(system):
@@ -61,9 +58,9 @@ def system_test_info(system):
 
             # if isinstance(proc, (GoldenRule, DirectRate)):
             if len(proc.initial) == 2:
-                cell_increment = proc.final[0].cell_state - proc.initial[0].cell_state
-                distance = np.linalg.norm([proc.final[0].get_coordinates_absolute() - proc.initial[0].get_coordinates_absolute()])
-                print('Distance: ', distance, 'angs')
+                cell_increment = proc.initial_absolute[1].cell_state - proc.initial_absolute[0].cell_state
+                distance = np.linalg.norm([proc.initial_absolute[1].get_coordinates_absolute() - proc.initial_absolute[0].get_coordinates_absolute()])
+                print('Distance: {:.4} angs'.format(distance))
                 print('Cell_increment: {} '.format(cell_increment))
 
             if isinstance(proc, GoldenRule):
@@ -72,16 +69,16 @@ def system_test_info(system):
 
                 e_coupling = proc.get_electronic_coupling()
 
-                print('Electronic coupling: ', e_coupling, 'eV')
-                print('Spectral overlap:    ', spectral_overlap, 'eV-1')
+                print('Electronic coupling: {:.4} eV'.format(e_coupling))
+                print('Spectral overlap:    {:.4} eV-1'.format(spectral_overlap))
                 # anal_data.append([distance, r])
 
-            print('Rate constant :      ', r, 'ns-1')
+            print('Rate constant: {:.4} ns-1'.format(r))
 
             print('-' * 80)
             total_r += r
 
-        print('Total rate sum: {}'.format(total_r))
+        print('Total rate sum: {:.4}'.format(total_r))
 
         # import matplotlib.pyplot as plt
         # plt.scatter(np.array(anal_data).T[0], np.array(anal_data).T[1])

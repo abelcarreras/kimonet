@@ -4,7 +4,7 @@ from kimonet.system.molecule import Molecule
 from kimonet import system_test_info
 from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
-from kimonet.core.processes import GoldenRule, DecayRate, DirectRate
+from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 from kimonet.analysis import plot_polar_plot

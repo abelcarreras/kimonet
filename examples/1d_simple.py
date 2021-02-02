@@ -1,4 +1,4 @@
-from kimonet.core.processes import DecayRate, DirectRate
+from kimonet.core.processes.types import DecayRate, DirectRate
 from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system import System
@@ -11,6 +11,7 @@ import numpy as np
 # custom transfer functions
 def transfer_rate(initial, final, custom_constant=1):
 
+    # r_vector = initial[0].get_coordinates_absolute() - initial[1].get_coordinates_absolute()
     r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
     distance = np.linalg.norm(r_vector)
 

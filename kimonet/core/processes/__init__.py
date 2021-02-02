@@ -132,6 +132,7 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
                 new_process = deepcopy(process)
                 new_process.initial = (donor_state, acceptor_state)
+                new_process.set_cell_increment(cell_incr)
 
                 # Binding final states to initial states if equal
                 #for final in new_process.final_test:

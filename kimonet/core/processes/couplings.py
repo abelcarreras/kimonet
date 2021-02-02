@@ -42,7 +42,8 @@ def forster_coupling(initial, final, ref_index=1, transition_moment=None):
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
+    #r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
@@ -78,7 +79,7 @@ def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
@@ -124,7 +125,7 @@ def forster_coupling_extended(initial, final, ref_index=1, transition_moment=Non
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
@@ -170,7 +171,7 @@ def forster_coupling_extended_py(initial, final, ref_index=1, transition_moment=
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
-    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
@@ -251,7 +252,7 @@ def unit_vector(vector):
     return vector / np.linalg.norm(vector)
 
 
-def dexter_coupling(initial, final, vdw_radius=None, k_factor=1):
+def dexter_coupling(initial, final, k_factor=1):
     """
     Compute Dexter coupling in eV
 
@@ -264,16 +265,17 @@ def dexter_coupling(initial, final, vdw_radius=None, k_factor=1):
 
     function_name = inspect.currentframe().f_code.co_name
 
-    r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
     distance = np.linalg.norm(r_vector)
 
     # donor <-> acceptor interaction symmetry
-    hash_string = generate_hash(function_name, initial, final, distance, [repr(sorted(vdw_radius.items())), k_factor])
+    hash_string = generate_hash(function_name, initial, final, distance, [k_factor])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    vdw_radius_sum = vdw_radius[initial[0]] + vdw_radius[final[0]]
+    vdw_radius_sum = initial[0].vdw_radius + final[0].vdw_radius
+
     dexter_coupling = k_factor * np.exp(-2 * distance / vdw_radius_sum)
 
     coupling_data[hash_string] = dexter_coupling                            # memory update for new couplings
