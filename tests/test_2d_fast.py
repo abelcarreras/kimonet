@@ -12,7 +12,6 @@ from kimonet.core.processes.transitions import Transition
 
 import unittest
 import numpy as np
-from copy import deepcopy
 
 
 # states list
@@ -42,23 +41,26 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-        marcus = MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
-                                                      (gs, s1): 0.08},
-                             temperature=300)  # Kelvin
+        transitions = [Transition(s1, gs,
+                                  tdm=[0.5, 0.2],  # a.u.
+                                  reorganization_energy=0.08,  # eV
+                                  symmetric=True)]
+
+        vibrational_model = MarcusModel(transitions=transitions,
+                                      temperature=300)  # Kelvin
 
         # list of transfer functions by state
         self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                  electronic_coupling_function=forster_coupling_extended,
                                                  description='Forster',
-                                                 arguments={'ref_index': 2, 'longitude': 2, 'n_divisions': 30,
-                                                             'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
-                                                 vibrations=marcus
-                                                 ),
-                                      DecayRate(initial_states=s1, final_states=gs,
+                                                 arguments={'ref_index': 2,
+                                                            'longitude': 2, 'n_divisions': 30,
+                                                            'transitions': transitions},
+                                                 vibrations=vibrational_model),
+                                      DecayRate(initial_state=s1, final_state=gs,
                                                 decay_rate_function=einstein_radiative_decay,
-                                                arguments={'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
-                                                description='singlet_radiative_decay')
-                                      ]
+                                                arguments={'transitions': transitions},
+                                                description='singlet_radiative_decay')]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
 
@@ -92,13 +94,13 @@ class Test1DFast(unittest.TestCase):
                 }
         print(test)
 
-        ref = {'diffusion coefficient': 5.8493,
-               'lifetime': 81.2738,
-               'diffusion length': 39.6384,
-               'diffusion tensor': [[6.8677, -4.4232],
-                                    [-4.4232, 4.8309]],
-               'diffusion length tensor': [[1806.4, -995.2],
-                                           [-995.2, 1336.0]]
+        ref = {'diffusion coefficient': 1616.8446,
+               'lifetime': 0.2326,
+               'diffusion length': 44.8932,
+               'diffusion tensor': [[1731.4549, -435.3538],
+                                    [-435.3538, 1502.2344]],
+               'diffusion length tensor': [[1969.8, -571.8],
+                                           [-571.8, 2061.0]]
                }
 
         self.assertDictEqual(ref, test)

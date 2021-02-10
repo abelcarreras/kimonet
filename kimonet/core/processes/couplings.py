@@ -3,7 +3,7 @@ from kimonet.utils import distance_vector_periodic
 import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet.core.processes.transitions import Transition
-from kimonet.utils.units import DEBYE_TO_ANGS_EL
+from kimonet.utils.units import ATOMIC_TO_ANGS_EL
 import kimonet.core.processes.forster as forster
 from kimonet.utils import rotate_vector
 
@@ -27,7 +27,7 @@ def generate_hash(function_name, initial, final, distance, data_list):
                  distance))
 
 
-def forster_coupling(initial, final, ref_index=1, transition_moment=None):
+def forster_coupling(initial, final, ref_index=1, transitions=()):
     """
     Compute Forster coupling in eV
 
@@ -48,16 +48,19 @@ def forster_coupling(initial, final, ref_index=1, transition_moment=None):
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
                                   d_orientation, a_orientation,
-                                  r_vector, [ref_index, repr(sorted(transition_moment.items()))])
+                                  r_vector, [ref_index, tuple(transitions)])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[d_transition]
-    mu_a = transition_moment[a_transition]
+    try:
+        mu_a = transitions[transitions.index(a_transition)].tdm
+        mu_d = transitions[transitions.index(d_transition)].tdm
+    except ValueError:
+        raise Exception('TDM for {} / {} not defined'.format(a_transition, d_transition))
 
-    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
+    mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
 
     coupling_data[hash_string] = forster.dipole(mu_d, mu_a, r_vector, n=ref_index)
 
@@ -93,8 +96,8 @@ def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
     mu_d = transition_moment[d_transition]
     mu_a = transition_moment[a_transition]
 
-    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
+    mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
 
 
     distance = np.linalg.norm(r_vector)
@@ -108,7 +111,7 @@ def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(initial, final, ref_index=1, transition_moment=None, longitude=3, n_divisions=300):
+def forster_coupling_extended(initial, final, ref_index=1, transitions=None, longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
 
@@ -130,16 +133,16 @@ def forster_coupling_extended(initial, final, ref_index=1, transition_moment=Non
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
                                   d_orientation, a_orientation,
-                                  r_vector, [ref_index, repr(sorted(transition_moment.items())), longitude, n_divisions])
+                                  r_vector, [ref_index, tuple(transitions), longitude, n_divisions])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[d_transition]
-    mu_a = transition_moment[a_transition]
+    mu_a = transitions[transitions.index(a_transition)].tdm
+    mu_d = transitions[transitions.index(d_transition)].tdm
 
-    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
+    mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
 
     # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
     # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
@@ -184,8 +187,8 @@ def forster_coupling_extended_py(initial, final, ref_index=1, transition_moment=
     mu_d = transition_moment[d_transition]
     mu_a = transition_moment[a_transition]
 
-    mu_d = rotate_vector(mu_d, d_orientation) * DEBYE_TO_ANGS_EL
-    mu_a = rotate_vector(mu_a, a_orientation) * DEBYE_TO_ANGS_EL
+    mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
 
     mu_ai = mu_a / n_divisions
     mu_di = mu_d / n_divisions
@@ -276,6 +279,7 @@ def dexter_coupling(initial, final, k_factor=1):
 
     vdw_radius_sum = initial[0].vdw_radius + final[0].vdw_radius
 
+    # print('dexter: ', 2/vdw_radius_sum)
     dexter_coupling = k_factor * np.exp(-2 * distance / vdw_radius_sum)
 
     coupling_data[hash_string] = dexter_coupling                            # memory update for new couplings

@@ -235,11 +235,16 @@ class GoldenRule(BaseProcess):
         def overlap(x):
             return donor_vib_dos(x) * acceptor_vib_dos(x)
 
+        d = BOLTZMANN_CONSTANT*1000*10
+        sup_range = np.max([self.initial[0].energy, self.initial[0].energy]) + d
+        inf_range = np.min([self.initial[0].energy, self.initial[0].energy]) - d
+
+
         if isinstance(self.vibrations, NoVibration):
             # Treat donor_vib_dos & acceptor_vib_dos as delta functions
             overlap_data[info] = 1.0 if donor_vib_dos - acceptor_vib_dos == 0 else 0.0
         else:
-            overlap_data[info] = quad(overlap, 0, np.inf, epsabs=1e-5, limit=1000)[0]
+            overlap_data[info] = quad(overlap, inf_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
         return overlap_data[info]
 
@@ -323,19 +328,19 @@ class SimpleRateBounded(BaseProcess):
         return self._rate_constant * sigmoid_function(distance, self._range_distance, step_param=self._step_param)
 
 
-class InterSystemCrossing(BaseProcess):
+class InternalConversion(BaseProcess):
     def __init__(self,
                  initial_state,
                  final_state,
+                 coupling=None,
                  vibrations=NoVibration(),
-                 isc_constant_1=0,
-                 isc_constant_2=1.0,
+                 k1=0,
                  description='',
                  arguments=None
                  ):
 
-        self._isc_constant_1 = isc_constant_1
-        self._isc_constant_2 = isc_constant_2
+        self._k1 = k1
+        self._coupling = coupling
         self._vibrations = vibrations
 
         BaseProcess.__init__(self, [initial_state], [final_state], description, arguments)
@@ -343,7 +348,7 @@ class InterSystemCrossing(BaseProcess):
     def get_rate_constant(self):
         delta_g = self.final_test[0].energy - self.initial[0].energy
 
-        return self._isc_constant_1 + self._isc_constant_2 * self.get_fcwd()
+        return self._k1 + 2*np.pi/HBAR_PLANCK * self._coupling**2 * self.get_fcwd()
 
     @property
     def vibrations(self):

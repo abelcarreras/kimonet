@@ -7,21 +7,15 @@ from kimonet.core.processes.couplings import forster_coupling
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes.types import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
-
+from kimonet.core.processes.transitions import Transition
+from kimonet.system.state import ground_state as gs
 import unittest
 import numpy as np
+
+
 np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-
-transfer_scheme = [GoldenRule(initial_states=('s1', 'gs'), final_states=('gs', 's1'),
-                              electronic_coupling_function=forster_coupling,
-                              description='forster couplings'),
-                  ]
-
-decay_scheme = [DecayRate(initial_states='s1', final_states='gs',
-                          decay_rate_function=einstein_radiative_decay,
-                          description='singlet_radiative_decay'),
-                ]
+s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
 def get_analytical_model(distance, dimension, transfer, decay):
@@ -45,23 +39,22 @@ class TestKimonet(unittest.TestCase):
         vib = MarcusModel(reorganization_energies={('s1', 'gs'): 0.5,
                                                    ('gs', 's1'): 0.5})
 
-        self.molecule = Molecule(states=[State(label='gs', energy=0.0),
-                                         State(label='s1', energy=3.0)],
-                                 transition_moment={('s1', 'gs'): [1.0, 0]},  # transition dipole moment of the molecule (Debye)
-                                 vibrations=vib,
-                                 decays=decay_scheme,
-                                 )
-
-        conditions = {'temperature': 273.15,            # temperature of the system (K)
-                      'refractive_index': 1,            # refractive index of the material (adimensional)
-                      'cutoff_radius': 3.1}             # maximum interaction distance (Angstroms)
+        self.molecule = Molecule()
 
         self.system = regular_system(molecule=self.molecule,
                                      lattice={'size': [3, 3], 'parameters': self.parameters},  # Angstroms
                                      orientation=[0, 0, 0])
 
         self.system.cutoff_radius = 3.1
-        self.system.transfer_scheme = transfer_scheme
+        self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
+                                                 electronic_coupling_function=forster_coupling,
+                                                 arguments={'transition_moment': {Transition(s1, gs): [1.0, 0.0]}},  # a.u.
+                                                 description='forster couplings'),
+                                      DecayRate(initial_state='s1', final_state='gs',
+                                                decay_rate_function=einstein_radiative_decay,
+                                                description='singlet_radiative_decay')
+                                      ]
+
 
     def test_kmc_algorithm(self):
         num_trajectories = 10                           # number of trajectories that will be simulated

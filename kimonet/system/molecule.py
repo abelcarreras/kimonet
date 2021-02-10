@@ -1,10 +1,7 @@
 import numpy as np
 from kimonet.utils import rotate_vector
 import copy
-#from kimonet.utils.units import DEBYE_TO_ANGS_EL
-#from kimonet.system.vibrations import NoVibration
 from kimonet.system.state import ground_state as _GS_
-#from kimonet.core.processes.types import Transition
 
 
 class Molecule(object):

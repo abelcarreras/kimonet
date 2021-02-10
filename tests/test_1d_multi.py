@@ -150,16 +150,17 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm_2(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
+        transitions = [Transition(s1, gs, tdm=[0.01], reorganization_energy=0.07, symmetric=True)]
+
         # set additional system parameters
         self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                  electronic_coupling_function=forster_coupling,
                                                  description='Forster coupling',
                                                  arguments={'ref_index': 1,
-                                                            'transition_moment': {Transition(s1, gs): [0.01]}},
-                                                 vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
-                                                                                                 (s1, gs): 0.07})
+                                                            'transitions': transitions},
+                                                 vibrations=MarcusModel(transitions=transitions)
                                                  ),
-                                      DecayRate(initial_states=s1, final_states=gs,
+                                      DecayRate(initial_state=s1, final_state=gs,
                                                 decay_rate_function=decay_rate,
                                                 description='custom decay rate')
                                       ]
@@ -194,11 +195,11 @@ class Test1DFast(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 0.0065,
-               'lifetime': 50.2957,
-               'diffusion length': 1.9235,
-               'diffusion tensor': [[0.0065]],
-               'diffusion length tensor': [[1.923538]]
+        ref = {'diffusion coefficient': 5.0368,
+               'lifetime': 46.0247,
+               'diffusion length': 20.4230,
+               'diffusion tensor': [[5.0368]],
+               'diffusion length tensor': [[20.423026]]
                }
 
         self.assertDictEqual(ref, test)

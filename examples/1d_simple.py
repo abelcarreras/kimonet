@@ -20,9 +20,9 @@ def transfer_rate(initial, final, custom_constant=1):
 
 # custom decay functions
 def decay_rate(initial, final):
-    rates = {'TypeA': 1. / 100,
-             'TypeB': 1. / 50,
-             'TypeC': 1. / 25}
+    rates = {'TypeA': 1. / 100,  # ns-1
+             'TypeB': 1. / 50,  # ns-1
+             'TypeC': 1. / 25}  # ns-1
     return rates[initial[0].get_center().name]
 
 
@@ -62,10 +62,10 @@ system.process_scheme = [DirectRate(initial_states=(s1, gs), final_states=(gs, s
                          DirectRate(initial_states=(s2, gs), final_states=(gs, s2),
                                     rate_constant_function=transfer_rate,
                                     description='custom'),
-                         DecayRate(initial_states=(s1), final_states=(gs),  # TO SYSTEM
+                         DecayRate(initial_state=s1, final_state=gs,  # TO SYSTEM
                                    decay_rate_function=decay_rate,
                                    description='custom decay rate'),
-                         DecayRate(initial_states=(s2), final_states=(gs),  # TO SYSTEM
+                         DecayRate(initial_state=s2, final_state=gs,  # TO SYSTEM
                                    decay_rate_function=decay_rate,
                                    description='custom decay rate')
                          ]

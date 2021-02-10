@@ -15,7 +15,6 @@ import numpy as np
 
 
 # states list
-# gs = State(label='gs', energy=0.0, multiplicity=1)
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
@@ -43,8 +42,12 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-        marcus = MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
-                                                      (gs, s1): 0.08},
+        transitions = [Transition(s1, gs,
+                                  tdm=[0.3, 0.1],  # a.u.
+                                  reorganization_energy=0.08,  # eV
+                                  symmetric=True)]
+
+        marcus = MarcusModel(transitions=transitions,
                              temperature=300)  # Kelvin
 
         # list of transfer functions by state
@@ -52,12 +55,12 @@ class Test1DFast(unittest.TestCase):
                                                  electronic_coupling_function=forster_coupling_extended,
                                                  description='Forster',
                                                  arguments={'ref_index': 2, 'longitude': 2, 'n_divisions': 30,
-                                                             'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
+                                                            'transitions': transitions},
                                                  vibrations=marcus
                                                  ),
-                                      DecayRate(initial_states=s1, final_states=gs,
+                                      DecayRate(initial_state=s1, final_state=gs,
                                                 decay_rate_function=einstein_radiative_decay,
-                                                arguments={'transition_moment': {Transition(s1, gs): [0.3, 0.1]}}, # Debye
+                                                arguments={'transitions': transitions},
                                                 description='singlet_radiative_decay')
                                       ]
 
@@ -92,11 +95,11 @@ class Test1DFast(unittest.TestCase):
                                                                                                               [1.0, 5.0]]), decimals=4).tolist()
                 }
 
-        ref = {'diffusion coefficient': 3.2155,
-               'lifetime': 60.7097,
+        ref = {'diffusion coefficient': 134.2051,
+               'lifetime': 1.4546,
                'diffusion length': 31.0016,
-               'diffusion tensor': [[ 3.2594, -1.1075],
-                                    [-1.1075,  4.0235]],
+               'diffusion tensor': [[136.0372, -46.2217],
+                                    [-46.2217, 167.9282]],
                'diffusion length tensor': [[1084.2, -668.2],
                                            [-668.2, 1352.0]]
                }

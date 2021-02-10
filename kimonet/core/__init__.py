@@ -78,7 +78,7 @@ def system_test_info(system):
             print('-' * 80)
             total_r += r
 
-        print('Total rate sum: {:.4}'.format(total_r))
+        print('Total rate sum: {:.4}'.format(float(total_r)))
 
         # import matplotlib.pyplot as plt
         # plt.scatter(np.array(anal_data).T[0], np.array(anal_data).T[1])

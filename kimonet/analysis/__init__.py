@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from kimonet.analysis.trajectory_graph import TrajectoryGraph as Trajectory
 from kimonet.analysis.trajectory_analysis import TrajectoryAnalysis
 from kimonet.system.state import ground_state as _GS_
+import warnings
 
 
 def visualize_system(system, dipole=None):
@@ -103,7 +104,10 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
     ax.set_rticks(list(np.linspace(0.0, max, 8)))  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
-    ax.set_xticklabels(['{}'.format(labels_plot[0]), '', '{}'.format(labels_plot[1]), '', '', '', '', ''])
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ax.set_xticklabels(['{}'.format(labels_plot[0]), '', '{}'.format(labels_plot[1]), '', '', '', '', ''])
 
     ax.set_title(title, va='bottom')
     plt.show()

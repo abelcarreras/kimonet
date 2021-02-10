@@ -68,7 +68,7 @@ class Test1DFast(unittest.TestCase):
                                                  rate_constant_function=transfer_rate,
                                                  arguments={'custom_constant': 1},
                                                  description='custom'),
-                                      DecayRate(initial_states=(s1), final_states=(gs),
+                                      DecayRate(initial_state=s1, final_state=gs,
                                                  decay_rate_function=decay_rate,
                                                  description='custom decay rate')
                                       ]
@@ -114,16 +114,19 @@ class Test1DFast(unittest.TestCase):
     def test_kmc_algorithm_2(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
+        transitions = [Transition(s1, gs, tdm=[0.02], reorganization_energy=0.07, symmetric=True)]
         # set additional system parameters
         self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                  electronic_coupling_function=forster_coupling,
                                                  description='Forster coupling',
                                                  arguments={'ref_index': 1,
-                                                            'transition_moment': {Transition(s1, gs): [0.01]}},
+                                                            'transitions': transitions,
+                                                            'transition_moment': {Transition(s1, gs): [0.02]}},
                                                  vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
-                                                                                                 (s1, gs): 0.07})
+                                                                                                 (s1, gs): 0.07},
+                                                                        transitions=transitions)
                                                  ),
-                                      DecayRate(initial_states=s1, final_states=gs,
+                                      DecayRate(initial_state=s1, final_state=gs,
                                                 decay_rate_function=decay_rate,
                                                 description='custom decay rate')
                                       ]
@@ -135,8 +138,8 @@ class Test1DFast(unittest.TestCase):
 
         trajectories = calculate_kmc(self.system,
                                      num_trajectories=10,  # number of trajectories that will be simulated
-                                     max_steps=10000,  # maximum number of steps for trajectory allowed
-                                     silent=True)
+                                     max_steps=1000,  # maximum number of steps for trajectory allowed
+                                     silent=False)
 
         # Results analysis
         analysis = TrajectoryAnalysis(trajectories)
@@ -158,11 +161,11 @@ class Test1DFast(unittest.TestCase):
                 }
 
         print(test)
-        ref = {'diffusion coefficient': 0.7894,
-               'lifetime': 40.8351,
-               'diffusion length': 8.0561,
-               'diffusion tensor': [[0.7894]],
-               'diffusion length tensor': [[8.056054]]
+        ref = {'diffusion coefficient': 493.6666,
+               'lifetime': 1.0164,
+               'diffusion length': 31.0306,
+               'diffusion tensor': [[493.6666]],
+               'diffusion length tensor': [[31.03063]]
                }
 
         self.assertDictEqual(ref, test)

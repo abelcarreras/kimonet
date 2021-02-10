@@ -20,13 +20,9 @@ import numpy as np
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 # transition moments
-transition_moment = {Transition(s1, gs): [0.1, 0.0]}
-
-# vibration model
-marcus = MarcusModel(reorganization_energies={(s1, gs): 0.08,  # eV
-                                              (gs, s1): 0.08},
-                     temperature=300)  # Kelvin
-
+transitions = [Transition(s1, gs,
+                          tdm=[0.1, 0.0],  # a.u.
+                          reorganization_energy=0.08)] # eV
 
 molecule = Molecule()
 
@@ -50,13 +46,12 @@ system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s
                                     electronic_coupling_function=forster_coupling,
                                     description='Forster coupling',
                                     arguments={'ref_index': 1,
-                                               'transition_moment': transition_moment},
-                                    vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
-                                                                                    (s1, gs): 0.07})
+                                               'transitions': transitions},
+                                    vibrations=MarcusModel(transitions=transitions) # eV
                                     ),
-                        DecayRate(initial_states=s1, final_states=gs,
+                        DecayRate(initial_state=s1, final_state=gs,
                                   decay_rate_function=einstein_radiative_decay,
-                                  arguments={'transition_moment': transition_moment},
+                                  arguments={'transitions': transitions},
                                   description='custom decay rate')
                         ]
 
