@@ -67,7 +67,7 @@ def forster_coupling(initial, final, ref_index=1, transitions=()):
     return coupling_data[hash_string]
 
 
-def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
+def forster_coupling_py(initial, final, ref_index=1, transitions=()):
     """
     Compute Forster coupling in eV
 
@@ -76,29 +76,31 @@ def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
     :return: Forster coupling
     """
 
-    d_transition = Transition(initial[0], final[0])
-    a_transition = Transition(initial[1], final[1])
+    d_transition = Transition(initial[0], final[1])
+    a_transition = Transition(initial[1], final[0])
 
     d_orientation = initial[0].get_center().molecular_orientation()
     a_orientation = initial[1].get_center().molecular_orientation()
 
+    # r_vector = initial[1].get_coordinates_absolute() - final[1].get_coordinates_absolute()
     r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
 
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
                                   d_orientation, a_orientation,
-                                  r_vector, [ref_index, repr(sorted(transition_moment.items()))])
+                                  r_vector, [ref_index, tuple(transitions)])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-
-    mu_d = transition_moment[d_transition]
-    mu_a = transition_moment[a_transition]
+    try:
+        mu_a = transitions[transitions.index(a_transition)].tdm
+        mu_d = transitions[transitions.index(d_transition)].tdm
+    except ValueError:
+        raise Exception('TDM for {} / {} not defined'.format(a_transition, d_transition))
 
     mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
     mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
-
 
     distance = np.linalg.norm(r_vector)
 
@@ -111,7 +113,7 @@ def forster_coupling_py(initial, final, ref_index=1, transition_moment=None):
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended(initial, final, ref_index=1, transitions=None, longitude=3, n_divisions=300):
+def forster_coupling_extended(initial, final, ref_index=1, transitions=(), longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV
 
@@ -157,7 +159,7 @@ def forster_coupling_extended(initial, final, ref_index=1, transitions=None, lon
     return coupling_data[hash_string]
 
 
-def forster_coupling_extended_py(initial, final, ref_index=1, transition_moment=None, longitude=3, n_divisions=300):
+def forster_coupling_extended_py(initial, final, ref_index=1, transitions=(), longitude=3, n_divisions=300):
     """
     Compute Forster coupling in eV (pure python version)
 
@@ -179,16 +181,21 @@ def forster_coupling_extended_py(initial, final, ref_index=1, transition_moment=
     hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
                                   d_transition, a_transition,
                                   d_orientation, a_orientation,
-                                  r_vector, [ref_index, repr(sorted(transition_moment.items())), longitude, n_divisions])
+                                  r_vector, [ref_index, tuple(transitions), longitude, n_divisions])
 
     if hash_string in coupling_data:
         return coupling_data[hash_string]
 
-    mu_d = transition_moment[d_transition]
-    mu_a = transition_moment[a_transition]
+    mu_a = transitions[transitions.index(a_transition)].tdm
+    mu_d = transitions[transitions.index(d_transition)].tdm
 
     mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
     mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
+
+    # mu_d = donor.get_transition_moment(to_state=_GS_)            # transition dipole moment (donor) e*angs
+    # mu_a = acceptor.get_transition_moment(to_state=donor.state)  # transition dipole moment (acceptor) e*angs
+
+    #r_vector = intermolecular_vector(donor, acceptor, supercell, cell_increment)  # position vector between donor and acceptor
 
     mu_ai = mu_a / n_divisions
     mu_di = mu_d / n_divisions
