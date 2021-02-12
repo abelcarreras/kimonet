@@ -6,9 +6,9 @@ include_dirs_numpy = [numpy.get_include()]
 
 def get_version_number():
     main_ns = {}
-    for l in open('kimonet/__init__.py', 'r').readlines():
-        if not(l.find('__version__')):
-            exec(l, main_ns)
+    for line in open('kimonet/__init__.py', 'r').readlines():
+        if not(line.find('__version__')):
+            exec(line, main_ns)
             return main_ns['__version__']
 
 
