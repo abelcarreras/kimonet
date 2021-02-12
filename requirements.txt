@@ -1,0 +1,10 @@
+###################################
+# Required packages for Kimonet   #
+###################################
+
+numpy
+scipy
+matplotlib
+networkx
+h5py
+pygraphviz
