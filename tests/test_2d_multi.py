@@ -95,7 +95,7 @@ class Test1DFast(unittest.TestCase):
                                                                                                               [1.0, 5.0]]), decimals=4).tolist()
                 }
 
-        ref = {'diffusion coefficient': 134.20511,
+        ref = {'diffusion coefficient': 134.2051,
                'lifetime': 1.4546,
                'diffusion length': 31.0016,
                'diffusion tensor': [[136.0372, -46.2217],
