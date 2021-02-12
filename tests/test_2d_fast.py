@@ -2,7 +2,7 @@ from kimonet.system.molecule import Molecule
 from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
-from kimonet.core.processes.couplings import forster_coupling, forster_coupling_extended
+from kimonet.core.processes.couplings import forster_coupling, forster_coupling_extended_py as forster_coupling_extended
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes.types import GoldenRule, DecayRate
 from kimonet.system.vibrations import MarcusModel
