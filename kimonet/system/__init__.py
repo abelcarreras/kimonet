@@ -388,14 +388,14 @@ if __name__ == '__main__':
     print(s1, s1.label)
     s_list = system.get_state_neighbors_copy(s1)
     for s in s_list:
-        print(s.label, s.get_coordinates_absolute(system.supercell))
+        print(s.label, s.get_coordinates_absolute())
         # print(s.label, s.get_coordinates_absolute(system.supercell) - s1.get_center().get_coordinates())
 
     print('----')
 
     s_list, c_list = system.get_state_neighbors(s1)
     for s, c in zip(s_list, c_list):
-        print(s.label, s.get_coordinates_absolute(system.supercell) - np.dot(np.array(system.supercell).T, c), state.get_center().name)
+        print(s.label, s.get_coordinates_absolute() - np.dot(np.array(system.supercell).T, c))
         # print(s.label, s.get_coordinates_absolute(system.supercell) - s1.get_center().get_coordinates())
 
 
