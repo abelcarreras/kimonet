@@ -1,14 +1,17 @@
 from kimonet.system.generators import regular_system
 from kimonet.analysis import Trajectory, TrajectoryAnalysis
 from kimonet.system.molecule import Molecule
+from kimonet.analysis import visualize_system, TrajectoryAnalysis
 from kimonet.system.state import State
-from kimonet import do_simulation_step
-from kimonet.core.processes.couplings import forster_coupling
+from kimonet import system_test_info, calculate_kmc
+from kimonet.core.processes.couplings import forster_coupling, forster_coupling_extended
 from kimonet.core.processes.decays import einstein_radiative_decay
-from kimonet.core.processes.types import GoldenRule, DecayRate
+from kimonet.core.processes.types import GoldenRule, DecayRate, SimpleRate
 from kimonet.system.vibrations import MarcusModel
-from kimonet.core.processes.transitions import Transition
+from kimonet.system.generators import regular_system, crystal_system
 from kimonet.system.state import ground_state as gs
+from kimonet.core.processes.transitions import Transition
+
 import unittest
 import numpy as np
 
@@ -34,85 +37,84 @@ class TestKimonet(unittest.TestCase):
 
     def setUp(self):
 
-        self.parameters = [3.0, 3.0]
+        # list of decay functions by state
+        molecule = Molecule()
 
-        self.molecule = Molecule()
+        # define system as a crystal
+        self.system = crystal_system(molecules=[molecule],  # molecule to use as reference
+                                     scaled_site_coordinates=[[0.0, 0.0]],
+                                     unitcell=[[5.0, 0.0],
+                                               [0.0, 5.0]],
+                                     dimensions=[2, 2],  # supercell size
+                                     orientations=[[0.0, 0.0, 0.0]])  # if element is None then random, if list then Rx Ry Rz
 
-        self.system = regular_system(molecule=self.molecule,
-                                     lattice={'size': [3, 3], 'parameters': self.parameters},  # Angstroms
-                                     orientation=[0, 0, 0])
+        # set initial exciton
+        self.system.add_excitation_index(s1, 0)
 
-        self.system.cutoff_radius = 3.1
-        self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
-                                                 electronic_coupling_function=forster_coupling,
-                                                 arguments={'transition_moment': {Transition(s1, gs): [1.0, 0.0]}},  # a.u.
-                                                 description='forster couplings'),
-                                      DecayRate(initial_state='s1', final_state='gs',
-                                                decay_rate_function=einstein_radiative_decay,
-                                                description='singlet_radiative_decay')
-                                      ]
+        # set additional system parameters
+        self.system.cutoff_radius = 5.5  # interaction cutoff radius in Angstrom
 
 
     def test_kmc_algorithm(self):
-        num_trajectories = 10                           # number of trajectories that will be simulated
-        max_steps = 100000                              # maximum number of steps for trajectory allowed
+        np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
-        trajectories = []
-        for j in range(num_trajectories):
+        transitions = [Transition(s1, gs, symmetric=True)]
 
-            # print('traj', j)
-            self.system.add_excitation_center('s1')
 
-            trajectory = Trajectory(self.system)
-            for i in range(max_steps):
+        # list of transfer functions by state
+        self.system.process_scheme = [SimpleRate(initial_states=(s1, gs), final_states=(gs, s1),
+                                                 rate_constant=0.1),
+                                      SimpleRate(initial_states=(s1,), final_states=(gs,),
+                                                 rate_constant=0.01)]
 
-                change_step, step_time = do_simulation_step(self.system)
+        # some system analyze functions
+        system_test_info(self.system)
 
-                if self.system.is_finished:
-                    break
+        trajectories = calculate_kmc(self.system,
+                                     num_trajectories=500,  # number of trajectories that will be simulated
+                                     max_steps=1000,  # maximum number of steps for trajectory allowed
+                                     silent=True)
 
-                trajectory.add_step(change_step, step_time)
-
-            self.system.reset()
-
-            trajectories.append(trajectory)
-
+        # Results analysis
         analysis = TrajectoryAnalysis(trajectories)
-        print(analysis)
 
-        print('n_dim: ', analysis.n_dim)
+        print('diffusion coefficient: {:9.5f} Angs^2/ns'.format(analysis.diffusion_coefficient('s1')))
+        print('lifetime:              {:9.5f} ns'.format(analysis.lifetime('s1')))
+        print('diffusion length:      {:9.5f} Angs'.format(analysis.diffusion_length('s1')))
+        print('diffusion tensor (Angs^2/ns)')
+        print(analysis.diffusion_coeff_tensor('s1'))
+
+        print('diffusion length square tensor (Angs)')
+        print(analysis.diffusion_length_square_tensor('s1'))
 
         test = {'diffusion coefficient': np.around(analysis.diffusion_coefficient('s1'), decimals=4),
                 'lifetime': np.around(analysis.lifetime('s1'), decimals=4),
                 'diffusion length': np.around(analysis.diffusion_length('s1'), decimals=4),
-                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1'), decimals=4).tolist(),
-                'diffusion length tensor': np.around(np.sqrt(analysis.diffusion_length_square_tensor('s1')), decimals=6).tolist()
+                'diffusion tensor': np.around(analysis.diffusion_coeff_tensor('s1', unit_cell=[[0.0, 0.5],
+                                                                                               [0.2, 0.0]]), decimals=4).tolist(),
+                'diffusion length tensor': np.around(analysis.diffusion_length_square_tensor('s1', unit_cell=[[0.0, 0.5],
+                                                                                                              [0.2, 0.0]]), decimals=6).tolist()
                 }
+        print(test)
 
-        ref = {'diffusion coefficient': 31.5846,
-               'lifetime': 259.8353,
-               'diffusion length': 203.5827,
-               'diffusion tensor': [[59.3142, 11.4197],
-                                    [11.4197, 3.8549]],
-               'diffusion length tensor': [[200.448497, 76.072334],
-                                           [76.072334, 35.585109]]
+        ref = {'diffusion coefficient': 2.4439,
+               'lifetime': 92.7496,
+               'diffusion length': 30.1679,
+               'diffusion tensor': [[2.1338, 0.1308],
+                                    [0.1308, 2.7539]],
+               'diffusion length tensor': [[798.7, 25.7],
+                                           [25.7, 1021.5]]
                }
 
+
         # This is just for visual comparison (not accounted in the test)
-        try:
-            from kimonet.core.processes import get_transfer_rates, get_decay_rates
+        decay = 0.01
+        transfer = 0.1
+        distance = 5
 
-            self.system.add_excitation_index('s1', 0)
-            transfer_x, _, transfer_y, _ = get_transfer_rates(0, self.system)[1]
-            decay, = get_decay_rates(0, self.system)[1]
-
-            print('analytical model')
-            print('----------------')
-            data = get_analytical_model(self.parameters[0], analysis.n_dim, transfer_x, decay)
-            print('x:', data)
-            data = get_analytical_model(self.parameters[1], analysis.n_dim, transfer_y, decay)
-            print('y:', data)
-        except ValueError:
-            pass
+        print('analytical model')
+        print('----------------')
+        data = get_analytical_model(distance, analysis.n_dim, transfer, decay)
+        print('results analytical:', data)
 
         self.assertDictEqual(ref, test)
