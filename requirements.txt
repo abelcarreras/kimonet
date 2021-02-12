@@ -7,4 +7,3 @@ scipy
 matplotlib
 networkx
 h5py
-pygraphviz
