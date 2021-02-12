@@ -5,10 +5,11 @@ include_dirs_numpy = [numpy.get_include()]
 
 
 def get_version_number():
+    main_ns = {}
     for l in open('kimonet/__init__.py', 'r').readlines():
         if not(l.find('__version__')):
-            exec(l, globals())
-            return __version__
+            exec(l, main_ns)
+            return main_ns['__version__']
 
 
 def check_compiler():
