@@ -6,8 +6,7 @@ from kimonet.system.generators import crystal_system
 from kimonet.analysis import visualize_system
 from kimonet.system.molecule import Molecule
 from kimonet.system.state import State
-from kimonet.utils.units import DEBYE_TO_ANGS_EL
-DEBYE_TO_AU = 0.393430
+from kimonet.utils.units import ATOMIC_TO_ANGS_EL
 
 
 def xyz_file(coordinates, symbols):
@@ -340,8 +339,8 @@ dipole = get_dipole_in_basis(dipole, ev_dipole, np.identity(3))
 dipole2 = get_dipole_in_basis(dipole2, ev_dipole2, np.identity(3))
 
 # print dipole
-print('\ndipole (debye)', np.array(dipole)/DEBYE_TO_AU)
-print('dipole2 (debye)', np.array(dipole2)/DEBYE_TO_AU)
+print('\ndipole (debye)', np.array(dipole))
+print('dipole2 (debye)', np.array(dipole2))
 
 # plot data for visual inspection
 for i, struct in enumerate([struct1, struct2]):
@@ -375,7 +374,7 @@ for i, struct in enumerate([struct1, struct2]):
                             orientations=[params])
 
     print('TM: {}'.format(system.molecules[0].get_transition_moment(to_state='s1')))
-    print('TM_test: {}'.format(get_dipole_in_basis(np.array(dipole)*DEBYE_TO_ANGS_EL*scale_factor, ev_dipole, ev)))
+    print('TM_test: {}'.format(get_dipole_in_basis(np.array(dipole)*ATOMIC_TO_ANGS_EL*scale_factor, ev_dipole, ev)))
 
     visualize_system(system)
     visualize_system(system, dipole='s1')

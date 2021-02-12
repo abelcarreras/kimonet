@@ -179,14 +179,6 @@ class TrajectoryGraph:
 
         for initial_state, inode in node_links.items():
 
-            #for final_state in process.final_test:
-            #    if (initial_state.label == final_state.label and final_state.label != _GS_.label):
-            #        # Transfer
-            #        print('append:', inode, final_state.label, final_state)
-            #        self._append_to_node(on_node=inode,
-            #                             add_state=final_state)
-            #        finish_node = False
-
             if initial_state in process.get_transport_connections():
                 for final_state in process.get_transport_connections()[initial_state]:
                     # Transfer
@@ -209,7 +201,7 @@ class TrajectoryGraph:
                                                                     new_on_state=final_state,
                                                                     process_label=process.description)
 
-        # print('------', initial_state, [state.label for state in process.initial], [state.label for state in process.final_test])
+        # print('------', initial_state, [state.label for state in process.initial], [state.label for state in process.final])
         ce = {}
         for state in self.system.get_states():
             self.states.add(state.label)
@@ -508,14 +500,14 @@ class TrajectoryGraph:
     def get_number_of_nodes(self):
         return self.graph.number_of_nodes()
 
-    def plot_2d(self, state=None, supercell_only=False):
+    def plot_2d(self, state=None, supercell_only=False, show_warnings=True):
 
         if state is None:
             node_list = [node for node in self.graph.nodes]
         else:
             node_list = [node for node in self.graph.nodes if self.graph.nodes[node]['state'] == state]
 
-        if len(node_list) == 0:
+        if len(node_list) == 0 and show_warnings:
             warnings.warn('Exciton {} not found for plot'.format(state))
 
         t = []

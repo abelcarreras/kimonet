@@ -1,10 +1,9 @@
 from kimonet.system.molecule import Molecule
-from kimonet.analysis import visualize_system, TrajectoryAnalysis
+from kimonet.analysis import TrajectoryAnalysis
 from kimonet.system import System
 from kimonet.system.state import State
 from kimonet import system_test_info, calculate_kmc
 from kimonet.core.processes.couplings import forster_coupling
-from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate
 from kimonet.system.vibrations import MarcusModel
 from kimonet.system.state import ground_state as gs
@@ -69,8 +68,8 @@ class Test1DFast(unittest.TestCase):
                                                  arguments={'custom_constant': 1},
                                                  description='custom'),
                                       DecayRate(initial_state=s1, final_state=gs,
-                                                 decay_rate_function=decay_rate,
-                                                 description='custom decay rate')
+                                                decay_rate_function=decay_rate,
+                                                description='custom decay rate')
                                       ]
 
         self.system.cutoff_radius = 10.0  # interaction cutoff radius in Angstrom
@@ -119,12 +118,8 @@ class Test1DFast(unittest.TestCase):
         self.system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                                  electronic_coupling_function=forster_coupling,
                                                  description='Forster coupling',
-                                                 arguments={'ref_index': 1,
-                                                            'transitions': transitions,
-                                                            'transition_moment': {Transition(s1, gs): [0.02]}},
-                                                 vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.07,
-                                                                                                 (s1, gs): 0.07},
-                                                                        transitions=transitions)
+                                                 arguments={'ref_index': 1, 'transitions': transitions},
+                                                 vibrations=MarcusModel(transitions=transitions)
                                                  ),
                                       DecayRate(initial_state=s1, final_state=gs,
                                                 decay_rate_function=decay_rate,

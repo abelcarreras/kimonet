@@ -1,9 +1,11 @@
 import numpy as np
 from kimonet.utils.rotation import rotate_vector
 import itertools
+import warnings
 
 
 def minimum_distance_vector(r_vector, supercell):
+    warnings.warn("deprecated", DeprecationWarning)
     # lattice periodicity
     r_vector = np.array(r_vector, dtype=float).copy()
     cell_vector = []
@@ -29,7 +31,8 @@ def distance_vector_periodic(r, supercell, cell_increment):
     return r + np.dot(cell_increment, supercell)
 
 
-def distance_between_molecules(molecule1, molecule2, supercell, cell_state1, cell_state2):
+def old_distance_between_molecules(molecule1, molecule2, supercell, cell_state1, cell_state2):
+    warnings.warn("deprecated, use get_coordinates_absolute() method", DeprecationWarning)
     r_vector = molecule2.get_coordinates() - molecule1.get_coordinates()
     cell_incr = np.array(cell_state2 - cell_state1)
     return np.linalg.norm(distance_vector_periodic(r_vector, supercell, cell_incr))

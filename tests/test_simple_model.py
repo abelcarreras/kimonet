@@ -36,9 +36,6 @@ class TestKimonet(unittest.TestCase):
 
         self.parameters = [3.0, 3.0]
 
-        vib = MarcusModel(reorganization_energies={('s1', 'gs'): 0.5,
-                                                   ('gs', 's1'): 0.5})
-
         self.molecule = Molecule()
 
         self.system = regular_system(molecule=self.molecule,

@@ -62,9 +62,9 @@ def partition(elements_list, group_list):
     return partition
 
 
-def combinations_group(elements_list_o, process_final_test, supercell=None, include_self=True, ref_states=None):
+def combinations_group(elements_list_o, process_final, supercell=None, include_self=True, ref_states=None):
 
-    group_list = tuple([s.size for s in process_final_test])
+    group_list = tuple([s.size for s in process_final])
 
     elements_list = tuple(range(len(elements_list_o)))
     combinations_list = []
@@ -92,7 +92,7 @@ def combinations_group(elements_list_o, process_final_test, supercell=None, incl
     combinations_list = [[[elements_list_o[l] for l in state] for state in conf] for conf in combinations_list]
     if supercell is not None:
         for c in combinations_list:
-            if not is_connected_states(c, supercell, process_final_test):
+            if not is_connected_states(c, supercell, process_final):
                 combinations_list.remove(c)
 
     if not include_self:

@@ -206,7 +206,7 @@ class TrajectoryAnalysis:
     def plot_2d(self, state=None):
         plt = None
         for traj in self.trajectories:
-            plt = traj.plot_2d(state)
+            plt = traj.plot_2d(state, show_warnings=False)
         return plt
 
     def plot_distances(self, state=None):

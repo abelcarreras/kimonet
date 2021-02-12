@@ -4,3 +4,4 @@ SPEED_OF_LIGHT = 2997924580              # Angstrom / ns
 BOLTZMANN_CONSTANT = 8.617333e-5         # eV / Kelvin
 VAC_PERMITTIVITY = 0.005524906526621038  # e^2 / (eV * Angs)
 HBAR_PLANCK = 6.58210893126952e-7        # eV * ns
+HARTREE_TO_EV = 27.21138624598           # eV

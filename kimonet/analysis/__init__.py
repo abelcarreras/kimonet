@@ -94,12 +94,15 @@ def plot_polar_plot(tensor_full, plane=(0, 1), title='', max=None, crystal_label
     else:
         labels_plot = [labels['cartesian'][i] for i in plane]
 
-    ax = plt.subplot(111, projection='polar')
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.05, 0.8, 0.8], polar=True)
+    #ax = plt.subplot(111, projection='polar')
     ax.arrow(0., 0., np.pi, max,  edgecolor='black', lw=1, zorder=5)
     ax.arrow(0., 0., 3./2*np.pi, max,  edgecolor='black', lw=1, zorder=5)
     ax.annotate("", xy=(0, max), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
     ax.annotate("", xy=(np.pi/2, max), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
     ax.plot(theta, r)
+    #plt.polar(theta, r)
     ax.set_rmax(max)
     ax.set_rticks(list(np.linspace(0.0, max, 8)))  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line

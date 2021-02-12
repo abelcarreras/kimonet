@@ -13,7 +13,7 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
         system_copy = system.copy()
 
         if not silent:
-            print('Trajectory: ', j)
+            print('Trajectory: {}'.format(j))
 
         trajectory = Trajectory(system_copy)
 
