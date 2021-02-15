@@ -21,6 +21,7 @@ s1 = State(label='s1', energy=1.0, multiplicity=1)
 class Test1DFast(unittest.TestCase):
 
     def setUp(self):
+        np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
         # list of decay functions by state
         molecule = Molecule()
 
@@ -105,7 +106,7 @@ class Test1DFast(unittest.TestCase):
                }
 
         ref_pytest = {'diffusion coefficient': 3418.999,
-               'lifetime': 0.1547,
+               'lifetime': 0.1734,
                'diffusion length': 44.5657,
                'diffusion tensor': [[3716.6239, -3886.0598],
                                     [-3886.0598, 6110.6509]],
@@ -116,4 +117,4 @@ class Test1DFast(unittest.TestCase):
 
         self.maxDiff = None
         __import__('sys').modules['unittest.util']._MAX_LENGTH = 999999999
-        self.assertDictEqual(ref_pytest, test)
+        self.assertDictEqual(ref, test)

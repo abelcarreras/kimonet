@@ -21,6 +21,7 @@ s1 = State(label='s1', energy=1.0, multiplicity=1)
 class Test1DFast(unittest.TestCase):
 
     def setUp(self):
+        np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
         # list of decay functions by state
         molecule = Molecule()
 
@@ -113,4 +114,4 @@ class Test1DFast(unittest.TestCase):
                }
 
 
-        self.assertDictEqual(ref_pytest, test)
+        self.assertDictEqual(ref, test)
