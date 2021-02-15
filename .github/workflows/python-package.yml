@@ -39,5 +39,5 @@ jobs:
         python setup.py build_ext --inplace
     - name: Test with pytest
       run: |
-        pytest tests
-        #python -m unittest discover -p 'test_*.py' tests
+        pytest tests --ignore=tests/test_2d_fast.py --ignore=tests/test_2d_multi.py
+        # python -m unittest discover -p 'test_*.py' tests
