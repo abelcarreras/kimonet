@@ -1,4 +1,4 @@
-__version__ = '0.1'
+__version__ = '0.1.1'
 from kimonet.core import do_simulation_step, system_test_info
 from kimonet.analysis import Trajectory, visualize_system
 from warnings import warn
