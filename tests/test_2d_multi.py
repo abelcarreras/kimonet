@@ -104,6 +104,16 @@ class Test1DFast(unittest.TestCase):
                                            [-668.2, 1352.0]]
                }
 
+        ref_pytest = {'diffusion coefficient': 3418.999,
+               'lifetime': 0.1547,
+               'diffusion length': 44.5657,
+               'diffusion tensor': [[3716.6239, -3886.0598],
+                                    [-3886.0598, 6110.6509]],
+               'diffusion length tensor': [[2165.8, -2295.8],
+                                           [-2295.8, 3572.4]]
+               }
+
+
         self.maxDiff = None
         __import__('sys').modules['unittest.util']._MAX_LENGTH = 999999999
-        self.assertDictEqual(ref, test)
+        self.assertDictEqual(ref_pytest, test)
