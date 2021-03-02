@@ -1,3 +1,6 @@
+[![Actions Status](https://github.com/abelcarreras/kimonet/actions/workflows/python-package.yml/badge.svg)](https://github.com/abelcarreras/kimonet/actions)
+[![PyPI version](https://badge.fury.io/py/kimonet.svg)](https://badge.fury.io/py/kimonet)
+
 Kimonet
 =======
 A kinetic Monte Carlo code to simulate exciton dynamics
