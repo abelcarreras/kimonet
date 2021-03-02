@@ -37,12 +37,14 @@ def regular_system(molecule,
     for subset in itertools.product(*[list(range(n)) for n in lattice['size']]):
         coordinates = np.multiply(subset, lattice['parameters'])
 
-        if orientation is None:
-            orientation = np.random.random_sample(3) * 2*np.pi
+        final_orientation = list(orientation)
+        for j in range(3):
+            if final_orientation[j] is None:
+                final_orientation[j] = np.random.random_sample() * 2 * np.pi
 
         molecule = molecule.copy()  # copy of the generic instance
         molecule.set_coordinates(coordinates)
-        molecule.set_orientation(orientation)
+        molecule.set_orientation(final_orientation)
         molecules.append(molecule)
 
     supercell = np.diag(np.multiply(lattice['size'], lattice['parameters']))
@@ -79,10 +81,12 @@ def crystal_system(molecules,
             molecule.set_coordinates(coor)
             molecule.name = 'a{}'.format(i+1)
 
-            if orientations[i] is None:
-                final_orientation = np.random.random_sample(3) * 2 * np.pi
-            else:
-                final_orientation = orientations[i]
+            final_orientation = list(orientations[i])
+            for j in range(3):
+                if final_orientation[j] is None:
+                    final_orientation[j] = np.random.random_sample() * 2 * np.pi
+                else:
+                    final_orientation[j] = final_orientation[j]
 
             molecule.set_orientation(final_orientation)
             molecules_list.append(molecule)

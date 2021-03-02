@@ -230,6 +230,28 @@ class NoVibration:
         #return vib_spectrum
 
 
+class SimpleBoltzmann:
+
+    def __init__(self,
+                 temperature=300,  # Kelvin
+                 ):
+
+        self.temperature = temperature
+        self.state_energies = None
+
+    def __hash__(self):
+        return hash((str(self.state_energies)))
+
+    def set_state_energies(self, state_energies):
+        self.state_energies = state_energies
+
+    def get_vib_spectrum(self, target_state, origin_state):
+
+        elec_trans_ene = target_state.energy - origin_state.energy
+
+        return np.exp(-elec_trans_ene/(BOLTZMANN_CONSTANT * self.temperature))
+
+
 # Analysis functions
 def get_normalized_spectrum(x, y, in_nm=False, interpolation='quadratic'):
 

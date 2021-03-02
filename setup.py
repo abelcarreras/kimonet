@@ -38,6 +38,7 @@ else:
 setup(name='kimonet',
       version=get_version_number(),
       description='kimonet module',
+      long_description=open('README.md').read(),
       author='Abel Carreras',
       url='https://github.com/abelcarreras/kimonet',
       author_email='abelcarreras83@gmail.com',

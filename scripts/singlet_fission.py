@@ -11,7 +11,7 @@ from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, Empirical
 from kimonet.core.processes.transitions import Transition
 from kimonet import calculate_kmc, calculate_kmc_parallel, calculate_kmc_parallel_py2
 from kimonet.system.state import ground_state as gs
-from kimonet.utils import distance_between_molecules, distance_vector_periodic
+from kimonet.utils import old_distance_between_molecules, distance_vector_periodic
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 import numpy as np
 

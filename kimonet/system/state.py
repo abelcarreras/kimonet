@@ -94,7 +94,10 @@ class State(object):
 
     @property
     def energy(self):
-        return self._energy
+        energy = self._energy
+        for mol in self.get_molecules():
+            energy += mol.site_energy
+        return energy
 
     @property
     def multiplicity(self):

@@ -39,10 +39,9 @@ system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s
                                     electronic_coupling_function=forster_coupling,
                                     arguments={'ref_index': 1,
                                                'transition_moment': transition_moment},
-                                    vibrations=MarcusModel(reorganization_energies={(gs, s1): 0.05,
-                                                                                    (s1, gs): 0.05}),
+                                    vibrations=MarcusModel(),
                                     description='forster'),
-                         DecayRate(initial_states=s1, final_states=gs,
+                         DecayRate(initial_state=s1, final_state=gs,
                                    decay_rate_function=einstein_radiative_decay,
                                    arguments={'transition_moment': transition_moment},
                                    description='decay')]

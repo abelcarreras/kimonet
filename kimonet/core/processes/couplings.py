@@ -222,6 +222,77 @@ def forster_coupling_extended_py(initial, final, ref_index=1, transitions=(), lo
     return forster_coupling
 
 
+def forster_coupling_sine_py(initial, final, ref_index=1, transitions=(), longitude=0.0, n_divisions=1):
+    """
+
+    :param initial: initial states
+    :param final: final states
+    :param ref_index:
+    :param transitions:
+    :param longitude: extension length of the dipole
+    :param n_divisions: number of subdivisions. To use with longitude. Increase until convergence
+    :return:
+    """
+
+    n_divisions += 2
+
+    d_transition = Transition(initial[0], final[1])
+    a_transition = Transition(initial[1], final[0])
+
+    d_orientation = initial[0].get_center().molecular_orientation()
+    a_orientation = initial[1].get_center().molecular_orientation()
+
+    r_vector = initial[0].get_coordinates_absolute() - final[0].get_coordinates_absolute()
+
+    hash_string = generate_hash_2(inspect.currentframe().f_code.co_name,
+                                  d_transition, a_transition,
+                                  d_orientation, a_orientation,
+                                  r_vector, [ref_index, tuple(transitions), longitude, n_divisions])
+
+    if hash_string in coupling_data:
+        return coupling_data[hash_string]
+
+    mu_a = transitions[transitions.index(a_transition)].tdm
+    mu_d = transitions[transitions.index(d_transition)].tdm
+
+    mu_d = rotate_vector(mu_d, d_orientation) * ATOMIC_TO_ANGS_EL
+    mu_a = rotate_vector(mu_a, a_orientation) * ATOMIC_TO_ANGS_EL
+
+    k_e = 1.0 / (4.0 * np.pi * VAC_PERMITTIVITY)
+
+    forster_coupling = 0
+    for i, x in enumerate(np.linspace(-1 + 1/n_divisions, 1 - 1/n_divisions, n_divisions)):
+
+        #test=[]
+        for j, y in enumerate(np.linspace(-1 + 1 / n_divisions, 1 - 1 / n_divisions, n_divisions)):
+
+            if n_divisions-1 > i > 0 and n_divisions-1 > j > 0:
+            #if True:
+                n_d = n_divisions - 1
+                mu_ai = np.sin(i*np.pi/n_d)/np.sum([np.sin(ik*np.pi/n_d) for ik in range(n_d)])*mu_a
+                mu_di = np.sin(j*np.pi/n_d)/np.sum([np.sin(jk*np.pi/n_d) for jk in range(n_d)])*mu_d
+                #print(x, y, np.sin(j*np.pi/n_d)/np.sum([np.sin(jk*np.pi/n_d) for jk in range(n_d)]))
+
+                dr_a = mu_a / np.linalg.norm(mu_a) * longitude * x
+                dr_d = mu_d / np.linalg.norm(mu_d) * longitude * y
+
+                r_vectori = r_vector + dr_a - dr_d
+
+                distance = np.linalg.norm(r_vectori)
+
+                #if np.linalg.norm(mu_ai) != 0 and np.linalg.norm(mu_di) != 0:
+                    # print(i, j)
+                k = orientation_factor(mu_ai, mu_di, r_vectori)              # orientation factor between molecules
+                forster_coupling += k_e * k**2 * np.dot(mu_ai, mu_di) / (distance**3)
+                #test.append(np.linalg.norm(mu_di))
+
+        #plt.plot(test, 'o-')
+        #plt.show()
+    coupling_data[hash_string] = forster_coupling                            # memory update for new couplings
+
+    return coupling_data[hash_string]
+
+
 def intermolecular_vector(molecule_1, molecule_2, supercell, cell_incr):
     """
     :param molecule_1: donor

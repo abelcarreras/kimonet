@@ -12,6 +12,7 @@ class Molecule(object):
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
+                 site_energy=0.0 # eV
                  ):
         """
         :param states_energies: dictionary {'state': energy} (eV)
@@ -29,6 +30,7 @@ class Molecule(object):
         self.orientation = np.array(orientation)
         self._cell_state = np.zeros_like(coordinates, dtype=int)
         self._vdw_radius = vdw_radius
+        self._site_energy = site_energy
         self.name = name
 
         state.remove_molecules()
@@ -119,3 +121,7 @@ class Molecule(object):
     @property
     def cell_state_2(self):
         return self._cell_state + self.state.cell_state
+
+    @property
+    def site_energy(self):
+        return self._site_energy

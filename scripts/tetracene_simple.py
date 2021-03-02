@@ -11,9 +11,11 @@ from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, Empirical
 from kimonet.core.processes.transitions import Transition
 from kimonet import calculate_kmc, calculate_kmc_parallel, calculate_kmc_parallel_py2
 from kimonet.system.state import ground_state as gs
-from kimonet.utils import distance_between_molecules, distance_vector_periodic
+from kimonet.utils import old_distance_between_molecules, distance_vector_periodic
 from kimonet.fileio import store_trajectory_list, load_trajectory_list
 import numpy as np
+
+np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
 
 # states list
 s1 = State(label='s1', energy=2.9705, multiplicity=1, size=1)
@@ -53,8 +55,8 @@ def electronic_coupling_direction(initial, final, couplings=None):
 
 # Electronic couplings in eV for the closest neighbor molecule in the indicated direction
 singlet_couplings = [12.61e-3,  # a
-                     41.85e-30,  # ab
-                     41.85e-30,  # ab
+                     41.85e-3,  # ab
+                     41.85e-3,  # ab
                      27.51e-3]  # b
 
 triplet_couplings = [0.0e-3,  # a
@@ -83,8 +85,9 @@ system = crystal_system(molecules=[molecule, molecule],  # molecule to use as re
 
 system.cutoff_radius = 8.1  # Angstroms
 
-                         # Transport
+
 system.process_scheme = [
+                         # Transport
                          GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                     electronic_coupling_function=electronic_coupling_direction,
                                     arguments={'couplings': singlet_couplings},
@@ -106,28 +109,27 @@ system.process_scheme = [
 
 np.random.seed(0)
 
-system.add_excitation_random(s1, 1)
-#system.add_excitation_random(t1, 1)
+#system.add_excitation_random(s1, 1)
+system.add_excitation_random(s1, 2)
 system_test_info(system)
 visualize_system(system)
 
 
-#trajectories = calculate_kmc(system,
-trajectories = calculate_kmc_parallel_py2(system, processors=6,
-                             num_trajectories=100,    # number of trajectories that will be simulated
+trajectories = calculate_kmc(system,
+                             num_trajectories=10,    # number of trajectories that will be simulated
                              max_steps=200,         # maximum number of steps for trajectory allowed
                              silent=False)
 
 
 store_trajectory_list(trajectories, 'test_t.h5')
 
-#trajectories = load_trajectory_list('test.h5')
-
 analysis = TrajectoryAnalysis(trajectories)
 
-for s in ['s1']:
+
+for s in ['s1', 't1']:
     print('STATE: ', s)
     print('diffusion coefficient: {} angs^2/ns'.format(analysis.diffusion_coefficient(s)))
+    print('diffusion coefficient total: {} angs^2/ns'.format(analysis.diffusion_coefficient()))
     print('lifetime: {} ns'.format(analysis.lifetime(s)))
     print('diffusion length: {} angs'.format(analysis.diffusion_length(s)))
 
@@ -154,6 +156,6 @@ for s in ['s1']:
                     crystal_labels=True)
 
 plt = analysis.plot_exciton_density()
-for s in ['s1']:
+for s in ['t1']:
     analysis.plot_exciton_density(state=s)
 plt.show()

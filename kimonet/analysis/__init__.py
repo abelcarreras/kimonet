@@ -9,7 +9,7 @@ from kimonet.system.state import ground_state as _GS_
 import warnings
 
 
-def visualize_system(system, dipole=None):
+def visualize_system(system, dipole=None, length=1):
 
     ndim = system.molecules[0].get_dim()
     #fig, ax = plt.subplots()
@@ -36,7 +36,7 @@ def visualize_system(system, dipole=None):
     for i, molecule in enumerate(system.molecules):
         c = molecule.get_coordinates()
         if dipole is None:
-            o = molecule.get_orientation_vector()
+            o = molecule.get_orientation_vector()*length
         else:
             o = molecule.get_transition_moment(to_state=dipole)
 
@@ -44,12 +44,17 @@ def visualize_system(system, dipole=None):
             continue
 
         if ndim == 1:
-            ax.quiver(c[0], 0, o[0], 0, color=colors[molecule.state.label])
+            ax.quiver(c[0]-o[0]/2, 0, o[0], 0, color=colors[molecule.state.label],
+                      scale=1, scale_units='xy', angles='xy')
         if ndim == 2:
-            ax.quiver(c[0], c[1], o[0], o[1], color=colors[molecule.state.label])
-            ax.text(c[0], c[1], '{}'.format(i), fontsize=12)
+            ax.quiver(c[0]-o[0]/2, c[1]-o[1]/2, o[0], o[1], color=colors[molecule.state.label],
+                      scale=1, scale_units='xy', angles='xy')
+            ax.text(c[0]+0.1, c[1]+0.1, '{}'.format(i), fontsize=12)
+            ax.plot(c[0], c[1], 'o', color=colors[molecule.state.label])
         if ndim == 3:
-            ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], normalize=True, length=5, color=colors[molecule.state.label])
+            ax.quiver(c[0]-o[0]/2, c[1]-o[1]/2, c[2]-o[2]/2, o[0], o[1], o[2],
+                      scale=1, scale_units='xy', angles='xy',
+                      color=colors[molecule.state.label])
             # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
             ax.text(c[0], c[1], c[2], '{}'.format(i), fontsize=12)
 

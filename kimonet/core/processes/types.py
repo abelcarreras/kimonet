@@ -365,6 +365,43 @@ class InternalConversion(BaseProcess):
         return vib_dos(0)
 
 
+class MillerAbrahams(BaseProcess):
+    # On development
+    def __init__(self,
+                 initial_state,
+                 final_state,
+                 attempt_to_hop=1,
+                 inverse_localization_length=1,
+                 vibrations=NoVibration(),
+                 description='',
+                 arguments=None
+                 ):
+
+        self._v0 = attempt_to_hop
+        self._gamma = inverse_localization_length
+        self._vibrations = vibrations
+
+        BaseProcess.__init__(self, [initial_state], [final_state], description, arguments)
+
+    def get_rate_constant(self):
+
+        transition = (self.initial[0], self.final[1])
+
+        r_vector = np.array(self.initial_absolute[0].get_coordinates_absolute()) - \
+                   np.array(self.initial_absolute[1].get_coordinates_absolute())
+        distance = np.linalg.norm(r_vector)
+
+        rate = self._v0 * np.exp(-2*self._gamma * distance)
+        if transition[0].energy < transition[1].energy:
+            rate = rate * self.vibrations.get_vib_spectrum(*transition)
+
+        return rate
+
+    @property
+    def vibrations(self):
+        return self._vibrations
+
+
 class DecayRate(BaseProcess):
     def __init__(self,
                  initial_state,
