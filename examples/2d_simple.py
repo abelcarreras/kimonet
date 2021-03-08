@@ -17,7 +17,7 @@ import numpy as np
 
 
 # states list
-s1 = State(label='s1', energy=1.0, multiplicity=1)
+s1 = State(label='s1', energy=20.0, multiplicity=1)
 
 # transition moments
 transitions = [Transition(s1, gs,
@@ -59,9 +59,7 @@ system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
 
 # some system analyze functions
 system_test_info(system)
-
-#visualize_system(system)
-#visualize_system(system, dipole='s1')
+visualize_system(system)
 
 # do the kinetic Monte Carlo simulation
 trajectories = calculate_kmc(system,
@@ -90,7 +88,8 @@ for state in analysis.get_states():
     plot_polar_plot(analysis.diffusion_coeff_tensor(state),
                     title='Diffusion', plane=[0, 1])
 
-    plot_polar_plot(analysis.diffusion_length_square_tensor(state),
+    plot_polar_plot(analysis.diffusion_length_square_tensor(state, unit_cell=[[5.0, 1.0],
+                                                                              [1.0, 5.0]]),
                     title='Diffusion length square', crystal_labels=True, plane=[0, 1])
 
 

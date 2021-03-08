@@ -9,13 +9,13 @@ from kimonet.system.state import ground_state as _GS_
 import warnings
 
 
-def visualize_system(system, dipole=None, length=1):
+def visualize_system(system, length=1):
 
     ndim = system.molecules[0].get_dim()
     #fig, ax = plt.subplots()
     fig = plt.figure()
 
-    fig.suptitle('Orientation' if dipole is None else 'TDM {}'.format(dipole))
+    fig.suptitle('Orientation')
     if ndim == 3:
         ax = fig.gca(projection='3d')
         ax.set_zlabel('Z')
@@ -35,10 +35,7 @@ def visualize_system(system, dipole=None, length=1):
 
     for i, molecule in enumerate(system.molecules):
         c = molecule.get_coordinates()
-        if dipole is None:
-            o = molecule.get_orientation_vector()*length
-        else:
-            o = molecule.get_transition_moment(to_state=dipole)
+        o = molecule.get_orientation_vector()*length
 
         if np.linalg.norm(o) == 0:
             continue

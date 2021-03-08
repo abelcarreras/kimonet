@@ -4,6 +4,7 @@ from kimonet.analysis import Trajectory, visualize_system
 from warnings import warn
 import numpy as np
 import time
+import sys
 
 
 def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
@@ -83,7 +84,7 @@ def calculate_kmc_parallel_py2(system, num_trajectories=100, max_steps=10000, si
     return trajectories
 
 
-def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
+def calculate_kmc_parallel_py3(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
     # This function only works in Python3
     import concurrent.futures as futures
 
@@ -100,6 +101,14 @@ def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent
 
     return trajectories
 
+def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
+
+    if sys.version_info[0] < 3:
+        # Run python 2
+        return calculate_kmc_parallel_py2(system, num_trajectories, max_steps, silent, processors)
+    else:
+        # Run python 3
+        return calculate_kmc_parallel_py3(system, num_trajectories, max_steps, silent, processors)
 
 def calculate_kmc_parallel_alternative(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
 
