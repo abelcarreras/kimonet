@@ -50,7 +50,7 @@ def system_test_info(system):
             except Exception:
                 i_acceptor = i_donor
 
-            print('Description:', proc.description)
+            print('Description: {}'.format(proc.description))
             print('Donor: {} / Acceptor: {}'.format(i_donor, i_acceptor))
 
 #            position_d = proc.initial[0].get_center().get_coordinates()

@@ -346,7 +346,7 @@ class InternalConversion(BaseProcess):
         BaseProcess.__init__(self, [initial_state], [final_state], description, arguments)
 
     def get_rate_constant(self):
-        delta_g = self.final_test[0].energy - self.initial[0].energy
+        # delta_g = self.final_test[0].energy - self.initial[0].energy
 
         return self._k1 + 2*np.pi/HBAR_PLANCK * self._coupling**2 * self.get_fcwd()
 

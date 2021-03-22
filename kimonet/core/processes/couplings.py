@@ -357,7 +357,8 @@ def dexter_coupling(initial, final, k_factor=1):
 
     vdw_radius_sum = initial[0].vdw_radius + final[0].vdw_radius
 
-    # print('dexter: ', 2/vdw_radius_sum)
+    # print('dexter: ', 2/vdw_radius_sum*1e3)
+
     dexter_coupling = k_factor * np.exp(-2 * distance / vdw_radius_sum)
 
     coupling_data[hash_string] = dexter_coupling                            # memory update for new couplings
