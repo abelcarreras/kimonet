@@ -124,8 +124,9 @@ class State(object):
     def vdw_radius(self):
         return np.average([mol.get_vdw_radius() for mol in self.get_molecules()])
 
-ground_state = State(label='gs', energy=0.0, multiplicity=1)
 
+# definition of ground state
+ground_state = State(label='gs', energy=0.0, multiplicity=1)
 
 if __name__ == '__main__':
     print('Test state')

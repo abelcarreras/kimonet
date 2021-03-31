@@ -8,7 +8,7 @@ class Molecule(object):
 
     def __init__(self,
                  name=None,
-                 state=_GS_.copy(),
+                 state=None,
                  vdw_radius=1.0,  # Angstrom
                  coordinates=(0,),  # Angstrom
                  orientation=(0, 0, 0),  # Rx, Ry, Rz (radians)
@@ -24,8 +24,6 @@ class Molecule(object):
         # set state energies to vibrations
         #vibrations.set_state_energies(state_energies)
 
-        # self._state = self._labels_to_state[state]
-        self._state = state
         self._coordinates = np.array(coordinates)
         self.orientation = np.array(orientation)
         self._cell_state = np.zeros_like(coordinates, dtype=int)
@@ -33,8 +31,13 @@ class Molecule(object):
         self._site_energy = site_energy
         self.name = name
 
-        state.remove_molecules()
-        state.add_molecule(self)
+        if state is None:
+            self._state = _GS_.copy()
+        else:
+            self._state = state
+
+        self._state.remove_molecules()
+        self._state.add_molecule(self)
 
     def __hash__(self):
         return hash((

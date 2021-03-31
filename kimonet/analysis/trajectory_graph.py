@@ -284,7 +284,8 @@ class TrajectoryGraph:
             return self._coordinates_dict[state]
 
         if state is None:
-            self._coordinates_dict[state] = np.array([np.array(ar).T.tolist() for ar in self._vector_list_global()[0]])
+            self._coordinates_dict[state] = np.array([np.array(ar).T.tolist() for ar in self._vector_list_global()[0]],
+                                                     dtype=object).tolist()
             #print('--> none shape', np.array(self._coordinates_dict[state]).shape)
             #print(self._coordinates_dict[state][0])
             #print(self._coordinates_dict[state][1])

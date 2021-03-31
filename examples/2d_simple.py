@@ -24,18 +24,31 @@ transitions = [Transition(s1, gs,
                           tdm=[0.1, 0.0],  # a.u.
                           reorganization_energy=0.08)] # eV
 
-molecule = Molecule()
 
-# physical conditions of the system
-conditions = {'refractive_index': 1}
 
 # define system as a crystal
-system = crystal_system(molecules=[molecule],  # molecule to use as reference
-                        scaled_site_coordinates=[[0.0, 0.0]],
+molecule = Molecule()
+
+#print(molecule, molecule.state, molecule.state.get_center())
+
+molecule2 = Molecule(site_energy=2)
+
+print(molecule2, molecule2.state, molecule2.state.get_center())
+print(molecule, molecule.state, molecule.state.get_center())
+
+
+system = crystal_system(molecules=[molecule, molecule],  # molecule to use as reference
+                        scaled_site_coordinates=[[0.0, 0.0],
+                                                 [0.0, 0.5]],
                         unitcell=[[5.0, 1.0],
                                   [1.0, 5.0]],
                         dimensions=[2, 2],  # supercell size
-                        orientations=[[0.0, 0.0, np.pi/2]])  # if element is None then random, if list then Rx Ry Rz
+                        orientations=[[0.0, 0.0, np.pi/2],
+                                      [0.0, 0.0, 0.0]])  # if element is None then random, if list then Rx Ry Rz
+
+print([m.site_energy for m in system.molecules])
+print(system.get_ground_states())
+
 
 # set initial exciton
 system.add_excitation_index(s1, 0)
@@ -64,7 +77,7 @@ visualize_system(system)
 # do the kinetic Monte Carlo simulation
 trajectories = calculate_kmc(system,
                              num_trajectories=5,    # number of trajectories that will be simulated
-                             max_steps=1000,         # maximum number of steps for trajectory allowed
+                             max_steps=100,         # maximum number of steps for trajectory allowed
                              silent=False)
 
 # specific trajectory plot
@@ -73,6 +86,10 @@ trajectories[0].plot_2d().show()
 
 # resulting trajectories analysis
 analysis = TrajectoryAnalysis(trajectories)
+
+print('diffusion coefficient: {:9.5e} Angs^2/ns'.format(analysis.diffusion_coefficient()))
+print('lifetime:              {:9.5e} ns'.format(analysis.lifetime()))
+print('diffusion length:      {:9.5e} Angs'.format(analysis.diffusion_length()))
 
 for state in analysis.get_states():
     print('\nState: {}\n--------------------------------'.format(state))

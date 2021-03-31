@@ -71,13 +71,13 @@ def crystal_system(molecules,
 
     molecules_list = []                              # list of instances of class molecule
 
-    for i, (coordinate, molecule) in enumerate(zip(scaled_site_coordinates, molecules)):
+    for i, (coordinate, molecule_type) in enumerate(zip(scaled_site_coordinates, molecules)):
         for subset in itertools.product(*[list(range(n)) for n in dimensions]):
 
             r_cell = np.sum([s * lattice_vector for s, lattice_vector in zip(subset, unitcell)], axis=0)
             coor = r_cell + np.dot(unitcell.T, coordinate)
 
-            molecule = molecule.copy()  # copy of the generic instance
+            molecule = molecule_type.copy()  # copy of the generic instance
             molecule.set_coordinates(coor)
             molecule.name = 'a{}'.format(i+1)
 

@@ -4,7 +4,7 @@ from scipy.integrate import quad
 import math
 
 ###########################################################################################################
-#                                 Frank-Condon weighted density
+#                 Frank-Condon weighted density (OLD and deprecated)
 ###########################################################################################################
 overlap_data = {}
 

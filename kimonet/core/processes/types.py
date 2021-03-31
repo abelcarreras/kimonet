@@ -235,16 +235,16 @@ class GoldenRule(BaseProcess):
         def overlap(x):
             return donor_vib_dos(x) * acceptor_vib_dos(x)
 
-        d = BOLTZMANN_CONSTANT*1000*10
-        sup_range = np.max([self.initial[0].energy, self.initial[0].energy]) + d
-        inf_range = np.min([self.initial[0].energy, self.initial[0].energy]) - d
+        d = BOLTZMANN_CONSTANT*10000
+        sup_range = np.abs(self.initial[0].energy - self.initial[1].energy) + d
 
+        #if isinstance(self.vibrations, NoVibration):
+        #    # Treat donor_vib_dos & acceptor_vib_dos as delta functions
+        #    overlap_data[info] = 1.0 if donor_vib_dos - acceptor_vib_dos == 0 else 0.0
+        #else:
+        #    overlap_data[info] = quad(overlap, inf_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
-        if isinstance(self.vibrations, NoVibration):
-            # Treat donor_vib_dos & acceptor_vib_dos as delta functions
-            overlap_data[info] = 1.0 if donor_vib_dos - acceptor_vib_dos == 0 else 0.0
-        else:
-            overlap_data[info] = quad(overlap, inf_range, sup_range, epsabs=1e-5, limit=1000)[0]
+        overlap_data[info] = quad(overlap, -sup_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
         return overlap_data[info]
 
@@ -359,8 +359,8 @@ class InternalConversion(BaseProcess):
 
         vib_dos = self.vibrations.get_vib_spectrum(*transition)
 
-        if isinstance(self.vibrations, NoVibration):
-            return 1.0 if vib_dos == 0 else 0.0
+        #if isinstance(self.vibrations, NoVibration):
+        #    return 1.0 if vib_dos == 0 else 0.0
 
         return vib_dos(0)
 

@@ -77,7 +77,6 @@ class System(object):
         self._gs_list = None
         self._state_neighbors = {}
 
-
     def get_states(self):
         return self._states
 
@@ -218,7 +217,8 @@ class System(object):
         if self._gs_list is None:
             self._gs_list = []
             for mol in self.molecules:
-                if (mol.state not in self._gs_list) and mol.state.label == _GS_.label:
+                if (mol.state not in self._gs_list) and mol.state.label == _GS_.label:  # can be an indicator of all ok
+                    # TODO: check if this works: if mol.state.label == _GS_.label:
                     self._gs_list.append(mol.state)
 
         return self._gs_list
