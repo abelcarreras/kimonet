@@ -108,7 +108,7 @@ def forster_coupling_py(initial, final, ref_index=1, transitions=()):
 
     k_e = 1.0/(4.0*np.pi*VAC_PERMITTIVITY)
 
-    coupling_data[hash_string] = k_e * k**2 * np.dot(mu_d, mu_a) / (ref_index**2 * distance**3)
+    coupling_data[hash_string] = k_e * k * np.dot(mu_d, mu_a) / (ref_index**2 * distance**3)
 
     return coupling_data[hash_string]
 
@@ -215,7 +215,7 @@ def forster_coupling_extended_py(initial, final, ref_index=1, transitions=(), lo
 
             k = orientation_factor(mu_ai, mu_di, r_vector_i)              # orientation factor between molecules
 
-            forster_coupling += k_e * k**2 * np.dot(mu_ai, mu_di) / (ref_index**2 * distance**3)
+            forster_coupling += k_e * k * np.dot(mu_ai, mu_di) / (ref_index**2 * distance**3)
 
     coupling_data[hash_string] = forster_coupling                            # memory update for new couplings
 
@@ -283,7 +283,7 @@ def forster_coupling_sine_py(initial, final, ref_index=1, transitions=(), longit
                 #if np.linalg.norm(mu_ai) != 0 and np.linalg.norm(mu_di) != 0:
                     # print(i, j)
                 k = orientation_factor(mu_ai, mu_di, r_vectori)              # orientation factor between molecules
-                forster_coupling += k_e * k**2 * np.dot(mu_ai, mu_di) / (distance**3)
+                forster_coupling += k_e * k * np.dot(mu_ai, mu_di) / (distance**3)
                 #test.append(np.linalg.norm(mu_di))
 
         #plt.plot(test, 'o-')
@@ -357,7 +357,7 @@ def dexter_coupling(initial, final, k_factor=1):
 
     vdw_radius_sum = initial[0].vdw_radius + final[0].vdw_radius
 
-    # print('dexter: ', 2/vdw_radius_sum*1e3)
+    # print('dexter: ', 2/vdw_radius_sum)
 
     dexter_coupling = k_factor * np.exp(-2 * distance / vdw_radius_sum)
 

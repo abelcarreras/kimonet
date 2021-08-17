@@ -18,7 +18,7 @@ import numpy as np
 s1 = State(label='s1', energy=1.0, multiplicity=1)
 
 
-class Test1DFast(unittest.TestCase):
+class Test2DFast(unittest.TestCase):
 
     def setUp(self):
         np.random.seed(0)  # set random seed in order for the examples to reproduce the exact references
@@ -95,13 +95,13 @@ class Test1DFast(unittest.TestCase):
                 }
         print(test)
 
-        ref = {'diffusion coefficient': 1616.8446,
-               'lifetime': 0.2326,
-               'diffusion length': 44.8932,
-               'diffusion tensor': [[1731.4549, -435.3538],
-                                    [-435.3538, 1502.2344]],
-               'diffusion length tensor': [[1969.8, -571.8],
-                                           [-571.8, 2061.0]]
+        ref = {'diffusion coefficient': 1586.4162,
+               'lifetime': 0.3621,
+               'diffusion length': 47.9375,
+               'diffusion tensor': [[2048.6421, 3.4329],
+                                    [3.4329, 1124.1904]],
+               'diffusion length tensor': [[3142.8, 42.0],
+                                           [42.0, 1453.2]]
                }
 
         self.assertDictEqual(ref, test)

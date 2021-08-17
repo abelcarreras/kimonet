@@ -153,7 +153,7 @@ static PyObject* Dipole(PyObject* self, PyObject *arg, PyObject *keywords)
     double Distance = sqrt(DotProduct(RVector, RVector, NumberOfData));
     double UnitsFactor = 1.0/(4.0 * 3.141592654 * 0.005524906526621038);  // (eV * Angs)/e^2
 
-    double Coupling = UnitsFactor * pow(KFactor,2) * DotProduct(Mu1, Mu2, NumberOfData) / (pow(RefractiveIndex,2) * pow(Distance,3));
+    double Coupling = UnitsFactor * KFactor * DotProduct(Mu1, Mu2, NumberOfData) / (pow(RefractiveIndex,2) * pow(Distance,3));
 
     // Free python memory
     Py_DECREF(r_vector_array);
@@ -230,7 +230,7 @@ static PyObject* DipoleExtended (PyObject* self, PyObject *arg, PyObject *keywor
             KFactor = GetKFactor(Mu1i, Mu2i, RVectori, NumberOfData);
             Distance = sqrt(DotProduct(RVectori, RVectori, NumberOfData));
             //printf("-> %i %i %f\n", i, j, Coupling);
-            Coupling += UnitsFactor * pow(KFactor,2) * DotProduct(Mu1i, Mu2i, NumberOfData) / (pow(RefractiveIndex,2) * pow(Distance,3));
+            Coupling += UnitsFactor * KFactor * DotProduct(Mu1i, Mu2i, NumberOfData) / (pow(RefractiveIndex,2) * pow(Distance,3));
         }
     }
 

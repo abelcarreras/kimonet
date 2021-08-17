@@ -84,3 +84,48 @@ def system_test_info(system):
         # plt.scatter(np.array(anal_data).T[0], np.array(anal_data).T[1])
         # plt.show()
 
+
+def local_diffusion_model(system):
+
+    total_centers = []
+    for state in system.get_states():
+        center = system.get_molecule_index(state.get_center())
+        #print('*' * 80 + '\n CENTER {}\n'.format(center) + '*' * 80)
+
+        process_list = get_processes(state, system)
+
+        diffusion_matrix_list = []
+
+        for proc in process_list:
+
+            k = proc.get_rate_constant()
+
+            # if isinstance(proc, (GoldenRule, DirectRate)):
+            if len(proc.initial) == 2:
+                #cell_increment = proc.initial_absolute[1].cell_state - proc.initial_absolute[0].cell_state
+                #distance = np.linalg.norm([proc.initial_absolute[1].get_coordinates_absolute() - proc.initial_absolute[0].get_coordinates_absolute()])
+                r_vec = proc.initial_absolute[1].get_coordinates_absolute() - proc.initial_absolute[0].get_coordinates_absolute()
+
+                #print(r_vec)
+                #print('r_vector: {}'.format(r_vec))
+                #print('Distance: {:.4} angs'.format(distance))
+                #print('Cell_increment: {} '.format(cell_increment))
+                #print('Rate constant: {:.4} ns-1'.format(k))
+
+                diffusion_matrix_list.append(np.outer(r_vec, r_vec) * k)
+                #continue
+
+                #diffusion_matrix.append(np.outer(r_vec, r_vec) * k)
+
+            #print('-' * 80)
+
+        diffusion_matrix = np.sum(diffusion_matrix_list, axis=0)/2
+
+        coeff = np.mean(np.diag(diffusion_matrix))
+        # print('matrix\n', diffusion_matrix)
+        # print('coef: ', np.mean(np.diag(diffusion_matrix)))
+
+        total_centers.append({'diff_coef': coeff,
+                              'diff_mat': diffusion_matrix})
+
+    return total_centers
