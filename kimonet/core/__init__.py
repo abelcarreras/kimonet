@@ -58,8 +58,8 @@ def system_test_info(system):
 
             # if isinstance(proc, (GoldenRule, DirectRate)):
             if len(proc.initial) == 2:
-                cell_increment = proc.initial_absolute[1].cell_state - proc.initial_absolute[0].cell_state
-                distance = np.linalg.norm([proc.initial_absolute[1].get_coordinates_absolute() - proc.initial_absolute[0].get_coordinates_absolute()])
+                cell_increment = proc.initial_safe[1].cell_state - proc.initial_safe[0].cell_state
+                distance = np.linalg.norm([proc.initial_safe[1].get_coordinates_absolute() - proc.initial_safe[0].get_coordinates_absolute()])
                 print('Distance: {:.4} angs'.format(distance))
                 print('Cell_increment: {} '.format(cell_increment))
 
@@ -104,7 +104,7 @@ def local_diffusion_model(system):
             if len(proc.initial) == 2:
                 #cell_increment = proc.initial_absolute[1].cell_state - proc.initial_absolute[0].cell_state
                 #distance = np.linalg.norm([proc.initial_absolute[1].get_coordinates_absolute() - proc.initial_absolute[0].get_coordinates_absolute()])
-                r_vec = proc.initial_absolute[1].get_coordinates_absolute() - proc.initial_absolute[0].get_coordinates_absolute()
+                r_vec = proc.initial_safe[1].get_coordinates_absolute() - proc.initial_safe[0].get_coordinates_absolute()
 
                 #print(r_vec)
                 #print('r_vector: {}'.format(r_vec))

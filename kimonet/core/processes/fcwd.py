@@ -24,8 +24,8 @@ def general_fcwd(donor, acceptor, process, conditions):
     # info = str(hash((donor, acceptor, process, str(conditions), 'general_fcwd')))
     # info = str(hash(donor) + hash(acceptor) + hash(str(conditions) + 'general_fcwd'))
 
-    transition_donor = (process.initial[0], process.final[0])
-    transition_acceptor = (process.initial[1], process.final[1])
+    transition_donor = (process.initial[0], process.final_safe[0])
+    transition_acceptor = (process.initial[1], process.final_safe[1])
 
     donor_vib_dos = donor.get_vib_dos(transition_donor)
     acceptor_vib_dos = acceptor.get_vib_dos(transition_acceptor)

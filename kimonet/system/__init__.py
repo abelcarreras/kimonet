@@ -340,7 +340,7 @@ class System(object):
         for initial in process.initial:
             self.remove_exciton(initial)
 
-        for final in process.final_test:
+        for final in process.final:
             for mol in final.get_molecules():
                 if final.label != _GS_.label:
                     mol.cell_state = process.cell_states[mol]

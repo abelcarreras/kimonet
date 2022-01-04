@@ -124,8 +124,8 @@ class TrajectoryGraph:
 
     def _add_node(self, from_node, new_on_state, process_label=None):
 
-        #if self.system.molecules[new_on_molecule].set_state(_GS_):
-        #    print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
+        # if self.system.molecules[new_on_molecule].set_state(_GS_):
+        #     print('Error in state: ', self.system.molecules[new_on_molecule].state.label)
 
         self.graph.add_edge(from_node, self.node_count, process_label=process_label)
         self.graph.add_node(self.node_count,
@@ -286,22 +286,21 @@ class TrajectoryGraph:
         if state is None:
             self._coordinates_dict[state] = np.array([np.array(ar).T.tolist() for ar in self._vector_list_global()[0]],
                                                      dtype=object).tolist()
-            #print('--> none shape', np.array(self._coordinates_dict[state]).shape)
-            #print(self._coordinates_dict[state][0])
-            #print(self._coordinates_dict[state][1])
+            # print('--> none shape', np.array(self._coordinates_dict[state]).shape)
+            # print(self._coordinates_dict[state][0])
+            # print(self._coordinates_dict[state][1])
 
-            #exit()
         else:
             self._coordinates_dict[state] = [np.array(ar).T.tolist() for ar in self._vector_list(state)[0]]
-            #print('--> state shape', np.array(self._coordinates_dict[state]).shape)
-            #print(self._coordinates_dict[state][0])
-            #print(self._coordinates_dict[state][1])
+            # print('--> state shape', np.array(self._coordinates_dict[state]).shape)
+            # print(self._coordinates_dict[state][0])
+            # print(self._coordinates_dict[state][1])
 
         return self._coordinates_dict[state]
 
     def get_distances(self):
         return [np.linalg.norm(coor, axis=1).tolist() for coor in self.get_coordinates()]
-        #return np.linalg.norm(self.get_coordinates(), axis=2).tolist()
+        # return np.linalg.norm(self.get_coordinates(), axis=2).tolist()
 
     def _vector_list(self, state):
 
@@ -315,12 +314,9 @@ class TrajectoryGraph:
                 continue
 
             times.append(self.graph.nodes[node]['time'])
-            #times.append(self.graph.nodes[node]['time'][:-1])
 
             initial = np.array(self.graph.nodes[node]['coordinates'][0])
             vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']]).T.tolist())
-            #vector.append(np.array([np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates'][:-1]]).T.tolist())
-
 
         return [vector, times]
 
@@ -336,10 +332,10 @@ class TrajectoryGraph:
             coor_ini = np.array([0.0] * self.get_dimension())
 
             for node in node_list:
-                #print('t_ini', t_ini)
+                # print('t_ini', t_ini)
                 times += list(np.array(self.graph.nodes[node]['time'][1:]) + t_ini)
                 initial = np.array(self.graph.nodes[node]['coordinates'][0])
-                #print('v ', [np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']])
+                # print('v ', [np.array(coordinate) - initial for coordinate in self.graph.nodes[node]['coordinates']])
                 vector += [np.array(coordinate) - initial - np.array(coor_ini) for coordinate in self.graph.nodes[node]['coordinates'][1:]]
                 t_ini = times[-1]
                 coor_ini = vector[-1]
@@ -406,11 +402,6 @@ class TrajectoryGraph:
 
         if state in self._diff_coefficient:
             return self._diff_coefficient[state]
-
-        #print('times', self.get_times(state))
-        #print('coord', self.get_coordinates(state))
-        #print('len', len(self.get_times(state)), len(self.get_coordinates(state)))
-        #print('sp:', self._start_point_nodes())
 
         slope_list = []
         for v, t in zip(self.get_coordinates(state), self.get_times(state)):

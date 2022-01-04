@@ -88,6 +88,9 @@ class State(object):
             # mol.set_state(self)
             mol.cell_state *= 0
 
+    def modify_energy(self, energy):
+        self._energy = energy
+
     @property
     def label(self):
         return self._label

@@ -16,7 +16,7 @@ import numpy as np
 # states list
 gs = gs.copy()
 s1 = State(label='s1', energy=1.0, multiplicity=1, size=1)
-tt = State(label='tt', energy=1.0, multiplicity=1, size=2)
+tt = State(label='tt', energy=1.0, multiplicity=1, size=2, connected_distance=1.0)
 
 
 # custom transfer function

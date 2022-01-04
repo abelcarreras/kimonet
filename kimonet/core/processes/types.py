@@ -68,9 +68,9 @@ class BaseProcess(object):
 #               + 'final : {} {}\n'.format(self.final[0], self.final[1])
 
     @property
-    def final(self):
+    def final_safe(self):
         if self._final is None:
-            self._final = deepcopy(self.final_test)
+            self._final = deepcopy(self.final)
             for state in self._final:
                 for mol in state.get_molecules():
                     mol.cell_state = self.cell_states[mol]
@@ -79,7 +79,7 @@ class BaseProcess(object):
         return self._final
 
     @property
-    def initial_absolute(self):
+    def initial_safe(self):
         if self._cell_increment is None:
             return self.initial
 
@@ -106,11 +106,11 @@ class BaseProcess(object):
         self._initial = state_list
 
     @property
-    def final_test(self):
+    def final(self):
         return self._final_test
 
-    @final_test.setter
-    def final_test(self, state_list):
+    @final.setter
+    def final(self, state_list):
         self._transition_connect = None
         self._transport_connect = None
         self._final_test = state_list
@@ -124,7 +124,7 @@ class BaseProcess(object):
     @supercell.setter
     def supercell(self, cell):
         self._supercell = cell
-        for state in self.final_test:
+        for state in self.final:
             state.supercell = cell
 
     def is_symmetry(self):
@@ -143,7 +143,7 @@ class BaseProcess(object):
 
     def reset_cell_states(self):
         self.cell_states.clear()
-        for state in self.final_test:
+        for state in self.final:
             for mol in state.get_molecules():
                 self.cell_states[mol] = np.zeros(mol.get_dim())
 
@@ -219,8 +219,8 @@ class GoldenRule(BaseProcess):
         return self._vibrations
 
     def get_fcwd(self):
-        transition_donor = (self.initial[0], self.final[1])
-        transition_acceptor = (self.initial[1], self.final[0])
+        transition_donor = (self.initial[0], self.final_safe[1])
+        transition_acceptor = (self.initial[1], self.final_safe[0])
 
         donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
         acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
@@ -249,7 +249,7 @@ class GoldenRule(BaseProcess):
         return overlap_data[info]
 
     def get_electronic_coupling(self):
-        return self._coupling_function(self.initial, self.final, **self.arguments)
+        return self._coupling_function(self.initial, self.final_safe, **self.arguments)
 
     def get_rate_constant(self):
         e_coupling = self.get_electronic_coupling()
@@ -273,7 +273,7 @@ class DirectRate(BaseProcess):
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     def get_rate_constant(self):
-        return self.rate_function(self.initial, self.final, **self.arguments)
+        return self.rate_function(self.initial, self.final_safe, **self.arguments)
 
 
 class SimpleRate(BaseProcess):
@@ -285,11 +285,33 @@ class SimpleRate(BaseProcess):
                  arguments=None
                  ):
 
-        self._rate_constant = rate_constant
+        self._rate_constant = float(rate_constant)
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     def get_rate_constant(self):
         return self._rate_constant
+
+
+class SimpleRateMulti(BaseProcess):
+    def __init__(self,
+                 initial_states,
+                 final_states,
+                 rate_constant,
+                 states_data,
+                 description='',
+                 ):
+
+        choice_state = np.random.choice(states_data['energies'], 1, p=states_data['probabilities'])
+
+        final_states = deepcopy(final_states)
+        final_states[0].modify_energy(choice_state[0])
+
+        self._rate_constant = float(rate_constant)
+        BaseProcess.__init__(self, initial_states, final_states, description, None)
+
+    def get_rate_constant(self):
+        return self._rate_constant
+
 
 
 class SimpleRateBounded(BaseProcess):
@@ -318,8 +340,8 @@ class SimpleRateBounded(BaseProcess):
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     def get_rate_constant(self):
-        r_vector = np.array(self.initial_absolute[0].get_coordinates_absolute()) - \
-                   np.array(self.initial_absolute[1].get_coordinates_absolute())
+        r_vector = np.array(self.initial_safe[0].get_coordinates_absolute()) - \
+                   np.array(self.initial_safe[1].get_coordinates_absolute())
         distance = np.linalg.norm(r_vector)
 
         def sigmoid_function(x, distance, step_param=1.0):
@@ -355,7 +377,7 @@ class InternalConversion(BaseProcess):
         return self._vibrations
 
     def get_fcwd(self):
-        transition = (self.final[0], self.initial[0])
+        transition = (self.final_safe[0], self.initial[0])
 
         vib_dos = self.vibrations.get_vib_spectrum(*transition)
 
@@ -385,10 +407,10 @@ class MillerAbrahams(BaseProcess):
 
     def get_rate_constant(self):
 
-        transition = (self.initial[0], self.final[1])
+        transition = (self.initial[0], self.final_safe[1])
 
-        r_vector = np.array(self.initial_absolute[0].get_coordinates_absolute()) - \
-                   np.array(self.initial_absolute[1].get_coordinates_absolute())
+        r_vector = np.array(self.initial_safe[0].get_coordinates_absolute()) - \
+                   np.array(self.initial_safe[1].get_coordinates_absolute())
         distance = np.linalg.norm(r_vector)
 
         rate = self._v0 * np.exp(-2*self._gamma * distance)
@@ -415,4 +437,4 @@ class DecayRate(BaseProcess):
         self.rate_function = decay_rate_function
 
     def get_rate_constant(self):
-        return self.rate_function(self.initial, self.final, **self.arguments)
+        return self.rate_function(self.initial, self.final_safe, **self.arguments)

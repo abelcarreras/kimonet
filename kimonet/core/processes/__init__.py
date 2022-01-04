@@ -67,14 +67,14 @@ def get_decay_rates(state, system):
             elements_list = state.get_molecules()
             # group_list = [s.size for s in process.final_test]
 
-            configurations = combinations_group(elements_list, process.final_test, supercell=process.supercell)
+            configurations = combinations_group(elements_list, process.final, supercell=process.supercell)
 
             for configuration in configurations:
 
                 new_process = deepcopy(process)
                 new_process.initial = (state,)
 
-                for molecules, final in zip(configuration, new_process.final_test):
+                for molecules, final in zip(configuration, new_process.final):
                     final.remove_molecules()
                     final.cell_state = np.zeros_like(molecules[0].cell_state) # set zero to final state cell_states
                     for mol in molecules:
@@ -119,14 +119,14 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
                 return sum1 == sum2
 
-            include_self = not is_same_p_configuration(process.initial, process.final_test)
+            include_self = not is_same_p_configuration(process.initial, process.final)
 
             # Getting all possible configurations for the final states
             elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
             elements_list = [item for sublist in elements_list for item in sublist]
             # group_list = [state.size for state in process.final_test]
 
-            configurations = combinations_group(elements_list, process.final_test, supercell=process.supercell, include_self=include_self)
+            configurations = combinations_group(elements_list, process.final, supercell=process.supercell, include_self=include_self)
 
             for configuration in configurations:
 
@@ -142,14 +142,14 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
                 #            print(final, initial)
                 #            final.cell_state = initial.cell_state
 
-                for final in new_process.final_test:
+                for final in new_process.final:
                     final.cell_state = np.zeros_like(donor_state.cell_state)
                 for initial, final_list in new_process.get_transport_connections().items():
                     for final in final_list:
                         final.cell_state = initial.cell_state
 
                 # Binding molecules to states
-                for molecules, final in zip(configuration, new_process.final_test):
+                for molecules, final in zip(configuration, new_process.final):
                     final.remove_molecules()
                     for mol in molecules:
                         final.add_molecule(mol)
@@ -165,7 +165,7 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
                         raise Exception('molecules from initial and final do not match')
 
                 # redefine state cell_state from molecules cell_state
-                for initial, final in zip(new_process.initial, new_process.final_test):
+                for initial, final in zip(new_process.initial, new_process.final):
                     if final.label != _GS_.label:
                         cell_diff = np.array(np.average([new_process.cell_states[mol] for mol in final.get_molecules()], axis=0),
                                              dtype=int)

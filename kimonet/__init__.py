@@ -41,6 +41,8 @@ def calculate_kmc(system, num_trajectories=100, max_steps=10000, silent=False):
         #for node in trajectory.graph.nodes:
         #    print(trajectory.graph.nodes[node]['state'])
         trajectories.append(trajectory)
+    states = system_copy.get_states()
+    print(states[0].label, states[0].energy)
 
     return trajectories
 
