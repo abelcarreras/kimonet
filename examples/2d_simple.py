@@ -22,14 +22,14 @@ s1 = State(label='s1', energy=20.0, multiplicity=1)
 # transition moments
 transitions = [Transition(s1, gs,
                           tdm=[0.1, 0.0],  # a.u.
-                          reorganization_energy=0.08)] # eV
+                          reorganization_energy=0.08)]  # eV
 
 
 
 # define system as a crystal
 molecule = Molecule()
 
-#print(molecule, molecule.state, molecule.state.get_center())
+# print(molecule, molecule.state, molecule.state.get_center())
 
 molecule2 = Molecule(site_energy=2)
 

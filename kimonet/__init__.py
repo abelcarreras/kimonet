@@ -105,6 +105,7 @@ def calculate_kmc_parallel_py3(system, num_trajectories=100, max_steps=10000, si
 
     return trajectories
 
+
 def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
 
     if sys.version_info[0] < 3:
@@ -113,6 +114,7 @@ def calculate_kmc_parallel(system, num_trajectories=100, max_steps=10000, silent
     else:
         # Run python 3
         return calculate_kmc_parallel_py3(system, num_trajectories, max_steps, silent, processors)
+
 
 def calculate_kmc_parallel_alternative(system, num_trajectories=100, max_steps=10000, silent=False, processors=2):
 

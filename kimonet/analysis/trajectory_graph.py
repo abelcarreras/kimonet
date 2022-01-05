@@ -17,6 +17,26 @@ def count_keys_dict(dictionary, key):
         dictionary[key] = 1
 
 
+class StateData:
+    def __init__(self, state):
+        self.label = state.label
+        self.multiplicity = state.multiplicity
+        self.size = state.size
+        self.energy = state.energy
+
+    def __repr__(self):
+        return '<{}>'.format(self.label)
+
+    def __hash__(self):
+        return hash((self.label,
+                     # self.energy,
+                     self.multiplicity,
+                     self.size))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+
 class ArrayHandler():
     def __init__(self, arraystructure, data):
         self.arraystructure = arraystructure
@@ -90,7 +110,7 @@ class TrajectoryGraph:
         self.states = set()
         ce = {}
         for state in self.system.get_states():
-            self.states.add(state.label)
+            self.states.add(StateData(state))
             count_keys_dict(ce, state.label)
 
         self.current_excitons = [ce]
@@ -204,7 +224,7 @@ class TrajectoryGraph:
         # print('------', initial_state, [state.label for state in process.initial], [state.label for state in process.final])
         ce = {}
         for state in self.system.get_states():
-            self.states.add(state.label)
+            self.states.add(StateData(state))
             count_keys_dict(ce, state.label)
 
         self.current_excitons.append(ce)
@@ -255,7 +275,10 @@ class TrajectoryGraph:
         return plt
 
     def get_states(self):
-        return self.states
+        return [s.label for s in self.states]
+
+    def get_states_full(self):
+        return list(self.states)
 
     def get_dimension(self):
         return self.n_dim

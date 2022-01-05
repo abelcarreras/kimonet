@@ -4,6 +4,8 @@ from kimonet.system.vibrations import NoVibration
 from scipy.integrate import quad
 from copy import deepcopy
 from kimonet.system.state import ground_state as _GS_
+import warnings
+
 
 overlap_data = {}
 
@@ -55,12 +57,17 @@ class BaseProcess(object):
         self._is_symmetry = None
         self._cell_increment = None
 
-        # Check input coherence
+        # Check initial & final states sizes match
         total_size_initial = np.sum([state.size for state in initial_states])
         total_size_final = np.sum([state.size for state in final_states])
-
-        # Check initial & final states sizes match
         assert total_size_initial == total_size_final
+
+        # Check initial & final states multiplicity coherence
+        total_multiplicity_initial = np.sum([state.multiplicity-1 for state in initial_states])
+        total_multiplicity_final = np.sum([state.multiplicity-1 for state in final_states])
+
+        if (total_multiplicity_initial % 2 == 0) != (total_multiplicity_final % 2 == 0):
+            warnings.warn('Multiplicity in process "{}" is not coherent'.format(self.description))
 
     #    def __str__(self):
 #        return 'donor/acceptor : {} {}\n'.format(self.donor.state, self.acceptor.state) \
@@ -301,17 +308,22 @@ class SimpleRateMulti(BaseProcess):
                  description='',
                  ):
 
-        choice_state = np.random.choice(states_data['energies'], 1, p=states_data['probabilities'])
+        # check if states_data contains proper keys
+        assert 'energies' in states_data and 'probabilities' in states_data
+        assert len(states_data['energies']) == len(states_data['probabilities'])
 
-        final_states = deepcopy(final_states)
-        final_states[0].modify_energy(choice_state[0])
-
+        self._states_data = states_data
         self._rate_constant = float(rate_constant)
         BaseProcess.__init__(self, initial_states, final_states, description, None)
 
     def get_rate_constant(self):
-        return self._rate_constant
 
+        # change final state energy randomly according to probabilities
+        choice_state = np.random.choice(self._states_data['energies'], 1, p=self._states_data['probabilities'])
+
+        self.final[0].modify_energy(choice_state[0])
+
+        return self._rate_constant
 
 
 class SimpleRateBounded(BaseProcess):
