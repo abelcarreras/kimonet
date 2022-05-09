@@ -70,7 +70,7 @@ jobs:
 
   build_sdist:
     name: Build source distribution
-    needs: [ test_code ]
+    needs: [ build_and_test ]
     runs-on: ubuntu-latest
     #if: github.ref == 'refs/heads/master'
     steps:
