@@ -38,8 +38,59 @@ jobs:
         pytest tests --ignore=tests/test_2d_fast.py --ignore=tests/test_2d_multi.py
         # python -m unittest discover -p 'test_*.py' tests
 
+  build_wheels:
+      name: Build wheels on ${{ matrix.os }}
+      runs-on: ${{ matrix.os }}
+      needs: [ test_code ]
+      # if: github.ref == 'refs/heads/master'
+      strategy:
+        matrix:
+          os: [ubuntu-20.04, windows-2019, macos-10.15]
+
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/setup-python@v2
+
+        - name: Build wheels
+          uses: pypa/cibuildwheel@v2.4.0
+          env:
+            CIBW_BEFORE_BUILD: pip install numpy==1.19.5
+            CIBW_BUILD: cp36-* cp37-* cp38-*
+
+        - name: Build wheels
+          uses: pypa/cibuildwheel@v2.4.0
+          env:
+            CIBW_BEFORE_BUILD: pip install numpy==1.21.6
+            CIBW_BUILD: cp39-* cp310-*
+            CIBW_ARCHS_MACOS: x86_64 universal2
+
+        - uses: actions/upload-artifact@v2
+          with:
+            path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build source distribution
+    needs: [ test_code ]
+    runs-on: ubuntu-latest
+    #if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install numpy
+      - name: Build sdist
+        run: |
+          python setup.py sdist
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+
   deploy_pypi:
-      needs: [build_and_test]
+      needs: [build_and_test, build_sdist, build_wheels]
       runs-on: ubuntu-latest
       if: github.ref == 'refs/heads/master'
       # upload to PyPI on every tag starting with 'v'
