@@ -4,7 +4,7 @@ import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet.core.processes.transitions import Transition
 from kimonet.utils.units import ATOMIC_TO_ANGS_EL
-import kimonet.core.processes.forster as forster
+#import kimonet.core.processes.forster as forster
 from kimonet.utils import rotate_vector
 
 
@@ -365,3 +365,33 @@ def dexter_coupling(initial, final, k_factor=1):
 
     return dexter_coupling
 
+def structure_based_coupling(initial,final,functions,couplings):
+    """Returns the coupling according to geometrical parameters.
+
+    Args:
+        initial (state class): Initial states
+        final (state class list): Final states list
+        functions (list): List of functions to compute the geometrical parameters
+        couplings (list): List of float with functions + 1 dimension
+        return (float): Coupling
+    """
+    
+    functions = np.array(functions)
+    couplings = np.array(couplings)
+    structure_parameters = np.zeros_like(functions)
+    probabilities = np.zeros(couplings.shape[0])
+    
+    if initial[0].size != 1:
+        mol_1 = initial[0]._molecules_set[0].get_coordinates()
+        mol_2 = initial[0]._molecules_set[1].get_coordinates()
+    else:
+        mol_1 = initial[0]._molecules_set[0].get_coordinates()
+        mol_2 = initial[1]._molecules_set[0].get_coordinates()
+    
+    for enum,func in enumerate(functions):
+        structure_parameters[enum] = func(mol_1,mol_2)
+
+    for enum,coup in enumerate(couplings[:,:-1]):
+        probabilities[enum] = np.sum((structure_parameters-coup)**2)
+    
+    return couplings[np.argmin(probabilities),-1]
