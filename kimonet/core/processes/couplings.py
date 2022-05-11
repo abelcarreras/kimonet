@@ -4,7 +4,7 @@ import inspect
 from kimonet.utils.units import VAC_PERMITTIVITY
 from kimonet.core.processes.transitions import Transition
 from kimonet.utils.units import ATOMIC_TO_ANGS_EL
-#import kimonet.core.processes.forster as forster
+import kimonet.core.processes.forster as forster
 from kimonet.utils import rotate_vector
 
 
