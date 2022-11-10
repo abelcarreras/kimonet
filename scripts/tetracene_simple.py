@@ -63,11 +63,17 @@ triplet_couplings = [0.0e-3,  # a
                      7.2e-3,  # ab
                      7.2e-3,  # ab
                      1.2e-3]  # b
+# transition moments
+transitions = [Transition(s1, gs,
+                          tdm=[0.1, 0.0],  # a.u.
+                          reorganization_energy=0.185),  # eV
+               Transition(gs, t1,
+                          tdm=[0.1, 0.0],  # a.u.
+                          reorganization_energy=0.165),  # eV
+               ]
+
 # Vibrations
-vibrational_model = MarcusModel(reorganization_energies={(gs, s1): 0.185,
-                                                         (s1, gs): 0.185,
-                                                         (gs, t1): 0.165,   # assuming triplet same reorganization
-                                                         (t1, gs): 0.165},  # energy as singlet
+vibrational_model = MarcusModel(transitions=transitions,  # energy as singlet
                                 temperature=300)
 #################################################################################
 

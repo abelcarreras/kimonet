@@ -9,7 +9,8 @@ class State(object):
                  multiplicity=1,
                  size=1,
                  molecules_list=None,
-                 connected_distance=1):
+                 connected_distance=1,
+                 nm_frequencies=None):
 
         self._label = label
         self._energy = energy
@@ -19,6 +20,7 @@ class State(object):
         self._molecules_set = molecules_list if molecules_list is not None else []
         self._cell_state = None
         self.supercell = None
+        self._nm_frequencies = nm_frequencies
 
     def __hash__(self):
         return hash((self._label,
@@ -127,6 +129,9 @@ class State(object):
     def vdw_radius(self):
         return np.average([mol.get_vdw_radius() for mol in self.get_molecules()])
 
+    @property
+    def nm_frequencies(self):
+        return self._nm_frequencies
 
 # definition of ground state
 ground_state = State(label='gs', energy=0.0, multiplicity=1)

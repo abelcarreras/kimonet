@@ -1,15 +1,19 @@
 
 
 class Transition:
-    def __init__(self, state1, state2, symmetric=True, tdm=0, reorganization_energy=0):
+    def __init__(self, state1, state2, symmetric=True, tdm=0, reorganization_energy=0, huang_rys=None):
         self._state1 = state1
         self._state2 = state2
         self._symmetric = symmetric
         self._tdm = tdm
         self._reorganization_energy = reorganization_energy
+        self._huang_rys = huang_rys
 
     def __str__(self):
-        return '{} -> {}'.format(self._state1.label, self._state2.label)
+        if self._symmetric:
+            return '{} <-> {}'.format(self._state1.label, self._state2.label)
+        else:
+            return '{} -> {}'.format(self._state1.label, self._state2.label)
 
     def __hash__(self):
         if self._symmetric:
@@ -33,3 +37,7 @@ class Transition:
     @property
     def reorganization_energy(self):
         return self._reorganization_energy
+
+    @property
+    def huang_rys(self):
+        return self._huang_rys

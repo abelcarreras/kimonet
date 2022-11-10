@@ -11,9 +11,7 @@ class MarcusModel:
     def __init__(self,
                  transitions=None,
                  temperature=300,  # Kelvin
-                 drift_term=0  # aN -> eV / angs [to be implemented]
                  ):
-
 
         self.temperature = temperature
         self._transitions = transitions
@@ -52,70 +50,39 @@ class MarcusModel:
 class LevichJortnerModel:
 
     def __init__(self,
-                 frequencies=None,
-                 reorganization_energies=None,  # eV
-                 external_reorganization_energies=None,  # eV
+                 transitions=None,
                  temperature=300,
-                 # state_energies=None,
                  ):
 
-        self.frequencies = frequencies
-        self.reorganization_energies = reorganization_energies
-        self.external_reorganization_energies = external_reorganization_energies
-        self.state_energies = None
+        self._transitions = transitions
         self.temperature = temperature
 
-        # symmetrize external reorganization energies
-        """
-        if self.external_reorganization_energies is not None:
-            for key in list(external_reorganization_energies):
-                external_reorganization_energies[key[::-1]] = external_reorganization_energies[key]
-        """
-
     def __hash__(self):
-        return hash((str(self.state_energies),
-                     str(self.frequencies),
-                     str(self.external_reorganization_energies),
-                     str(self.reorganization_energies)))
-
-    def set_state_energies(self, state_energies):
-        self.state_energies = state_energies
+        return hash((str(self._transitions),
+                     ))
 
     def get_vib_spectrum(self, target_state, origin_state):
+        CM_TO_NS = 29.9792558
 
-        elec_trans_ene = target_state.energy - origin_state.energy
+        elec_trans_ene = target_state.energy - origin_state.energy  # eV
+        angl_freqs = np.array(origin_state.nm_frequencies) * CM_TO_NS * 2*np.pi  # cm-1 (ordinary) -> ns-1 (angular)
         transition = Transition(target_state, origin_state, symmetric=False)
 
-        #elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
-
         temp = self.temperature  # temperature (K)
-        ext_reorg_ene = self.external_reorganization_energies[transition]
-        reorg_ene = np.array(self.reorganization_energies[transition])
+
+        if transition in self._transitions:
+            reorg_ene = self._transitions[self._transitions.index(transition)].reorganization_energy
+            huang_rhys = self._transitions[self._transitions.index(transition)].huang_rys
+
+        else:
+            raise Exception('{} transition not defined'.format(transition))
+
+
+        l_cl = reorg_ene
+        s_eff = np.sum(huang_rhys)
+        w_eff = np.sum(np.multiply(huang_rhys, angl_freqs))/s_eff  # angular frequency
 
         sign = np.sign(elec_trans_ene)
-
-        angl_freqs = np.array(self.frequencies[transition]) * 29.9792558 * 2*np.pi  # cm-1 -> ns-1 , angular frequency
-
-        freq_classic_limit = BOLTZMANN_CONSTANT * temp / HBAR_PLANCK  # ns^-1,  angular frequency
-
-        indices_cl = np.where(angl_freqs < freq_classic_limit)[0]
-        indices_qm = np.where(angl_freqs >= freq_classic_limit)[0]
-
-        l_cl = np.sum(reorg_ene[indices_cl]) + ext_reorg_ene
-
-        l_qm = reorg_ene[indices_qm]
-
-        ang_freq_qm = angl_freqs[indices_qm]
-
-        s = np.true_divide(l_qm, ang_freq_qm) / HBAR_PLANCK
-
-        s_eff = np.sum(s)
-        w_eff = np.sum(np.multiply(s, ang_freq_qm))/s_eff  # angular frequency
-
-        # print('l_qm', np.sum(l_qm))
-        # print('s_eff', s_eff)
-        # print('w_eff', w_eff)
-
         def vib_spectrum(e):
             e = np.array(e, dtype=float)
             fcwd_term = np.zeros_like(e)
@@ -126,6 +93,7 @@ class LevichJortnerModel:
             return 1.0 / (np.sqrt(4 * np.pi * BOLTZMANN_CONSTANT * temp * l_cl)) * fcwd_term
 
         return vib_spectrum
+
 
 
 class EmpiricalModel:
