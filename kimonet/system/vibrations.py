@@ -72,7 +72,7 @@ class LevichJortnerModel:
 
         if transition in self._transitions:
             reorg_ene = self._transitions[self._transitions.index(transition)].reorganization_energy
-            huang_rhys = self._transitions[self._transitions.index(transition)].huang_rys
+            huang_rhys = self._transitions[self._transitions.index(transition)].huang_rhys
 
         else:
             raise Exception('{} transition not defined'.format(transition))

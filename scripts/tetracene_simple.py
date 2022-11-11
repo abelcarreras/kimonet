@@ -115,8 +115,8 @@ system.process_scheme = [
 
 np.random.seed(0)
 
-#system.add_excitation_random(s1, 1)
-system.add_excitation_random(s1, 2)
+system.add_excitation_random(s1, 1)
+system.add_excitation_random(t1, 1)
 system_test_info(system)
 visualize_system(system)
 

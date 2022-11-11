@@ -1,13 +1,13 @@
 
 
 class Transition:
-    def __init__(self, state1, state2, symmetric=True, tdm=0, reorganization_energy=0, huang_rys=None):
+    def __init__(self, state1, state2, symmetric=True, tdm=0, reorganization_energy=0, huang_rhys=None):
         self._state1 = state1
         self._state2 = state2
         self._symmetric = symmetric
         self._tdm = tdm
         self._reorganization_energy = reorganization_energy
-        self._huang_rys = huang_rys
+        self._huang_rhys = huang_rhys
 
     def __str__(self):
         if self._symmetric:
@@ -39,5 +39,5 @@ class Transition:
         return self._reorganization_energy
 
     @property
-    def huang_rys(self):
-        return self._huang_rys
+    def huang_rhys(self):
+        return self._huang_rhys
