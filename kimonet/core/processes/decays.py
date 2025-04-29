@@ -6,7 +6,7 @@ from kimonet.utils.units import ATOMIC_TO_ANGS_EL
 
 
 # Decay functions
-def einstein_radiative_decay(initial, final, g1=1, g2=1, transitions=None, transition_moment=None):
+def einstein_radiative_decay(initial, final, g1=1, g2=1, transitions=None, **kwargs):
     """
     Einstein radiative decay
 

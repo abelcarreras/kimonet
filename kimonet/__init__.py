@@ -90,7 +90,7 @@ def calculate_kmc_parallel_py3(system, num_trajectories=100, max_steps=10000, si
     from multiprocessing import set_start_method
 
     if use_fork:
-        set_start_method("fork")
+        set_start_method('fork', force=True)
 
     # executor = futures.ThreadPoolExecutor(max_workers=processors)
     executor = futures.ProcessPoolExecutor(max_workers=processors)
