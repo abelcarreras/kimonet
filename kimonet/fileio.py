@@ -27,13 +27,13 @@ def load_trajectory_list(filename):
 
     trajectory_list = []
     for dataset in f:
-        graph = pickle.loads(f[dataset]['graph'][()].tostring())
+        graph = pickle.loads(f[dataset]['graph'][()].tobytes())
         node_count = f[dataset]['node_count'][()]
         times = f[dataset]['times'][()]
         ndim = f[dataset]['n_dim'][()]
-        system = pickle.loads(f[dataset]['system'][()].tostring())
-        states = pickle.loads(f[dataset]['states'][()].tostring())
-        current_excitons = pickle.loads(f[dataset]['current_excitons'][()].tostring())
+        system = pickle.loads(f[dataset]['system'][()].tobytes())
+        states = pickle.loads(f[dataset]['states'][()].tobytes())
+        current_excitons = pickle.loads(f[dataset]['current_excitons'][()].tobytes())
 
         trajectory = TrajectoryGraph(system)
         trajectory.graph = graph

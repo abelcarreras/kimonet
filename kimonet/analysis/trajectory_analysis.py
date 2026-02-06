@@ -16,11 +16,10 @@ class TrajectoryAnalysis:
         self.n_dim = trajectories[0].get_dimension()
         self.n_traj = len(trajectories)
 
-        self.states = []
+        self.states = set()
         for traj in trajectories:
-            self.states += traj.get_states()
+            self.states.update(traj.get_states())
 
-        # self.states = self.states
         self._points_ratio = {}
         self._segment_ratio = {}
 

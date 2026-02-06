@@ -115,7 +115,9 @@ class EmpiricalModel:
     def get_vib_spectrum(self, target_state, origin_state):
         transition = Transition(target_state, origin_state, symmetric=False)
 
-        # Temperature is not actually used. This is to keep common interface
+        if transition not in self.empirical_function:
+            raise Exception('{} transition not defined'.format(transition))
+
         return self.empirical_function[transition]
 
 

@@ -17,7 +17,8 @@ def visualize_system(system, length=1):
 
     fig.suptitle('Orientation')
     if ndim == 3:
-        ax = fig.gca(projection='3d')
+        # ax = fig.gca(projection='3d')
+        ax = fig.add_subplot(111, projection='3d')
         ax.set_zlabel('Z')
     else:
         ax = fig.gca()
@@ -41,18 +42,14 @@ def visualize_system(system, length=1):
             continue
 
         if ndim == 1:
-            ax.quiver(c[0]-o[0]/2, 0, o[0], 0, color=colors[molecule.state.label],
-                      scale=1, scale_units='xy', angles='xy')
+            ax.quiver(c[0]-o[0]/2, 0, o[0]*length, 0, color=colors[molecule.state.label])
         if ndim == 2:
-            ax.quiver(c[0]-o[0]/2, c[1]-o[1]/2, o[0], o[1], color=colors[molecule.state.label],
-                      scale=1, scale_units='xy', angles='xy')
+            ax.quiver(c[0]-o[0]/2, c[1]-o[1]/2, o[0]*length, o[1]*length, color=colors[molecule.state.label])
             ax.text(c[0]+0.1, c[1]+0.1, '{}'.format(i), fontsize=12)
             ax.plot(c[0], c[1], 'o', color=colors[molecule.state.label])
         if ndim == 3:
-            ax.quiver(c[0]-o[0]/2, c[1]-o[1]/2, c[2]-o[2]/2, o[0], o[1], o[2],
-                      scale=1, scale_units='xy', angles='xy',
+            ax.quiver(c[0]-o[0]/2, c[1]-o[1]/2, c[2]-o[2]/2, o[0]*length, o[1]*length, o[2]*length,
                       color=colors[molecule.state.label])
-            # ax.quiver(c[0], c[1], c[2], o[0], o[1], o[2], length=0.1, normalize=True)
             ax.text(c[0], c[1], c[2], '{}'.format(i), fontsize=12)
 
     # Plot lattice vectors

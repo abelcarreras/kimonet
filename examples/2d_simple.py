@@ -54,18 +54,32 @@ print(system.get_ground_states())
 system.add_excitation_index(s1, 0)
 system.add_excitation_index(s1, 1)
 
+
+def test_function(initial, final):
+    """
+    rate as a function of distance
+
+    :param initial: initial states
+    :param final: final states
+    """
+
+    r_vector = initial[0].get_coordinates_absolute() - initial[1].get_coordinates_absolute()
+
+    return 1 /np.linalg.norm(r_vector)
+
 # set additional system parameters
 system.process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                                     electronic_coupling_function=forster_coupling,
                                     description='Forster coupling',
-                                    arguments={'ref_index': 1,
-                                               'transitions': transitions},
+                                    arguments={'ref_index': 1, 'transitions': transitions},
                                     vibrations=MarcusModel(transitions=transitions) # eV
                                     ),
-                        DecayRate(initial_state=s1, final_state=gs,
-                                  decay_rate_function=einstein_radiative_decay,
-                                  arguments={'transitions': transitions},
-                                  description='custom decay rate')
+                        DirectRate(initial_states=(s1, s1), final_states=(gs, gs),
+                                   rate_constant_function=test_function),
+                        #DecayRate(initial_state=s1, final_state=gs,
+                        #          decay_rate_function=einstein_radiative_decay,
+                        #          arguments={'transitions': transitions},
+                        #          description='custom decay rate')
                         ]
 
 system.cutoff_radius = 8  # interaction cutoff radius in Angstrom
@@ -86,10 +100,6 @@ trajectories[0].plot_2d().show()
 
 # resulting trajectories analysis
 analysis = TrajectoryAnalysis(trajectories)
-
-print('diffusion coefficient: {:9.5e} Angs^2/ns'.format(analysis.diffusion_coefficient()))
-print('lifetime:              {:9.5e} ns'.format(analysis.lifetime()))
-print('diffusion length:      {:9.5e} Angs'.format(analysis.diffusion_length()))
 
 for state in analysis.get_states():
     print('\nState: {}\n--------------------------------'.format(state))

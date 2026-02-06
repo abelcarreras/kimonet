@@ -268,7 +268,7 @@ class System(object):
                                                  size=state.size,
                                                  connected_distance=state.connected_distance)
         if mol_list is None:
-            raise Exception('Not enough space is system')
+            raise Exception('Not enough space is system to add exciton')
 
         if state.label == _GS_.label:
             self._states.remove(self.molecules[index].state)
