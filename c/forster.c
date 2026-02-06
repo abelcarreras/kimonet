@@ -8,6 +8,9 @@
 #include <omp.h>
 #endif
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
 
 //static double FrequencyEvaluation(double Delta, double  Coefficients[], int m, double xms);
 static double GetKFactor(double  *u_d, double  *u_a , double  *r, int size);
@@ -130,9 +133,9 @@ static PyObject* Dipole(PyObject* self, PyObject *arg, PyObject *keywords)
     static char *kwlist[] = {"r_vector", "mu_1", "mu_2", "n", NULL};
     if (!PyArg_ParseTupleAndKeywords(arg, keywords, "OOO|d", kwlist, &mu_1_obj, &mu_2_obj, &r_vector_obj, &RefractiveIndex))  return NULL;
 
-    PyObject *r_vector_array = PyArray_FROM_OTF(r_vector_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-    PyObject *mu_1_array = PyArray_FROM_OTF(mu_1_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-    PyObject *mu_2_array = PyArray_FROM_OTF(mu_2_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+    PyObject *r_vector_array = PyArray_FROM_OTF(r_vector_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyObject *mu_1_array = PyArray_FROM_OTF(mu_1_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyObject *mu_2_array = PyArray_FROM_OTF(mu_2_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
     if (r_vector_array == NULL || mu_1_array == NULL || mu_2_array == NULL ) {
         Py_XDECREF(r_vector_array);
@@ -141,10 +144,10 @@ static PyObject* Dipole(PyObject* self, PyObject *arg, PyObject *keywords)
         return NULL;
     }
 
-    double *RVector = (double*)PyArray_DATA(r_vector_array);
-    double *Mu1     = (double*)PyArray_DATA(mu_1_array);
-    double *Mu2     = (double*)PyArray_DATA(mu_2_array);
-    int    NumberOfData = (int)PyArray_DIM(r_vector_array, 0);
+    double *RVector = (double*)PyArray_DATA((PyArrayObject *)r_vector_array);
+    double *Mu1 = (double*)PyArray_DATA((PyArrayObject *)mu_1_array);
+    double *Mu2 = (double*)PyArray_DATA((PyArrayObject *)mu_2_array);
+    int NumberOfData = (int)PyArray_DIM((PyArrayObject *)r_vector_array, 0);
 
 
     //Create new numpy array for storing result
@@ -179,9 +182,9 @@ static PyObject* DipoleExtended (PyObject* self, PyObject *arg, PyObject *keywor
     if (!PyArg_ParseTupleAndKeywords(arg, keywords, "OOO|ddi", kwlist, &r_vector_obj, &mu_1_obj, &mu_2_obj,
                                      &RefractiveIndex, &Longitude, &NDivisions))  return NULL;
 
-    PyObject *r_vector_array = PyArray_FROM_OTF(r_vector_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-    PyObject *mu_1_array = PyArray_FROM_OTF(mu_1_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-    PyObject *mu_2_array = PyArray_FROM_OTF(mu_2_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+    PyObject *r_vector_array = PyArray_FROM_OTF(r_vector_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyObject *mu_1_array = PyArray_FROM_OTF(mu_1_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyObject *mu_2_array = PyArray_FROM_OTF(mu_2_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
     if (r_vector_array == NULL || mu_1_array == NULL || mu_2_array == NULL ) {
         Py_XDECREF(r_vector_array);
@@ -190,10 +193,10 @@ static PyObject* DipoleExtended (PyObject* self, PyObject *arg, PyObject *keywor
         return NULL;
     }
 
-    double *RVector = (double*)PyArray_DATA(r_vector_array);
-    double *Mu1     = (double*)PyArray_DATA(mu_1_array);
-    double *Mu2     = (double*)PyArray_DATA(mu_2_array);
-    int    NumberOfData = (int)PyArray_DIM(r_vector_array, 0);
+    double *RVector = (double*)PyArray_DATA((PyArrayObject *)r_vector_array);
+    double *Mu1 = (double*)PyArray_DATA((PyArrayObject *)mu_1_array);
+    double *Mu2 = (double*)PyArray_DATA((PyArrayObject *)mu_2_array);
+    int NumberOfData = (int)PyArray_DIM((PyArrayObject *)r_vector_array, 0);
 
     // dipole part
     double *Mu1i = malloc(NumberOfData * sizeof(double));

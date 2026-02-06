@@ -11,7 +11,7 @@ combinations_data = {}
 def distance_matrix(molecules_list, supercell, max_distance=1):
 
     # Set maximum possible distance everywhere
-    distances = np.ones((len(molecules_list), len(molecules_list))) * np.product(np.diag(supercell))
+    distances = np.ones((len(molecules_list), len(molecules_list))) * np.prod(np.diag(supercell))
 
     for i, mol_i in enumerate(molecules_list):
         for j, mol_j in enumerate(molecules_list):
