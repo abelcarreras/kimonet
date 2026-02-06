@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import warnings
 from kimonet.utils.units import BOLTZMANN_CONSTANT, HBAR_PLANCK
 import scipy.integrate as integrate
@@ -87,7 +88,7 @@ class LevichJortnerModel:
             e = np.array(e, dtype=float)
             fcwd_term = np.zeros_like(e)
             for m in range(10):
-                fcwd_term += s_eff**m / np.math.factorial(m) * np.exp(-s_eff) * np.exp(
+                fcwd_term += s_eff**m / math.factorial(m) * np.exp(-s_eff) * np.exp(
                     -(elec_trans_ene - e * sign + l_cl + m * HBAR_PLANCK * w_eff)**2 / (4 * BOLTZMANN_CONSTANT * temp * l_cl))
 
             return 1.0 / (np.sqrt(4 * np.pi * BOLTZMANN_CONSTANT * temp * l_cl)) * fcwd_term

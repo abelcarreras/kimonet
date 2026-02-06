@@ -81,11 +81,12 @@ triplet_couplings = [0.0e-3,  # a
                      7.2e-3,  # ab
                      1.2e-3]  # b
 # Vibrations
-vibrational_model = MarcusModel(reorganization_energies={(gs, s1): 0.07,
-                                                         (s1, gs): 0.07,
-                                                         (gs, t1): 0.07,   # assuming triplet same reorganization
-                                                         (t1, gs): 0.07},  # energy as singlet
+vibrational_model = MarcusModel(transitions=[Transition(gs, s1, reorganization_energy=0.07),
+                                             Transition(s1, gs, reorganization_energy=0.07),
+                                             Transition(gs, t1, reorganization_energy=0.07),
+                                             Transition(t1, gs, reorganization_energy=0.07)],
                                 temperature=300)
+
 #################################################################################
 
 # 2D model (plane a-b) , not diffusion in C
