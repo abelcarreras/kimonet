@@ -229,15 +229,16 @@ class GoldenRule(BaseProcess):
         transition_donor = (self.initial[0], self.final_safe[1])
         transition_acceptor = (self.initial[1], self.final_safe[0])
 
+        info = hash((transition_donor[0].label, transition_donor[1].label, transition_acceptor[0].label, transition_acceptor[1].label))
+        # the memory is used if the overlap has been already computed (buggy)
+        if info in overlap_data:
+            return overlap_data[info]
+
         donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
         acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
 
         # print(donor_vib_dos)
-        info = (hash(donor_vib_dos), hash(acceptor_vib_dos))
-
-        # the memory is used if the overlap has been already computed (buggy)
-        #if info in overlap_data:
-        #    return overlap_data[info]
+        #info = (hash(transition_donor), hash(transition_acceptor))
 
         def overlap(x):
             return donor_vib_dos(x) * acceptor_vib_dos(x)

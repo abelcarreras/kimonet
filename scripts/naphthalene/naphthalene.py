@@ -87,7 +87,7 @@ system.add_excitation_index(s1, 0)
 trajectories = calculate_kmc_parallel(system,
                                       processors=4,
                                       num_trajectories=10,    # number of trajectories that will be simulated
-                                      max_steps=50,         # maximum number of steps for trajectory allowed
+                                      max_steps=5000,         # maximum number of steps for trajectory allowed
                                       silent=False)
 
 # diffusion properties
