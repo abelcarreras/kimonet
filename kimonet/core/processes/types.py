@@ -7,9 +7,6 @@ from kimonet.system.state import ground_state as _GS_
 import warnings
 
 
-overlap_data = {}
-
-
 def ordered_states(state_list):
     """
     get GS states behind and other states at front
@@ -219,6 +216,7 @@ class GoldenRule(BaseProcess):
 
         self._coupling_function = electronic_coupling_function
         self._vibrations = vibrations
+        self._overlap_data = {}
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     @property
@@ -231,8 +229,8 @@ class GoldenRule(BaseProcess):
 
         info = hash((transition_donor[0].label, transition_donor[1].label, transition_acceptor[0].label, transition_acceptor[1].label))
         # the memory is used if the overlap has been already computed (buggy)
-        if info in overlap_data:
-            return overlap_data[info]
+        if info in self._overlap_data:
+            return self._overlap_data[info]
 
         donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
         acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
@@ -252,9 +250,9 @@ class GoldenRule(BaseProcess):
         #else:
         #    overlap_data[info] = quad(overlap, inf_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
-        overlap_data[info] = quad(overlap, -sup_range, sup_range, epsabs=1e-5, limit=1000)[0]
+        self._overlap_data[info] = quad(overlap, -sup_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
-        return overlap_data[info]
+        return self._overlap_data[info]
 
     def get_electronic_coupling(self):
         return self._coupling_function(self.initial, self.final_safe, **self.arguments)
