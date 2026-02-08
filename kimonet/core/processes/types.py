@@ -1,10 +1,13 @@
 from kimonet.utils.units import HBAR_PLANCK, BOLTZMANN_CONSTANT
-import numpy as np
 from kimonet.system.vibrations import NoVibration
+from kimonet.system.state import ground_state as _GS_
+from kimonet.core.processes.transitions import Transition
 from scipy.integrate import quad
 from copy import deepcopy
-from kimonet.system.state import ground_state as _GS_
 import warnings
+import numpy as np
+
+overlap_data = {}
 
 
 def ordered_states(state_list):
@@ -208,7 +211,7 @@ class GoldenRule(BaseProcess):
     def __init__(self,
                  initial_states,
                  final_states,
-                 electronic_coupling_function,
+                 electronic_coupling_function, # returns in eV
                  description='',
                  arguments=None,
                  vibrations=NoVibration(),
@@ -216,7 +219,6 @@ class GoldenRule(BaseProcess):
 
         self._coupling_function = electronic_coupling_function
         self._vibrations = vibrations
-        self._overlap_data = {}
         BaseProcess.__init__(self, initial_states, final_states, description, arguments)
 
     @property
@@ -227,10 +229,14 @@ class GoldenRule(BaseProcess):
         transition_donor = (self.initial[0], self.final_safe[1])
         transition_acceptor = (self.initial[1], self.final_safe[0])
 
-        info = hash((transition_donor[0].label, transition_donor[1].label, transition_acceptor[0].label, transition_acceptor[1].label))
+        # info = hash((transition_donor[0].label, transition_donor[1].label, transition_acceptor[0].label, transition_acceptor[1].label))
+        info = (self.__class__.__name__,
+                hash(Transition(*transition_donor, symmetric=False)),
+                hash(Transition(*transition_acceptor, symmetric=False)))
+
         # the memory is used if the overlap has been already computed (buggy)
-        if info in self._overlap_data:
-            return self._overlap_data[info]
+        if info in overlap_data:
+            return overlap_data[info]
 
         donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
         acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
@@ -250,15 +256,15 @@ class GoldenRule(BaseProcess):
         #else:
         #    overlap_data[info] = quad(overlap, inf_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
-        self._overlap_data[info] = quad(overlap, -sup_range, sup_range, epsabs=1e-5, limit=1000)[0]
+        overlap_data[info] = quad(overlap, -sup_range, sup_range, epsabs=1e-5, limit=1000)[0]
 
-        return self._overlap_data[info]
+        return overlap_data[info]
 
     def get_electronic_coupling(self):
-        return self._coupling_function(self.initial, self.final_safe, **self.arguments)
+        return self._coupling_function(self.initial, self.final_safe, **self.arguments) # eV
 
     def get_rate_constant(self):
-        e_coupling = self.get_electronic_coupling()
+        e_coupling = self.get_electronic_coupling()  # eV
         # spectral_overlap = general_fcwd(self.donor, self.acceptor, self, conditions)
 
         spectral_overlap = self.get_fcwd()
@@ -270,7 +276,7 @@ class DirectRate(BaseProcess):
     def __init__(self,
                  initial_states,
                  final_states,
-                 rate_constant_function,
+                 rate_constant_function, # function that returns rate constant in ns^-1
                  description='',
                  arguments=None
                  ):
@@ -286,7 +292,7 @@ class SimpleRate(BaseProcess):
     def __init__(self,
                  initial_states,
                  final_states,
-                 rate_constant,
+                 rate_constant, # ns^-1
                  description='',
                  arguments=None
                  ):
@@ -439,7 +445,7 @@ class DecayRate(BaseProcess):
     def __init__(self,
                  initial_state,
                  final_state,
-                 decay_rate_function,
+                 decay_rate_function, # returns rate decay in ns^-1
                  description='',
                  arguments=None
                  ):

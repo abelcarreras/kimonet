@@ -27,7 +27,7 @@ transitions = [Transition(s1, gs,
                Transition(s2, gs,
                           tdm=[0.9226746648, -1.72419493e-02, 4.36234688e-05],  # a.u.
                           reorganization_energy=0.08),
-               ]  # eV
+               ]
 
 from scipy.interpolate import interp1d
 from scipy.integrate import simpson as simps
@@ -46,9 +46,10 @@ process_scheme = [GoldenRule(initial_states=(s1, gs), final_states=(gs, s1),
                               electronic_coupling_function=forster_coupling_extended,
                               description='Forster',
                               arguments={'longitude': 2, 'n_divisions': 100, 'transitions': transitions, 'ref_index': 1.0},
-                              vibrations=EmpiricalModel({Transition(gs, s1, symmetric=False): f_abs,
+                              vibrations=EmpiricalModel({Transition(gs, s1, symmetric=False): f_abs,  # eV
                                                          Transition(s1, gs, symmetric=False): f_em})  # eV
-                              ),
+
+                             ),
 
                   DecayRate(initial_state=s1, final_state=gs,
                             decay_rate_function=einstein_radiative_decay,
