@@ -7,7 +7,7 @@ from kimonet import do_simulation_step, system_test_info
 from kimonet.core.processes.couplings import forster_coupling, dexter_coupling, forster_coupling_extended
 from kimonet.core.processes.decays import einstein_radiative_decay
 from kimonet.core.processes.types import GoldenRule, DecayRate, DirectRate, SimpleRate
-from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel
+from kimonet.system.vibrations import MarcusModel, LevichJortnerModel, EmpiricalModel, SimpleOverlap
 from kimonet import calculate_kmc, calculate_kmc_parallel
 from kimonet.system.state import State
 from kimonet.core.processes.transitions import Transition
@@ -19,21 +19,20 @@ s1 = State(label='s1', energy=4.37, multiplicity=1)  # fist excited state
 
 # define transition between states
 transitions = [Transition(s1, gs,
-                          tdm=[1.0, 0.0, 0.0],  # a.u.
-                          reorganization_energy=0.08), # eV
+                          tdm=[1.0, 0.0, 0.0]), # a.u.
                ]
 
 # define molecules (sites) on which the states are placed
-molecule = Molecule(name='mol_name', site_energy=2, vdw_radius=1.7) # angs
+molecule = Molecule(name='my_molecule', site_energy=2, vdw_radius=1.7) # angs
 
 # define the whole system in cheihc the simulation runs
 system = crystal_system(molecules=[molecule, molecule, molecule, molecule],
-                          scaled_site_coordinates=[[0.0, 0.0, 0.0], # relative coordiates
-                                                   [0.5, 0.0, 0.0], # relative coordinates
+                          scaled_site_coordinates=[[0.0, 0.0, 0.0],  # relative coordinates
+                                                   [0.5, 0.0, 0.0],  # relative coordinates
                                                    [0.0, 0.5, 0.0],  # relative coordinates
                                                    [0.0, 0.0, 0.5],  # relative coordinates
                                                    ], # relative coordinates
-                          unitcell=[[5.00000000, 0.0000000, 0.00000000],  # angs
+                          unitcell=[[5.00000000, 0.0000000, 0.00000000],   # angs
                                     [0.00000000, 5.0000000, 0.00000000],   # angs
                                     [0.00000000, 0.0000000, 5.00000000]],  # angs
                           dimensions=[1, 1, 1], # supercell dimensions
@@ -52,7 +51,7 @@ system.process_scheme = [# exciton transfers
                                     electronic_coupling_function=forster_coupling,
                                     description='Forster coupling',
                                     arguments={'ref_index': 1, 'transitions': transitions},
-                                    vibrations=MarcusModel(transitions=transitions) # eV
+                                    vibrations=SimpleOverlap(fcwd=0.1) # eV
                                     ),
                         # decays
                         DecayRate(initial_state=s1, final_state=gs,

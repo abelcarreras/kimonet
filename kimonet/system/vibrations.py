@@ -164,7 +164,36 @@ class GaussianModel:
 
         sign = np.sign(elec_trans_ene)
         def vib_spectrum(e):
-            return np.exp(-(elec_trans_ene - e * sign + reorg_ene) ** 22 / (2 * deviation) ** 2) / (2 * np.sqrt(np.pi) * deviation)
+            return np.exp(-(elec_trans_ene - e * sign + reorg_ene) ** 2 / (2 * deviation) ** 2) / (2 * np.sqrt(np.pi) * deviation)
+
+        return vib_spectrum
+
+class SimpleOverlap:
+
+    def __init__(self, fcwd):
+        """
+        simple model that generates two gaussian DOS that overlap with fcwd.
+        Note: this is a trick. Not physical!
+
+        :param fcwd: Frank-Condon-weighted density of states
+        """
+        self._fcwd = fcwd
+
+    def __hash__(self):
+        return hash(str(self._fcwd))
+
+    def get_vib_spectrum(self, target_state, origin_state):
+
+        """
+        :param donor: energy diference between states
+        :param acceptor: deviation in energy units
+        :return: Franck-Condon-weighted density of states
+        """
+
+        variance = 0.1
+        def vib_spectrum(e):
+            #return self._fcwd/np.sqrt(2*np.pi) * np.exp(-e**2/2)
+            return np.sqrt(self._fcwd/np.sqrt(2*np.pi*variance**2) * np.exp(-e**2/(2*variance**2)))
 
         return vib_spectrum
 
