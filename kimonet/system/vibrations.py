@@ -22,11 +22,9 @@ class MarcusModel:
         #return hash((str(self.reorganization_energies)))
         return hash((str(self._transitions)))
 
-    def get_vib_spectrum(self, target_state, origin_state):
+    def get_vib_spectrum(self, transition : Transition):
 
-        # elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
-        elec_trans_ene = target_state.energy - origin_state.energy
-        transition = Transition(target_state, origin_state, symmetric=False)
+        elec_trans_ene = transition.transition_energy  # eV
 
         temp = self.temperature  # temperature (K)
 
@@ -62,12 +60,11 @@ class LevichJortnerModel:
         return hash((str(self._transitions),
                      ))
 
-    def get_vib_spectrum(self, target_state, origin_state):
+    def get_vib_spectrum(self, transition: Transition):
         CM_TO_NS = 29.9792558
 
-        elec_trans_ene = target_state.energy - origin_state.energy  # eV
-        angl_freqs = np.array(origin_state.nm_frequencies) * CM_TO_NS * 2*np.pi  # cm-1 (ordinary) -> ns-1 (angular)
-        transition = Transition(target_state, origin_state, symmetric=False)
+        elec_trans_ene = transition.transition_energy  # eV
+        angl_freqs = np.array(transition.origin.nm_frequencies) * CM_TO_NS * 2*np.pi  # cm-1 (ordinary) -> ns-1 (angular)
 
         temp = self.temperature  # temperature (K)
 
@@ -113,8 +110,7 @@ class EmpiricalModel:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, target_state, origin_state):
-        transition = Transition(target_state, origin_state, symmetric=False)
+    def get_vib_spectrum(self, transition : Transition):
 
         if transition not in self.empirical_function:
             raise Exception('{} transition not defined'.format(transition))
@@ -146,20 +142,15 @@ class GaussianModel:
                      str(self.deviations),
                      str(self.reorganization_energies)))
 
-    def get_vib_spectrum(self, target_state, origin_state):
+    def get_vib_spectrum(self, transition : Transition):
 
         """
-        :param donor: energy diference between states
-        :param acceptor: deviation in energy units
+        :param transition: transition between states
         :return: Franck-Condon-weighted density of states in gaussian aproximation
         """
 
-        elec_trans_ene = target_state.energy - origin_state.energy
-        transition = Transition(target_state, origin_state, symmetric=False)
-
-        #elec_trans_ene = self.state_energies[transition[1]] - self.state_energies[transition[0]]
-        reorg_ene = np.sum(self.reorganization_energies[transition])
-
+        elec_trans_ene = transition.transition_energy # eV
+        reorg_ene = np.sum(self.reorganization_energies[transition]) # eV
         deviation = self.deviations[transition]     # atomic units
 
         sign = np.sign(elec_trans_ene)
@@ -182,11 +173,10 @@ class SimpleOverlap:
     def __hash__(self):
         return hash(str(self._fcwd))
 
-    def get_vib_spectrum(self, target_state, origin_state):
+    def get_vib_spectrum(self, transition : Transition):
 
         """
-        :param donor: energy diference between states
-        :param acceptor: deviation in energy units
+        :param transition: transition between states
         :return: Franck-Condon-weighted density of states
         """
 
@@ -211,9 +201,9 @@ class NoVibration:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, target_state, origin_state):
+    def get_vib_spectrum(self, transition : Transition):
 
-        elec_trans_ene = target_state.energy - origin_state.energy
+        elec_trans_ene = transition.transition_energy # eV
 
         return elec_trans_ene
 
@@ -245,9 +235,9 @@ class SimpleBoltzmann:
     def set_state_energies(self, state_energies):
         self.state_energies = state_energies
 
-    def get_vib_spectrum(self, target_state, origin_state):
+    def get_vib_spectrum(self, transition : Transition):
 
-        elec_trans_ene = target_state.energy - origin_state.energy
+        elec_trans_ene = transition.transition_energy # eV
 
         return np.exp(-elec_trans_ene/(BOLTZMANN_CONSTANT * self.temperature))
 

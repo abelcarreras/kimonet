@@ -226,20 +226,17 @@ class GoldenRule(BaseProcess):
         return self._vibrations
 
     def get_fcwd(self):
-        transition_donor = (self.initial[0], self.final_safe[1])
-        transition_acceptor = (self.initial[1], self.final_safe[0])
+        transition_donor = Transition(self.initial[0], self.final_safe[1], symmetric=False)
+        transition_acceptor = Transition(self.initial[1], self.final_safe[0], symmetric=False)
 
-        # info = hash((transition_donor[0].label, transition_donor[1].label, transition_acceptor[0].label, transition_acceptor[1].label))
-        info = (self.__class__.__name__,
-                hash(Transition(*transition_donor, symmetric=False)),
-                hash(Transition(*transition_acceptor, symmetric=False)))
+        info = (self.__class__.__name__, hash(transition_donor), hash(transition_acceptor))
 
         # the memory is used if the overlap has been already computed (buggy)
         if info in overlap_data:
             return overlap_data[info]
 
-        donor_vib_dos = self.vibrations.get_vib_spectrum(*transition_donor)  # (transition_donor)
-        acceptor_vib_dos = self.vibrations.get_vib_spectrum(*transition_acceptor)  # (transition_acceptor)
+        donor_vib_dos = self.vibrations.get_vib_spectrum(transition_donor)  # (transition_donor)
+        acceptor_vib_dos = self.vibrations.get_vib_spectrum(transition_acceptor)  # (transition_acceptor)
 
         # print(donor_vib_dos)
         #info = (hash(transition_donor), hash(transition_acceptor))
@@ -394,9 +391,8 @@ class InternalConversion(BaseProcess):
         return self._vibrations
 
     def get_fcwd(self):
-        transition = (self.final_safe[0], self.initial[0])
-
-        vib_dos = self.vibrations.get_vib_spectrum(*transition)
+        transition = Transition(self.final_safe[0], self.initial[0], symmetric=False)
+        vib_dos = self.vibrations.get_vib_spectrum(transition)
 
         #if isinstance(self.vibrations, NoVibration):
         #    return 1.0 if vib_dos == 0 else 0.0
@@ -424,15 +420,15 @@ class MillerAbrahams(BaseProcess):
 
     def get_rate_constant(self):
 
-        transition = (self.initial[0], self.final_safe[1])
-
         r_vector = np.array(self.initial_safe[0].get_coordinates_absolute()) - \
                    np.array(self.initial_safe[1].get_coordinates_absolute())
         distance = np.linalg.norm(r_vector)
 
+        transition = Transition(self.initial[0], self.final_safe[1], symmetric=False)
+
         rate = self._v0 * np.exp(-2*self._gamma * distance)
         if transition[0].energy < transition[1].energy:
-            rate = rate * self.vibrations.get_vib_spectrum(*transition)
+            rate = rate * self.vibrations.get_vib_spectrum(transition)
 
         return rate
 

@@ -31,6 +31,14 @@ class Transition:
         return hash(self) == hash(other)
 
     @property
+    def target(self):
+        return self._state1
+
+    @property
+    def origin(self):
+        return self._state2
+
+    @property
     def tdm(self):
         return self._tdm
 
@@ -41,3 +49,7 @@ class Transition:
     @property
     def huang_rhys(self):
         return self._huang_rhys
+
+    @property
+    def transition_energy(self):
+        return self._state1.energy - self._state2.energy
