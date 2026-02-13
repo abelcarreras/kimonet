@@ -8,6 +8,7 @@ class State(object):
                  energy,
                  multiplicity=1,
                  size=1,
+                 molecule_type=None,
                  molecules_list=None,
                  connected_distance=1,
                  nm_frequencies=None):
@@ -21,6 +22,10 @@ class State(object):
         self._cell_state = None
         self.supercell = None
         self._nm_frequencies = nm_frequencies
+        self._molecule_type = molecule_type
+
+        if molecule_type is not None and len(molecule_type) != size:
+            raise Exception('Molecule type does not match size')
 
     def __hash__(self):
         return hash((self._label,
@@ -28,6 +33,7 @@ class State(object):
                      self._multiplicity,
                      self._size,
                      str(self._cell_state) if self._label != ground_state.label else '',
+                     # str(self._molecule_type) if self._molecule_type is not None else '',
                      tuple(self.get_molecules())))
 
     def __eq__(self, other):
@@ -132,6 +138,11 @@ class State(object):
     @property
     def nm_frequencies(self):
         return self._nm_frequencies
+
+    @property
+    def molecule_type(self):
+        return self._molecule_type
+
 
 # definition of ground state
 ground_state = State(label='gs', energy=0.0, multiplicity=1)

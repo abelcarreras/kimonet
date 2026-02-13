@@ -8,6 +8,9 @@ import warnings
 import os
 from copy import deepcopy
 from kimonet.system.state import ground_state as _GS_
+import sys
+
+sys.setrecursionlimit(15000)  # increase recursion limit for analysis function
 
 
 def count_keys_dict(dictionary, key):

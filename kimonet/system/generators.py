@@ -79,7 +79,7 @@ def crystal_system(molecules,
 
             molecule = molecule_type.copy()  # copy of the generic instance
             molecule.set_coordinates(coor)
-            molecule.name = 'a{}'.format(i+1)
+            molecule.name = 'a{}'.format(i+1) if molecule_type.name is None else molecule_type.name
 
             final_orientation = list(orientations[i])
             for j in range(3):

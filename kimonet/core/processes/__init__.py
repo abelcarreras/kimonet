@@ -119,7 +119,8 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
                 return sum1 == sum2
 
-            include_self = not is_same_p_configuration(process.initial, process.final)
+            # include_self = not is_same_p_configuration(process.initial, process.final)
+            include_self = False
 
             # Getting all possible configurations for the final states
             elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
@@ -148,11 +149,27 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
                     for final in final_list:
                         final.cell_state = initial.cell_state
 
+                def match_mol_type(mol_list, type_list):
+                    if type_list is None:
+                        return True
+
+                    for mol in mol_list:
+                        if mol.name not in type_list:
+                            return False
+                    return True
+
                 # Binding molecules to states
+                match = True
                 for molecules, final in zip(configuration, new_process.final):
+                    if not match_mol_type(molecules, final.molecule_type):
+                        match = False
+                        break
+
                     final.remove_molecules()
                     for mol in molecules:
                         final.add_molecule(mol)
+                if not match:
+                    continue
 
                 # redefine cell states for molecules in the process
                 for mol in new_process.get_molecules():

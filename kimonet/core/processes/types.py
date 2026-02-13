@@ -451,3 +451,18 @@ class DecayRate(BaseProcess):
 
     def get_rate_constant(self):
         return self.rate_function(self.initial, self.final_safe, **self.arguments)
+
+
+class SimpleDecayRate(BaseProcess):
+    def __init__(self,
+                 initial_state,
+                 final_state,
+                 decay_rate_constant, # returns rate decay in ns^-1
+                 description='',
+                 arguments=None
+                 ):
+        self._decay_rate_constant = decay_rate_constant
+        BaseProcess.__init__(self, [initial_state], [final_state], description, arguments)
+
+    def get_rate_constant(self):
+        return self._decay_rate_constant

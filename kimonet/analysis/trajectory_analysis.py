@@ -226,7 +226,7 @@ class TrajectoryAnalysis:
             t = traj.get_simulation_times()
             ne_interp.append(np.interp(t_range, t, ne, right=0))
 
-        plt.title('Averaged exciton number ({})'.format('' if state is None else state))
+        plt.title('Averaged exciton number ({})'.format('All' if state is None else state))
         plt.ylim(bottom=0, top=np.max(ne_interp))
         plt.xlim(left=0, right=time_max)
         plt.xlabel('time (ns)')
@@ -242,7 +242,7 @@ class TrajectoryAnalysis:
             d, _ = traj.get_max_distances_vs_times(state)
             distances += list(d)
 
-        plt.title('Distances histogram  ({})'.format('' if state is None else state))
+        plt.title('Distances histogram  ({})'.format('All' if state is None else state))
         plt.xlabel('Distance (Angs)')
         if normalized:
             plt.ylabel('Probability density (Angs^-1)')
