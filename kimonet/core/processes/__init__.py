@@ -110,22 +110,15 @@ def get_allowed_processes(donor_state, acceptor_state, transfer_scheme, cell_inc
 
         if (process.initial[0].label, process.initial[1].label) == (donor_state.label, acceptor_state.label):
 
-            def is_same_p_configuration(p_configuration_1, p_configuration_2):
-                if len(p_configuration_1) != len(p_configuration_2):
-                    return False
-
-                sum1 = np.multiply(*[hash(state) for state in p_configuration_1])
-                sum2 = np.multiply(*[hash(state) for state in p_configuration_2])
-
-                return sum1 == sum2
-
-            # include_self = not is_same_p_configuration(process.initial, process.final)
-            include_self = False
+            # check if initial and final states are the same
+            include_self = True
+            for sf in process.final:
+                if sf.label in [si.label for si in process.initial]:
+                    include_self = False
 
             # Getting all possible configurations for the final states
             elements_list = [state.get_molecules() for state in (donor_state, acceptor_state)]
             elements_list = [item for sublist in elements_list for item in sublist]
-            # group_list = [state.size for state in process.final_test]
 
             configurations = combinations_group(elements_list, process.final, supercell=process.supercell, include_self=include_self)
 
