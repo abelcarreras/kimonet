@@ -112,7 +112,7 @@ def get_orientation_from_vectors(v_reference, v_target):
             ang_x = np.arctan2(R[2, 1]/np.cos(ang_y), R[2, 2]/np.cos(ang_y))
             ang_z = np.arctan2(R[1, 0]/np.cos(ang_y), R[0, 0]/np.cos(ang_y))
         else:
-            # Gimbal lock: ang_y = ±pi/2
+            # Gimbal lock: ang_y = +/- pi/2
             ang_y = np.pi/2 if R[2, 0] <= -1 else -np.pi/2
             ang_x = 0
             ang_z = np.arctan2(-R[0, 1], R[1, 1])
