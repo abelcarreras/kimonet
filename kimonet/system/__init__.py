@@ -270,6 +270,12 @@ class System(object):
         if mol_list is None:
             raise Exception('Not enough space is system to add exciton')
 
+        if state.molecule_type is not None:
+            for mol_type in state.molecule_type:
+                if mol_type not in [mol.name for mol in mol_list]:
+                    raise Exception('Site {} [{}] cannot be in state {}'.format(index, mol_type, state.label))
+
+
         if state.label == _GS_.label:
             self._states.remove(self.molecules[index].state)
         else:
@@ -324,6 +330,11 @@ class System(object):
                     if nc == max_cycles - 1:
                         raise Exception('Not enough space in system')
                     continue
+
+                if exciton.molecule_type is not None:
+                    for mol_type in exciton.molecule_type:
+                        if mol_type not in [mol.name for mol in mol_list]:
+                            continue
 
                 self._states.append(exciton)
 
